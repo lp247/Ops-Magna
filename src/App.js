@@ -28,19 +28,9 @@ const PaleSection = Section.extend`
   color: rgb(201, 201, 201);
 `;
 
-const Subsection = styled.div`
-  margin-top: 16px;
-  border: 1px solid black;
-`;
-
 const Header = styled.p`
   font-size: 36px;
   margin-bottom: 16px;
-`;
-
-const Subheader = styled.p`
-  font-size: 24px;
-  margin-bottom: 8px;
 `;
 
 const List = styled.ul`
