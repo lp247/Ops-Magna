@@ -185,18 +185,6 @@ class App extends Component {
   render() {
     var tasksOfToday = this.state.taskArr.filter(el => match(moment(), el.doc.rid, el.doc.sd, el.doc.ed));
     var appointmentsOfToday = this.state.appointmentArr.filter(el => match(moment(), el.doc.rid, el.doc.sd, el.doc.ed));
-    var taskGroups = [...new Set(tasksOfToday.map(item => item.doc.g))].sort((a, b) => {
-      if (a === 'NO_GROUP') return -1;
-      if (b === 'NO_GROUP') return 1;
-      if (a === 'Morgenroutine' && b === 'Abendroutine') return -1;
-      if (a === 'Abendroutine' && b === 'Morgenroutine') return 1;
-      return 0;
-    });
-    var groupedTasksSkeleton = Object.assign({}, ...taskGroups.map(g => ({[g]: []})));
-    var groupedTasks = tasksOfToday.reduce((accu, cv) => {
-      accu[cv.doc.g].push(cv.doc);
-      return accu;
-    }, groupedTasksSkeleton);
     if (this.state.type) {
       return (
         <ContentWrapper>
@@ -248,15 +236,6 @@ class App extends Component {
               />
             </Inputfield>
             <Inputfield>
-              <Inputlabel htmlFor="group">Gruppe:</Inputlabel>
-              <Input
-                type="text"
-                id="group"
-                value={this.state.g}
-                onChange={e => {this.setState({g: e.target.value});}}
-              />
-            </Inputfield>
-            <Inputfield>
               <Inputlabel htmlFor="text">Text:</Inputlabel>
               <Textarea
                 id="text"
@@ -271,7 +250,6 @@ class App extends Component {
                     _id: this.state._id || moment().format(),
                     type: this.state.type,
                     desc: this.state.desc,
-                    g: this.state.g,
                     done: this.state.done,
                     rid: this.state.rid,
                     sd: this.state.sd,
@@ -299,36 +277,26 @@ class App extends Component {
           <Header onClick={() => {this.setState({type: 't'});}}>Aufgaben +</Header>
           {tasksOfToday.length === 0
             ? <Infotext>Heute keine Aufgaben!</Infotext>
-            : Object.keys(groupedTasks).map((g, index) => {
-              return (
-                <Subsection key={index}>
-                  {g === 'NO_GROUP'
-                    ? null
-                    : <Subheader>{g}</Subheader>
-                  }
-                  <List>
-                    {groupedTasks[g].map((el, index) => {
-                      return (
-                        <Listelement key={index}>
-                          <label>
-                            <Checkbox
-                              type="checkbox"
-                              checked={el.done}
-                              onChange={() => {
-                                var tmp = el;
-                                tmp['done'] = !tmp['done'];
-                                this.writeDB(tmp);
-                              }}
-                            />
-                            <Description>{el.desc}</Description>
-                          </label>
-                        </Listelement>
-                      );
-                    })}
-                  </List>
-                </Subsection>
-              );
-            })
+            : <List>
+              {tasksOfToday.map((el, index) => {
+                return (
+                  <Listelement key={index}>
+                    <label>
+                      <Checkbox
+                        type="checkbox"
+                        checked={el.doc.done}
+                        onChange={() => {
+                          var tmp = el.doc;
+                          tmp['done'] = !tmp['done'];
+                          this.writeDB(tmp);
+                        }}
+                      />
+                      <Description>{el.doc.desc}</Description>
+                    </label>
+                  </Listelement>
+                );
+              })}
+            </List>
           }
         </Section>
         <Section>
