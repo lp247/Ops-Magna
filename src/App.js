@@ -332,7 +332,7 @@ class App extends Component {
       <Page>
         <ContentWrapper>
           <Section>
-            <PlusButton  onClick={() => {this.setState({type: 't'});}} />
+            <PlusButton onClick={() => {this.setState({type: 't'});}} />
             <Header>Aufgaben</Header>
             {tasksOfToday.length === 0
               ? <Infotext>Heute keine Aufgaben! <Link
