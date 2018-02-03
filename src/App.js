@@ -64,9 +64,9 @@ const Description = styled.span`
 const Infotext = styled.p`
 `;
 
-// const Successtext = Infotext.extend`
-//   color: forestgreen;
-// `;
+const Successtext = Infotext.extend`
+  color: forestgreen;
+`;
 
 const Inputfield = styled.div`
   margin-top: 16px;
@@ -332,10 +332,10 @@ class App extends Component {
           } */}
         </PaleSection>
         <Section>
-          {/* {this.state.tasks.every(cv => cv['done'])
+          {tasksOfToday.every(el => el.doc.done) && appointmentsOfToday.every(el => el.doc.done)
             ? <Successtext>Alle Aufgaben erfüllt!</Successtext>
             : null
-          } */}
+          }
         </Section>
       </ContentWrapper>
     );
