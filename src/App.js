@@ -15,10 +15,13 @@ const ContentWrapper = styled.div`
     margin-right: 0;
   }
   box-sizing: border-box;
+  border: 1px solid black;
+  padding: 12px;
 `;
 
 const Section = styled.div`
   margin-top: 48px;
+  border: 1px solid black;
 `;
 
 const PaleSection = Section.extend`
@@ -27,6 +30,7 @@ const PaleSection = Section.extend`
 
 const Subsection = styled.div`
   margin-top: 16px;
+  border: 1px solid black;
 `;
 
 const Header = styled.p`
@@ -41,21 +45,21 @@ const Subheader = styled.p`
 
 const List = styled.ul`
   list-style-type: none;
-  `;
+`;
 
 const Listelement = styled.li`
   margin-top: 8px;
-  `;
+`;
 
 const Checkbox = styled.input`
   float: left;
   margin-top: 7px;
-  `;
+`;
 
 const Description = styled.span`
   display: block;
   margin-left: 32px;
-  `;
+`;
 
 const Infotext = styled.p`
 `;
