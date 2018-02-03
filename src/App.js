@@ -3,6 +3,18 @@ import styled from 'styled-components';
 import PouchDB from 'pouchdb';
 import moment from 'moment';
 
+const fontcolor = 'rgb(184, 184, 184)';
+const bgcolor = 'rgb(33, 34, 37)';
+const accentcolor = 'rgb(111, 178, 156)';
+
+const Page = styled.div`
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  background-color: ${bgcolor};
+  color: ${fontcolor};
+`;
+
 const ContentWrapper = styled.div`
   @media (min-width: 501px) {
     width: 500px;
@@ -15,17 +27,15 @@ const ContentWrapper = styled.div`
     margin-right: 0;
   }
   box-sizing: border-box;
-  border: 1px solid black;
   padding: 12px;
 `;
 
 const Section = styled.div`
   margin-top: 48px;
-  border: 1px solid black;
 `;
 
 const PaleSection = Section.extend`
-  color: rgb(201, 201, 201);
+  opacity: 0.3;
 `;
 
 const Header = styled.p`
@@ -65,19 +75,80 @@ const Inputfield = styled.div`
 const Input = styled.input`
   display: block;
   width: 100%;
+  background-color: ${fontcolor};
+  border: none;
 `;
 
 const Textarea = styled.textarea`
   width: 100%;
   height: 128px;
+  background-color: ${fontcolor};
 `;
 
 const Inputlabel = styled.label`
   display: block;
 `;
 
-const Button = styled.button`
-  margin-right: 16px;
+const ButtonBox = styled.div`
+  display: inline-block;
+  background-color: ${accentcolor};
+  cursor: pointer;
+  padding: 8px;
+`;
+
+const PlusButtonBox = ButtonBox.extend`
+  float: right;
+`;
+
+const TextButtonBox = ButtonBox.extend`
+  margin-left: 16px;
+  &:first-child {
+    margin-left: 0;
+  }
+`;
+
+const ButtonText = styled.p`
+  color: black;
+  /* display: flex; */
+  /* justify-content: center; */
+  /* align-content: center; */
+  /* flex-direction: column; */
+  /* text-align: center; */
+  /* font-weight: bold; */
+`;
+
+const SVGPath = styled.path`
+  stroke: black;
+  stroke-width: 16;
+`;
+
+const SVG = styled.svg`
+  display: block;
+  width: 24px;
+  height: 24px;
+`;
+
+const PlusButton = (props) => {
+  return (
+    <PlusButtonBox onClick={props.onClick}>
+      <SVG viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <SVGPath d="M50 0 L50 100 M0 50 L100 50"></SVGPath>
+      </SVG>
+    </PlusButtonBox>
+  );
+}
+
+const TextButton = (props) => {
+  return (
+    <TextButtonBox onClick={props.onClick}>
+      <ButtonText>{props.children}</ButtonText>
+    </TextButtonBox>
+  );
+}
+
+const Link = styled.a`
+  color: ${accentcolor};
+  cursor: pointer;
 `;
 
 // const HOST = '192.168.0.110:8000';
@@ -177,157 +248,159 @@ class App extends Component {
     var appointmentsOfToday = this.state.appointmentArr.filter(el => match(moment(), el.doc.rid, el.doc.sd, el.doc.ed));
     if (this.state.type) {
       return (
-        <ContentWrapper>
-          <Section>
-            <Header>{this.state.type === 't' ? 'Neue Aufgabe' : 'Neuer Termin'}</Header>
-            {/* <div>
-              <select
-                value={this.state.type}
-                onChange={e => {this.setState({type: e.target.value});}}
-              >
-                <option value="t">Aufgabe</option>
-                <option value="a">Termin</option>
-              </select>
-            </div> */}
-            <Inputfield>
-              <Inputlabel htmlFor="date">Startdatum:</Inputlabel>
-              <Input
-                type="date"
-                id="startdate"
-                value={this.state.sd}
-                onChange={e => {this.setState({sd: e.target.value});}}
-              />
-            </Inputfield>
-            <Inputfield>
-              <Inputlabel htmlFor="date">Enddatum:</Inputlabel>
-              <Input
-                type="date"
-                id="enddate"
-                value={this.state.ed}
-                onChange={e => {this.setState({ed: e.target.value});}}
-              />
-            </Inputfield>
-            <Inputfield>
-              <Inputlabel htmlFor="time">Uhrzeit:</Inputlabel>
-              <Input
-                type="time"
-                id="time"
-                value={this.state.time}
-                onChange={e => {this.setState({time: e.target.value});}}
-              />
-            </Inputfield>
-            <Inputfield>
-              <Inputlabel htmlFor="rid">Wiederholkennung:</Inputlabel>
-              <Input
-                type="text"
-                id="rid"
-                value={this.state.rid}
-                onChange={e => {this.setState({rid: e.target.value});}}
-              />
-            </Inputfield>
-            <Inputfield>
-              <Inputlabel htmlFor="text">Text:</Inputlabel>
-              <Textarea
-                id="text"
-                value={this.state.desc}
-                onChange={e => {this.setState({desc: e.target.value});}}
-              />
-            </Inputfield>
-            <Inputfield>
-              <Button
-                onClick={() => {
-                  this.writeDB({
-                    _id: this.state._id || moment().format(),
-                    type: this.state.type,
-                    desc: this.state.desc,
-                    done: this.state.done,
-                    rid: this.state.rid,
-                    sd: this.state.sd,
-                    ed: this.state.ed,
-                    time: this.state.time
-                  });
-                  this.setState({type: ''});
-                }}
-              >Eintragen</Button>
-              <Button
-                onClick={() => {
-                  this.setState({type: ''});
-                }}
-              >
-                Abbrechen
-              </Button>
-            </Inputfield>
-          </Section>
-        </ContentWrapper>
+        <Page>
+          <ContentWrapper>
+            <Section>
+              <Header>{this.state.type === 't' ? 'Neue Aufgabe' : 'Neuer Termin'}</Header>
+              {/* <div>
+                <select
+                  value={this.state.type}
+                  onChange={e => {this.setState({type: e.target.value});}}
+                >
+                  <option value="t">Aufgabe</option>
+                  <option value="a">Termin</option>
+                </select>
+              </div> */}
+              <Inputfield>
+                <Inputlabel htmlFor="date">Startdatum:</Inputlabel>
+                <Input
+                  type="date"
+                  id="startdate"
+                  value={this.state.sd}
+                  onChange={e => {this.setState({sd: e.target.value});}}
+                />
+              </Inputfield>
+              <Inputfield>
+                <Inputlabel htmlFor="date">Enddatum:</Inputlabel>
+                <Input
+                  type="date"
+                  id="enddate"
+                  value={this.state.ed}
+                  onChange={e => {this.setState({ed: e.target.value});}}
+                />
+              </Inputfield>
+              <Inputfield>
+                <Inputlabel htmlFor="time">Uhrzeit:</Inputlabel>
+                <Input
+                  type="time"
+                  id="time"
+                  value={this.state.time}
+                  onChange={e => {this.setState({time: e.target.value});}}
+                />
+              </Inputfield>
+              <Inputfield>
+                <Inputlabel htmlFor="rid">Wiederholkennung:</Inputlabel>
+                <Input
+                  type="text"
+                  id="rid"
+                  value={this.state.rid}
+                  onChange={e => {this.setState({rid: e.target.value});}}
+                />
+              </Inputfield>
+              <Inputfield>
+                <Inputlabel htmlFor="text">Text:</Inputlabel>
+                <Textarea
+                  id="text"
+                  value={this.state.desc}
+                  onChange={e => {this.setState({desc: e.target.value});}}
+                />
+              </Inputfield>
+              <Inputfield>
+                <TextButton
+                  onClick={() => {
+                    this.writeDB({
+                      _id: this.state._id || moment().format(),
+                      type: this.state.type,
+                      desc: this.state.desc,
+                      done: this.state.done,
+                      rid: this.state.rid,
+                      sd: this.state.sd,
+                      ed: this.state.ed,
+                      time: this.state.time
+                    });
+                    this.setState({type: ''});
+                  }}
+                >Eintragen</TextButton>
+                <TextButton onClick={() => {this.setState({type: ''});}}>Abbrechen</TextButton>
+              </Inputfield>
+            </Section>
+          </ContentWrapper>
+        </Page>
       );
     }
     return (
-      <ContentWrapper>
-        <Section>
-          <Header onClick={() => {this.setState({type: 't'});}}>Aufgaben +</Header>
-          {tasksOfToday.length === 0
-            ? <Infotext>Heute keine Aufgaben!</Infotext>
-            : <List>
-              {tasksOfToday.map((el, index) => {
-                return (
-                  <Listelement key={index}>
-                    <label>
-                      <Checkbox
-                        type="checkbox"
-                        checked={el.doc.done}
-                        onChange={() => {
-                          var tmp = el.doc;
-                          tmp['done'] = !tmp['done'];
-                          this.writeDB(tmp);
-                        }}
-                      />
-                      <Description>{el.doc.desc}</Description>
-                    </label>
-                  </Listelement>
-                );
-              })}
-            </List>
-          }
-        </Section>
-        <Section>
-          <Header onClick={() => {this.setState({type: 'a'});}}>Termine +</Header>
-          {appointmentsOfToday.length === 0
-            ? <Infotext>Heute keine Termine!</Infotext>
-            : <List>
-              {appointmentsOfToday.map((el, index) => {
-                return (
-                  <Listelement key={index}>
-                    {'[' + el.doc.time + '] ' + el.doc.desc}
-                  </Listelement>
-                );
-              })}
-            </List>
-          }
-        </Section>
-        <PaleSection>
-          <Header>Kommende Termine</Header>
-          {/* {this.state.upcoming_appointments.length == 0
-            ? <Infotext>Keine Termine in den nächsten {this.state.numNextDays} Tagen!</Infotext>
-            : <List>
-              {this.state.upcoming_appointments.map((element, index) => {
-                return (
-                  <Listelement key={index}>
-                    {'[' + element.year + '-' + element.month + '-' + element.day + ' '
-                      + ('0' + element.hour).slice(-2) + ':'
-                      + ('0' + element.minute).slice(-2) + '] ' + element.desc}
-                  </Listelement>
-                );
-              })}
-            </List>
-          } */}
-        </PaleSection>
-        <Section>
-          {tasksOfToday.every(el => el.doc.done) && appointmentsOfToday.every(el => el.doc.done)
-            ? <Successtext>Alle Aufgaben erfüllt!</Successtext>
-            : null
-          }
-        </Section>
-      </ContentWrapper>
+      <Page>
+        <ContentWrapper>
+          <Section>
+            <PlusButton  onClick={() => {this.setState({type: 't'});}} />
+            <Header>Aufgaben</Header>
+            {tasksOfToday.length === 0
+              ? <Infotext>Heute keine Aufgaben! <Link
+                onClick={() => {this.setState({type: 't'});}}
+              >hinzufügen</Link>.</Infotext>
+              : <List>
+                {tasksOfToday.map((el, index) => {
+                  return (
+                    <Listelement key={index}>
+                      <label>
+                        <Checkbox
+                          type="checkbox"
+                          checked={el.doc.done}
+                          onChange={() => {
+                            var tmp = el.doc;
+                            tmp['done'] = !tmp['done'];
+                            this.writeDB(tmp);
+                          }}
+                        />
+                        <Description>{el.doc.desc}</Description>
+                      </label>
+                    </Listelement>
+                  );
+                })}
+              </List>
+            }
+          </Section>
+          <Section>
+            <PlusButton onClick={() => {this.setState({type: 'a'});}} />
+            <Header>Termine</Header>
+            {appointmentsOfToday.length === 0
+              ? <Infotext>Heute keine Termine!</Infotext>
+              : <List>
+                {appointmentsOfToday.map((el, index) => {
+                  return (
+                    <Listelement key={index}>
+                      {'[' + el.doc.time + '] ' + el.doc.desc}
+                    </Listelement>
+                  );
+                })}
+              </List>
+            }
+          </Section>
+          <PaleSection>
+            <Header>Kommende Termine</Header>
+            {/* {this.state.upcoming_appointments.length == 0
+              ? <Infotext>Keine Termine in den nächsten {this.state.numNextDays} Tagen!</Infotext>
+              : <List>
+                {this.state.upcoming_appointments.map((element, index) => {
+                  return (
+                    <Listelement key={index}>
+                      {'[' + element.year + '-' + element.month + '-' + element.day + ' '
+                        + ('0' + element.hour).slice(-2) + ':'
+                        + ('0' + element.minute).slice(-2) + '] ' + element.desc}
+                    </Listelement>
+                  );
+                })}
+              </List>
+            } */}
+          </PaleSection>
+          <Section>
+            {tasksOfToday.every(el => el.doc.done) && appointmentsOfToday.every(el => el.doc.done)
+              ? <Successtext>Alle Aufgaben erfüllt!</Successtext>
+              : null
+            }
+          </Section>
+        </ContentWrapper>
+      </Page>
     );
   }
 }
