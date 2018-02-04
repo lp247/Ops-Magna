@@ -39,6 +39,7 @@ class App extends Component {
       currentTasksArr: [],
       currentEventsArr: [],
       upcomingEventsArr: [],
+      cotdoc: {},
       numUpcoming: 7,
       newEntry: '',
       dptr: {}
@@ -75,6 +76,8 @@ class App extends Component {
 
     this.readDB = this.readDB.bind(this);
     this.writeToDB = this.writeToDB.bind(this);
+    this.deleteFromDB = this.deleteFromDB.bind(this);
+    this.toggleTask = this.toggleTask.bind(this);
   }
 
   componentDidMount() {
@@ -83,7 +86,7 @@ class App extends Component {
 
   readDB() {
     this.localDB.allDocs({include_docs: true}).then((result) => {
-      var uearr = [];
+      let uearr = [];
       for (var i = 0; i < result.rows.length; i++) {
         for (var j = 1; j < this.state.numUpcoming; j++) {
           if (result.rows[i].doc.type === 'event') {
@@ -101,9 +104,10 @@ class App extends Component {
         if (a.date > b.date) return 1;
         return 0;
       })
-      var ctarr = result.rows.filter(el => el.doc.type === 'task' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)).map(el => el.doc);
-      var cearr = result.rows.filter(el => el.doc.type === 'event' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)).map(el => el.doc);
-      this.setState({currentTasksArr: ctarr, currentEventsArr: cearr, upcomingEventsArr: uearr});
+      let ctarr = result.rows.filter(el => el.doc.type === 'task' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)).map(el => el.doc);
+      let cearr = result.rows.filter(el => el.doc.type === 'event' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)).map(el => el.doc);
+      let cotdoc = (result.rows.find(el => el.doc._id === 'cotid') || {doc: {_id: 'cotid'}}).doc;
+      this.setState({currentTasksArr: ctarr, currentEventsArr: cearr, upcomingEventsArr: uearr, cotdoc: cotdoc});
     }).catch((err) => {
       throw err;
     });
@@ -120,7 +124,26 @@ class App extends Component {
     return this.writeToDB(doc);
   }
 
+  toggleTask(taskid) {
+    let cdate = moment().format('YYYY-MM-DD');
+    let tmp = this.state.cotdoc;
+    if (!tmp[cdate]) {
+      tmp[cdate] = [];
+    }
+    let index = this.state.cotdoc[cdate].findIndex(id => id === taskid);
+    if (index === -1) {
+      tmp[cdate] = [...tmp[cdate], taskid];
+      this.writeToDB(tmp);
+    } else {
+      tmp[cdate].splice(index, 1);
+      this.writeToDB(tmp);
+    }
+  }
+
   render() {
+    let cdate = moment().format('YYYY-MM-DD');
+    console.log(this.state.cotdoc);
+    console.log(this.state.cotdoc[cdate]);
     if (this.state.newEntry) {
       return (
         <NewEntry
@@ -157,12 +180,8 @@ class App extends Component {
                           <Checkbox
                             type='checkbox'
                             id={doc._id}
-                            checked={doc.done}
-                            onChange={() => {
-                              var tmp = doc;
-                              tmp['done'] = !tmp['done'];
-                              this.writeToDB(tmp);
-                            }}
+                            checked={this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1}
+                            onChange={() => {this.toggleTask(doc._id)}}
                           />
                         </TCell>
                         <TCell primary><label htmlFor={doc._id}>{doc.summ}</label></TCell>
@@ -261,7 +280,7 @@ class App extends Component {
             }
           </PaleSection>
           <Section>
-            {this.state.currentTasksArr.every(doc => doc.done)
+            {this.state.cotdoc[cdate] && this.state.currentTasksArr.map(doc => doc._id).sort().join(',') === this.state.cotdoc[cdate].sort().join(',')
               ? <Successtext>Alle Aufgaben erfüllt!</Successtext>
               : null
             }
