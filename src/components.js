@@ -55,7 +55,7 @@ export const TRow = styled.tr`
 export const TCell = styled.td`
   width: ${props => props.primary ? '99%' : 'auto'};
   white-space: ${props => props.primary ? 'normal' : 'nowrap'};
-  padding: 2px 8px;
+  padding: 2px 10px;
   vertical-align: middle;
   /* border: 1px solid black; */
 `;

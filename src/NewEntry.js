@@ -18,6 +18,22 @@ class NewEntry extends Component {
       ed: this.props.data.ed || '',
       time: this.props.data.time || ''
     };
+
+    this.getObj = this.getObj.bind(this);
+  }
+
+  getObj() {
+    return {
+      _id: this.state._id,
+      _rev: this.state._rev,
+      type: this.props.type,
+      summ: this.state.summ,
+      desc: this.state.desc,
+      rid: this.state.rid,
+      sd: this.state.sd,
+      ed: this.state.ed,
+      time: this.state.time
+    };
   }
 
   render() {
@@ -80,25 +96,9 @@ class NewEntry extends Component {
               />
             </Inputfield>
             <Inputfield>
-              <TextButton
-                onClick={() => {
-                  this.props.save({
-                    _id: this.state._id,
-                    _rev: this.state._rev,
-                    type: this.props.type,
-                    summ: this.state.summ,
-                    desc: this.state.desc,
-                    rid: this.state.rid,
-                    sd: this.state.sd,
-                    ed: this.state.ed,
-                    time: this.state.time
-                  });
-                }}
-              >Speichern</TextButton>
-              <TextButton
-                padding={8}
-                onClick={this.props.discard}
-              >Abbrechen</TextButton>
+              <TextButton onClick={() => {this.props.save(this.getObj());}}>Speichern</TextButton>
+              <TextButton padding={8} onClick={this.props.discard}>Abbrechen</TextButton>
+              <TextButton padding={8} onClick={() => {this.props.delete(this.getObj());}}>Löschen</TextButton>
             </Inputfield>
           </Section>
         </ContentWrapper>

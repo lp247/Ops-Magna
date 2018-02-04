@@ -154,6 +154,10 @@ class App extends Component {
           discard={() => {
             this.setState({newEntry: ''});
           }}
+          delete={(obj) => {
+            this.deleteFromDB(obj);
+            this.setState({newEntry: ''});
+          }}
         />
       );
     }
@@ -189,13 +193,13 @@ class App extends Component {
                             onClick={() => {this.setState({dptr: doc, newEntry: 'task'})}}
                           />
                         </TCell>
-                        <TCell>
+                        {/* <TCell>
                           <XButton
                             size={20}
                             display='table-cell'
                             onClick={() => {this.deleteFromDB(doc)}}
                           />
-                        </TCell>
+                        </TCell> */}
                       </TRow>
                     );
                   })}
@@ -224,12 +228,12 @@ class App extends Component {
                             onClick={() => {this.setState({dptr: doc, newEntry: 'event'})}}
                           />
                         </TCell>
-                        <TCell>
+                        {/* <TCell>
                           <XButton
                             size={20}
                             onClick={() => {this.deleteFromDB(doc)}}
                           />
-                        </TCell>
+                        </TCell> */}
                       </TRow>
                     );
                   })}
@@ -253,12 +257,12 @@ class App extends Component {
                             onClick={() => {this.setState({dptr: doc, newEntry: 'event'})}}
                           />
                         </TCell>
-                        <TCell>
+                        {/* <TCell>
                           <XButton
                             size={20}
                             onClick={() => {this.deleteFromDB(doc)}}
                           />
-                        </TCell>
+                        </TCell> */}
                       </TRow>
                     );
                   })}
