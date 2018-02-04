@@ -188,8 +188,8 @@ class App extends Component {
       numUpcoming: 7,
       _id: '',
       type: '',
+      summ: '',
       desc: '',
-      g: '',
       done: false,
       rid: '',
       sd: '',
@@ -312,7 +312,16 @@ class App extends Component {
                 />
               </Inputfield>
               <Inputfield>
-                <Inputlabel htmlFor="text">Text:</Inputlabel>
+                <Inputlabel htmlFor="summ">Kurzbeschreibung:</Inputlabel>
+                <Input
+                  type="text"
+                  id="summ"
+                  value={this.state.summ}
+                  onChange={e => {this.setState({summ: e.target.value});}}
+                />
+              </Inputfield>
+              <Inputfield>
+                <Inputlabel htmlFor="text">Beschreibung:</Inputlabel>
                 <Textarea
                   id="text"
                   value={this.state.desc}
@@ -366,7 +375,7 @@ class App extends Component {
                             this.writeDB(tmp);
                           }}
                         />
-                        <Description>{el.doc.desc}</Description>
+                        <Description>{el.doc.summ}</Description>
                       </label>
                     </Listelement>
                   );
@@ -383,7 +392,7 @@ class App extends Component {
                 {this.state.currentAppointmentsArr.map((el, index) => {
                   return (
                     <Listelement key={index}>
-                      {'[' + el.doc.time + '] ' + el.doc.desc}
+                      {'[' + el.doc.time + '] ' + el.doc.summ}
                     </Listelement>
                   );
                 })}
@@ -398,7 +407,7 @@ class App extends Component {
                 {this.state.upcomingAppointmentsArr.map((el, index) => {
                   return (
                     <Listelement key={index}>
-                      {'[' + el.doc.date + ' ' + el.doc.time + '] ' + el.doc.desc}
+                      {'[' + el.doc.date + ' ' + el.doc.time + '] ' + el.doc.summ}
                     </Listelement>
                   );
                 })}
