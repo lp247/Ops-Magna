@@ -182,8 +182,10 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      taskArr: [],
-      appointmentArr: [],
+      currentTasksArr: [],
+      currentAppointmentsArr: [],
+      upcomingAppointmentsArr: [],
+      numUpcoming: 7,
       _id: '',
       type: '',
       desc: '',
@@ -226,9 +228,32 @@ class App extends Component {
 
   readDB() {
     this.localDB.allDocs({include_docs: true}).then((result) => {
+      var modUAArr = [];
+      for (var i = 0; i < result.rows.length; i++) {
+        for (var j = 1; j < this.state.numUpcoming; j++) {
+          if (result.rows[i].doc.type === 'a') {
+            var doc = result.rows[i].doc;
+            if (match(moment().add(j, 'days'), doc.rid, doc.sd, doc.ed)) {
+              var tmp = JSON.parse(JSON.stringify(result.rows[i]));
+              tmp.doc.date = moment().add(j, 'days').format('YYYY-MM-DD');
+              modUAArr.push(tmp);
+            }
+          }
+        }
+      }
+      modUAArr.sort((a, b) => {
+        if (a.doc.date < b.doc.date) return -1;
+        if (a.doc.date > b.doc.date) return 1;
+        return 0;
+      })
       this.setState({
-        taskArr: result.rows.filter(element => element.doc.type === 't'),
-        appointmentArr: result.rows.filter(element => element.doc.type === 'a')
+        currentTasksArr: result.rows.filter(el => {
+          return el.doc.type === 't' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)
+        }),
+        currentAppointmentsArr: result.rows.filter(el => {
+          return el.doc.type === 'a' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)
+        }),
+        upcomingAppointmentsArr: modUAArr
       });
     }).catch((err) => {
       throw err;
@@ -244,23 +269,12 @@ class App extends Component {
   }
 
   render() {
-    var tasksOfToday = this.state.taskArr.filter(el => match(moment(), el.doc.rid, el.doc.sd, el.doc.ed));
-    var appointmentsOfToday = this.state.appointmentArr.filter(el => match(moment(), el.doc.rid, el.doc.sd, el.doc.ed));
     if (this.state.type) {
       return (
         <Page>
           <ContentWrapper>
             <Section>
               <Header>{this.state.type === 't' ? 'Neue Aufgabe' : 'Neuer Termin'}</Header>
-              {/* <div>
-                <select
-                  value={this.state.type}
-                  onChange={e => {this.setState({type: e.target.value});}}
-                >
-                  <option value="t">Aufgabe</option>
-                  <option value="a">Termin</option>
-                </select>
-              </div> */}
               <Inputfield>
                 <Inputlabel htmlFor="date">Startdatum:</Inputlabel>
                 <Input
@@ -334,12 +348,12 @@ class App extends Component {
           <Section>
             <PlusButton onClick={() => {this.setState({type: 't'});}} />
             <Header>Aufgaben</Header>
-            {tasksOfToday.length === 0
+            {this.state.currentTasksArr.length === 0
               ? <Infotext>Heute keine Aufgaben! <Link
                 onClick={() => {this.setState({type: 't'});}}
               >hinzufügen</Link>.</Infotext>
               : <List>
-                {tasksOfToday.map((el, index) => {
+                {this.state.currentTasksArr.map((el, index) => {
                   return (
                     <Listelement key={index}>
                       <label>
@@ -363,10 +377,10 @@ class App extends Component {
           <Section>
             <PlusButton onClick={() => {this.setState({type: 'a'});}} />
             <Header>Termine</Header>
-            {appointmentsOfToday.length === 0
+            {this.state.currentAppointmentsArr.length === 0
               ? <Infotext>Heute keine Termine!</Infotext>
               : <List>
-                {appointmentsOfToday.map((el, index) => {
+                {this.state.currentAppointmentsArr.map((el, index) => {
                   return (
                     <Listelement key={index}>
                       {'[' + el.doc.time + '] ' + el.doc.desc}
@@ -378,23 +392,21 @@ class App extends Component {
           </Section>
           <PaleSection>
             <Header>Kommende Termine</Header>
-            {/* {this.state.upcoming_appointments.length == 0
-              ? <Infotext>Keine Termine in den nächsten {this.state.numNextDays} Tagen!</Infotext>
+            {this.state.upcomingAppointmentsArr.length == 0
+              ? <Infotext>Keine Termine in den nächsten 7 Tagen!</Infotext>
               : <List>
-                {this.state.upcoming_appointments.map((element, index) => {
+                {this.state.upcomingAppointmentsArr.map((el, index) => {
                   return (
                     <Listelement key={index}>
-                      {'[' + element.year + '-' + element.month + '-' + element.day + ' '
-                        + ('0' + element.hour).slice(-2) + ':'
-                        + ('0' + element.minute).slice(-2) + '] ' + element.desc}
+                      {'[' + el.doc.date + ' ' + el.doc.time + '] ' + el.doc.desc}
                     </Listelement>
                   );
                 })}
               </List>
-            } */}
+            }
           </PaleSection>
           <Section>
-            {tasksOfToday.every(el => el.doc.done) && appointmentsOfToday.every(el => el.doc.done)
+            {this.state.currentTasksArr.every(el => el.doc.done)
               ? <Successtext>Alle Aufgaben erfüllt!</Successtext>
               : null
             }
