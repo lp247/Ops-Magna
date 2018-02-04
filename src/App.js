@@ -1,158 +1,12 @@
 import React, {Component} from 'react';
-import styled from 'styled-components';
 import PouchDB from 'pouchdb';
 import moment from 'moment';
 
-const fontcolor = 'rgb(184, 184, 184)';
-const bgcolor = 'rgb(33, 34, 37)';
-const accentcolor = 'rgb(111, 178, 156)';
-
-const Page = styled.div`
-  width: 100vw;
-  height: 100vh;
-  overflow: auto;
-  background-color: ${bgcolor};
-  color: ${fontcolor};
-`;
-
-const ContentWrapper = styled.div`
-  @media (min-width: 501px) {
-    width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  @media (max-width: 500px) {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-  }
-  box-sizing: border-box;
-  padding: 12px;
-`;
-
-const Section = styled.div`
-  margin-top: 48px;
-`;
-
-const PaleSection = Section.extend`
-  opacity: 0.3;
-`;
-
-const Header = styled.p`
-  font-size: 36px;
-  margin-bottom: 16px;
-`;
-
-const List = styled.ul`
-  list-style-type: none;
-`;
-
-const Listelement = styled.li`
-  margin-top: 8px;
-`;
-
-const Checkbox = styled.input`
-  float: left;
-  margin-top: 7px;
-`;
-
-const Description = styled.span`
-  display: block;
-  margin-left: 32px;
-`;
-
-const Infotext = styled.p`
-`;
-
-const Successtext = Infotext.extend`
-  color: forestgreen;
-`;
-
-const Inputfield = styled.div`
-  margin-top: 16px;
-`;
-
-const Input = styled.input`
-  display: block;
-  width: 100%;
-  background-color: ${fontcolor};
-  border: none;
-`;
-
-const Textarea = styled.textarea`
-  width: 100%;
-  height: 128px;
-  background-color: ${fontcolor};
-`;
-
-const Inputlabel = styled.label`
-  display: block;
-`;
-
-const ButtonBox = styled.div`
-  display: inline-block;
-  background-color: ${accentcolor};
-  cursor: pointer;
-  padding: 8px;
-`;
-
-const PlusButtonBox = ButtonBox.extend`
-  float: right;
-`;
-
-const TextButtonBox = ButtonBox.extend`
-  margin-left: 16px;
-  &:first-child {
-    margin-left: 0;
-  }
-`;
-
-const ButtonText = styled.p`
-  color: black;
-  /* display: flex; */
-  /* justify-content: center; */
-  /* align-content: center; */
-  /* flex-direction: column; */
-  /* text-align: center; */
-  /* font-weight: bold; */
-`;
-
-const SVGPath = styled.path`
-  stroke: black;
-  stroke-width: 16;
-`;
-
-const SVG = styled.svg`
-  display: block;
-  width: 24px;
-  height: 24px;
-`;
-
-const PlusButton = (props) => {
-  return (
-    <PlusButtonBox onClick={props.onClick}>
-      <SVG viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <SVGPath d="M50 0 L50 100 M0 50 L100 50"></SVGPath>
-      </SVG>
-    </PlusButtonBox>
-  );
-}
-
-const TextButton = (props) => {
-  return (
-    <TextButtonBox onClick={props.onClick}>
-      <ButtonText>{props.children}</ButtonText>
-    </TextButtonBox>
-  );
-}
-
-const Link = styled.a`
-  color: ${accentcolor};
-  cursor: pointer;
-`;
-
-// const HOST = '192.168.0.110:8000';
-// const tdf = new Intl.NumberFormat(undefined, {minimumIntegerDigits: 2});
+import {
+  Page, ContentWrapper, Section, PlusButton, Header, Infotext,
+  Checkbox, PaleSection, Successtext, XButton, Table, TRow, TCell, OButton
+} from './components.js';
+import NewEntry from './NewEntry.js';
 
 function match(now, rid, startdate, enddate) {
   if (!moment.isMoment(now)) now = moment(now);
@@ -183,18 +37,19 @@ class App extends Component {
     super(props);
     this.state = {
       currentTasksArr: [],
-      currentAppointmentsArr: [],
-      upcomingAppointmentsArr: [],
+      currentEventsArr: [],
+      upcomingEventsArr: [],
       numUpcoming: 7,
-      _id: '',
-      type: '',
-      summ: '',
-      desc: '',
-      done: false,
-      rid: '',
-      sd: '',
-      ed: '',
-      time: ''
+      newEntry: '',
+      dptr: {}
+      // _id: '',
+      // summ: '',
+      // desc: '',
+      // done: false,
+      // rid: '',
+      // sd: '',
+      // ed: '',
+      // time: ''
     };
 
     this.localDB = new PouchDB('todos');
@@ -219,7 +74,7 @@ class App extends Component {
     });
 
     this.readDB = this.readDB.bind(this);
-    this.writeDB = this.writeDB.bind(this);
+    this.writeToDB = this.writeToDB.bind(this);
   }
 
   componentDidMount() {
@@ -228,194 +83,185 @@ class App extends Component {
 
   readDB() {
     this.localDB.allDocs({include_docs: true}).then((result) => {
-      var modUAArr = [];
+      var uearr = [];
       for (var i = 0; i < result.rows.length; i++) {
         for (var j = 1; j < this.state.numUpcoming; j++) {
-          if (result.rows[i].doc.type === 'a') {
+          if (result.rows[i].doc.type === 'event') {
             var doc = result.rows[i].doc;
             if (match(moment().add(j, 'days'), doc.rid, doc.sd, doc.ed)) {
-              var tmp = JSON.parse(JSON.stringify(result.rows[i]));
-              tmp.doc.date = moment().add(j, 'days').format('YYYY-MM-DD');
-              modUAArr.push(tmp);
+              var tmp = JSON.parse(JSON.stringify(doc));
+              tmp.date = moment().add(j, 'days').format('YYYY-MM-DD');
+              uearr.push(tmp);
             }
           }
         }
       }
-      modUAArr.sort((a, b) => {
-        if (a.doc.date < b.doc.date) return -1;
-        if (a.doc.date > b.doc.date) return 1;
+      uearr.sort((a, b) => {
+        if (a.date < b.date) return -1;
+        if (a.date > b.date) return 1;
         return 0;
       })
-      this.setState({
-        currentTasksArr: result.rows.filter(el => {
-          return el.doc.type === 't' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)
-        }),
-        currentAppointmentsArr: result.rows.filter(el => {
-          return el.doc.type === 'a' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)
-        }),
-        upcomingAppointmentsArr: modUAArr
-      });
+      var ctarr = result.rows.filter(el => el.doc.type === 'task' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)).map(el => el.doc);
+      var cearr = result.rows.filter(el => el.doc.type === 'event' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)).map(el => el.doc);
+      this.setState({currentTasksArr: ctarr, currentEventsArr: cearr, upcomingEventsArr: uearr});
     }).catch((err) => {
       throw err;
     });
   }
 
-  writeDB(dataObject) {
-    this.localDB.put(dataObject).then(result => {
-
-    }).catch(err => {
+  writeToDB(doc) {
+    this.localDB.put(doc).catch(err => {
       throw err;
     });
   }
 
+  deleteFromDB(doc) {
+    doc._deleted = true;
+    return this.writeToDB(doc);
+  }
+
   render() {
-    if (this.state.type) {
+    if (this.state.newEntry) {
       return (
-        <Page>
-          <ContentWrapper>
-            <Section>
-              <Header>{this.state.type === 't' ? 'Neue Aufgabe' : 'Neuer Termin'}</Header>
-              <Inputfield>
-                <Inputlabel htmlFor="date">Startdatum:</Inputlabel>
-                <Input
-                  type="date"
-                  id="startdate"
-                  value={this.state.sd}
-                  onChange={e => {this.setState({sd: e.target.value});}}
-                />
-              </Inputfield>
-              <Inputfield>
-                <Inputlabel htmlFor="date">Enddatum:</Inputlabel>
-                <Input
-                  type="date"
-                  id="enddate"
-                  value={this.state.ed}
-                  onChange={e => {this.setState({ed: e.target.value});}}
-                />
-              </Inputfield>
-              <Inputfield>
-                <Inputlabel htmlFor="time">Uhrzeit:</Inputlabel>
-                <Input
-                  type="time"
-                  id="time"
-                  value={this.state.time}
-                  onChange={e => {this.setState({time: e.target.value});}}
-                />
-              </Inputfield>
-              <Inputfield>
-                <Inputlabel htmlFor="rid">Wiederholkennung:</Inputlabel>
-                <Input
-                  type="text"
-                  id="rid"
-                  value={this.state.rid}
-                  onChange={e => {this.setState({rid: e.target.value});}}
-                />
-              </Inputfield>
-              <Inputfield>
-                <Inputlabel htmlFor="summ">Kurzbeschreibung:</Inputlabel>
-                <Input
-                  type="text"
-                  id="summ"
-                  value={this.state.summ}
-                  onChange={e => {this.setState({summ: e.target.value});}}
-                />
-              </Inputfield>
-              <Inputfield>
-                <Inputlabel htmlFor="text">Beschreibung:</Inputlabel>
-                <Textarea
-                  id="text"
-                  value={this.state.desc}
-                  onChange={e => {this.setState({desc: e.target.value});}}
-                />
-              </Inputfield>
-              <Inputfield>
-                <TextButton
-                  onClick={() => {
-                    this.writeDB({
-                      _id: this.state._id || moment().format(),
-                      type: this.state.type,
-                      desc: this.state.desc,
-                      done: this.state.done,
-                      rid: this.state.rid,
-                      sd: this.state.sd,
-                      ed: this.state.ed,
-                      time: this.state.time
-                    });
-                    this.setState({type: ''});
-                  }}
-                >Eintragen</TextButton>
-                <TextButton onClick={() => {this.setState({type: ''});}}>Abbrechen</TextButton>
-              </Inputfield>
-            </Section>
-          </ContentWrapper>
-        </Page>
+        <NewEntry
+          type={this.state.newEntry}
+          data={this.state.dptr}
+          save={(obj) => {
+            this.writeToDB(obj);
+            this.setState({newEntry: ''});
+          }}
+          discard={() => {
+            this.setState({newEntry: ''});
+          }}
+        />
       );
     }
     return (
       <Page>
         <ContentWrapper>
           <Section>
-            <PlusButton onClick={() => {this.setState({type: 't'});}} />
+            <PlusButton
+              size={40}
+              float='right'
+              onClick={() => {this.setState({dptr: {}, newEntry: 'task'});}}
+            />
             <Header>Aufgaben</Header>
             {this.state.currentTasksArr.length === 0
-              ? <Infotext>Heute keine Aufgaben! <Link
-                onClick={() => {this.setState({type: 't'});}}
-              >hinzufügen</Link>.</Infotext>
-              : <List>
-                {this.state.currentTasksArr.map((el, index) => {
-                  return (
-                    <Listelement key={index}>
-                      <label>
-                        <Checkbox
-                          type="checkbox"
-                          checked={el.doc.done}
-                          onChange={() => {
-                            var tmp = el.doc;
-                            tmp['done'] = !tmp['done'];
-                            this.writeDB(tmp);
-                          }}
-                        />
-                        <Description>{el.doc.summ}</Description>
-                      </label>
-                    </Listelement>
-                  );
-                })}
-              </List>
+              ? <Infotext>Heute keine Aufgaben!</Infotext>
+              : <Table>
+                <tbody>
+                  {this.state.currentTasksArr.map((doc, index) => {
+                    return (
+                      <TRow key={index}>
+                        <TCell>
+                          <Checkbox
+                            type='checkbox'
+                            id={doc._id}
+                            checked={doc.done}
+                            onChange={() => {
+                              var tmp = doc;
+                              tmp['done'] = !tmp['done'];
+                              this.writeToDB(tmp);
+                            }}
+                          />
+                        </TCell>
+                        <TCell primary><label htmlFor={doc._id}>{doc.summ}</label></TCell>
+                        <TCell>
+                          <OButton
+                            size={20}
+                            float='right'
+                            inverted
+                            onClick={() => {this.setState({dptr: doc, newEntry: 'task'})}}
+                          />
+                        </TCell>
+                        <TCell>
+                          <XButton
+                            size={20}
+                            float='right'
+                            inverted={true}
+                            onClick={() => {this.deleteFromDB(doc)}}
+                          />
+                        </TCell>
+                      </TRow>
+                    );
+                  })}
+                </tbody>
+              </Table>
             }
           </Section>
           <Section>
-            <PlusButton onClick={() => {this.setState({type: 'a'});}} />
+            <PlusButton
+              size={40}
+              float='right'
+              onClick={() => {this.setState({dptr: {}, newEntry: 'event'});}}
+            />
             <Header>Termine</Header>
-            {this.state.currentAppointmentsArr.length === 0
-              ? <Infotext>Heute keine Termine!</Infotext>
-              : <List>
-                {this.state.currentAppointmentsArr.map((el, index) => {
-                  return (
-                    <Listelement key={index}>
-                      {'[' + el.doc.time + '] ' + el.doc.summ}
-                    </Listelement>
-                  );
-                })}
-              </List>
+            {this.state.currentEventsArr.length === 0
+              ? <Infotext>Heute keine Aufgaben!</Infotext>
+              : <Table>
+                <tbody>
+                  {this.state.currentEventsArr.map((doc, index) => {
+                    return (
+                      <TRow key={index}>
+                        <TCell primary>{'[' + doc.time + '] ' + doc.summ}</TCell>
+                        <TCell>
+                          <OButton
+                            size={20}
+                            float='right'
+                            inverted
+                            onClick={() => {this.setState({dptr: doc, newEntry: 'event'})}}
+                          />
+                        </TCell>
+                        <TCell>
+                          <XButton
+                            size={20}
+                            float='right'
+                            inverted={true}
+                            onClick={() => {this.deleteFromDB(doc)}}
+                          />
+                        </TCell>
+                      </TRow>
+                    );
+                  })}
+                </tbody>
+              </Table>
             }
           </Section>
           <PaleSection>
             <Header>Kommende Termine</Header>
-            {this.state.upcomingAppointmentsArr.length == 0
-              ? <Infotext>Keine Termine in den nächsten 7 Tagen!</Infotext>
-              : <List>
-                {this.state.upcomingAppointmentsArr.map((el, index) => {
-                  return (
-                    <Listelement key={index}>
-                      {'[' + el.doc.date + ' ' + el.doc.time + '] ' + el.doc.summ}
-                    </Listelement>
-                  );
-                })}
-              </List>
+            {this.state.upcomingEventsArr.length === 0
+              ? <Infotext>Keine Aufgaben in den nächsten {this.state.numUpcoming} Tagen!</Infotext>
+              : <Table>
+                <tbody>
+                  {this.state.upcomingEventsArr.map((doc, index) => {
+                    return (
+                      <TRow key={index}>
+                        <TCell primary>{'[' + doc.date + ' ' + doc.time + '] ' + doc.summ}</TCell>
+                        <TCell>
+                          <OButton
+                            size={20}
+                            float='right'
+                            inverted
+                            onClick={() => {this.setState({dptr: doc, newEntry: 'event'})}}
+                          />
+                        </TCell>
+                        <TCell>
+                          <XButton
+                            size={20}
+                            float='right'
+                            inverted={true}
+                            onClick={() => {this.deleteFromDB(doc)}}
+                          />
+                        </TCell>
+                      </TRow>
+                    );
+                  })}
+                </tbody>
+              </Table>
             }
           </PaleSection>
           <Section>
-            {this.state.currentTasksArr.every(el => el.doc.done)
+            {this.state.currentTasksArr.every(doc => doc.done)
               ? <Successtext>Alle Aufgaben erfüllt!</Successtext>
               : null
             }
