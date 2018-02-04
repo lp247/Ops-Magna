@@ -4,7 +4,7 @@ import moment from 'moment';
 
 import {
   Page, ContentWrapper, Section, PlusButton, Header, Infotext,
-  Checkbox, PaleSection, Successtext, XButton, Table, TRow, TCell, OButton
+  CBButton, PaleSection, Successtext, XButton, Table, TRow, TCell, OButton
 } from './components.js';
 import NewEntry from './NewEntry.js';
 
@@ -142,8 +142,6 @@ class App extends Component {
 
   render() {
     let cdate = moment().format('YYYY-MM-DD');
-    console.log(this.state.cotdoc);
-    console.log(this.state.cotdoc[cdate]);
     if (this.state.newEntry) {
       return (
         <NewEntry
@@ -176,28 +174,25 @@ class App extends Component {
                   {this.state.currentTasksArr.map((doc, index) => {
                     return (
                       <TRow key={index}>
-                        <TCell>
-                          <Checkbox
-                            type='checkbox'
-                            id={doc._id}
+                        <TCell onClick={() => {this.toggleTask(doc._id)}}>
+                          <CBButton
+                            size={20}
+                            display='table-cell'
                             checked={this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1}
-                            onChange={() => {this.toggleTask(doc._id)}}
                           />
                         </TCell>
-                        <TCell primary><label htmlFor={doc._id}>{doc.summ}</label></TCell>
+                        <TCell primary onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
                         <TCell>
                           <OButton
                             size={20}
-                            float='right'
-                            inverted
+                            display='table-cell'
                             onClick={() => {this.setState({dptr: doc, newEntry: 'task'})}}
                           />
                         </TCell>
                         <TCell>
                           <XButton
                             size={20}
-                            float='right'
-                            inverted={true}
+                            display='table-cell'
                             onClick={() => {this.deleteFromDB(doc)}}
                           />
                         </TCell>
@@ -216,7 +211,7 @@ class App extends Component {
             />
             <Header>Termine</Header>
             {this.state.currentEventsArr.length === 0
-              ? <Infotext>Heute keine Aufgaben!</Infotext>
+              ? <Infotext>Heute keine Termine!</Infotext>
               : <Table>
                 <tbody>
                   {this.state.currentEventsArr.map((doc, index) => {
@@ -226,16 +221,12 @@ class App extends Component {
                         <TCell>
                           <OButton
                             size={20}
-                            float='right'
-                            inverted
                             onClick={() => {this.setState({dptr: doc, newEntry: 'event'})}}
                           />
                         </TCell>
                         <TCell>
                           <XButton
                             size={20}
-                            float='right'
-                            inverted={true}
                             onClick={() => {this.deleteFromDB(doc)}}
                           />
                         </TCell>
@@ -259,16 +250,12 @@ class App extends Component {
                         <TCell>
                           <OButton
                             size={20}
-                            float='right'
-                            inverted
                             onClick={() => {this.setState({dptr: doc, newEntry: 'event'})}}
                           />
                         </TCell>
                         <TCell>
                           <XButton
                             size={20}
-                            float='right'
-                            inverted={true}
                             onClick={() => {this.deleteFromDB(doc)}}
                           />
                         </TCell>
