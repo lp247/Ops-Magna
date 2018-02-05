@@ -4,9 +4,9 @@ import moment from 'moment';
 
 import {
   Page, ContentWrapper, Section, PlusButton, Header, Infotext,
-  CBButton, PaleSection, Successtext, XButton, Table, TRow, TCell, OButton
+  CBButton, PaleSection, Successtext, Table, TRow, TCell, OButton, Subsection
 } from './components.js';
-import NewEntry from './NewEntry.js';
+import Form from './Form.js';
 
 function match(now, rid, startdate, enddate) {
   if (!moment.isMoment(now)) now = moment(now);
@@ -41,7 +41,8 @@ class App extends Component {
       upcomingEventsArr: [],
       cotdoc: {},
       numUpcoming: 7,
-      newEntry: '',
+      formType: '',
+      formMode: '',
       dptr: {}
       // _id: '',
       // summ: '',
@@ -142,21 +143,22 @@ class App extends Component {
 
   render() {
     let cdate = moment().format('YYYY-MM-DD');
-    if (this.state.newEntry) {
+    if (this.state.formType) {
       return (
-        <NewEntry
-          type={this.state.newEntry}
+        <Form
+          type={this.state.formType}
+          mode={this.state.formMode}
           data={this.state.dptr}
           save={(obj) => {
             this.writeToDB(obj);
-            this.setState({newEntry: ''});
+            this.setState({formType: '', formMode: ''});
           }}
           discard={() => {
-            this.setState({newEntry: ''});
+            this.setState({formType: '', formMode: ''});
           }}
           delete={(obj) => {
             this.deleteFromDB(obj);
-            this.setState({newEntry: ''});
+            this.setState({formType: '', formMode: ''});
           }}
         />
       );
@@ -166,52 +168,47 @@ class App extends Component {
         <ContentWrapper>
           <Section>
             <PlusButton
-              size={40}
+              size='40px'
               float='right'
-              onClick={() => {this.setState({dptr: {}, newEntry: 'task'});}}
+              onClick={() => {this.setState({dptr: {}, formType: 'task', formMode: 'new'});}}
             />
             <Header>Aufgaben</Header>
-            {this.state.currentTasksArr.length === 0
-              ? <Infotext>Heute keine Aufgaben!</Infotext>
-              : <Table>
-                <tbody>
-                  {this.state.currentTasksArr.map((doc, index) => {
-                    return (
-                      <TRow key={index}>
-                        <TCell onClick={() => {this.toggleTask(doc._id)}}>
-                          <CBButton
-                            size={20}
-                            display='table-cell'
-                            checked={this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1}
-                          />
-                        </TCell>
-                        <TCell primary onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
-                        <TCell>
-                          <OButton
-                            size={20}
-                            display='table-cell'
-                            onClick={() => {this.setState({dptr: doc, newEntry: 'task'})}}
-                          />
-                        </TCell>
-                        {/* <TCell>
-                          <XButton
-                            size={20}
-                            display='table-cell'
-                            onClick={() => {this.deleteFromDB(doc)}}
-                          />
-                        </TCell> */}
-                      </TRow>
-                    );
-                  })}
-                </tbody>
-              </Table>
-            }
+            <Subsection>
+              {this.state.currentTasksArr.length === 0
+                ? <Infotext>Heute keine Aufgaben!</Infotext>
+                : <Table>
+                  <tbody>
+                    {this.state.currentTasksArr.map((doc, index) => {
+                      return (
+                        <TRow key={index}>
+                          <TCell onClick={() => {this.toggleTask(doc._id)}}>
+                            <CBButton
+                              size='20px'
+                              display='table-cell'
+                              checked={this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1}
+                            />
+                          </TCell>
+                          <TCell primary onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
+                          <TCell>
+                            <OButton
+                              size='20px'
+                              display='table-cell'
+                              onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit'})}}
+                            />
+                          </TCell>
+                        </TRow>
+                      );
+                    })}
+                  </tbody>
+                </Table>
+              }
+            </Subsection>
           </Section>
           <Section>
             <PlusButton
-              size={40}
+              size='40px'
               float='right'
-              onClick={() => {this.setState({dptr: {}, newEntry: 'event'});}}
+              onClick={() => {this.setState({dptr: {}, formType: 'event', formMode: 'new'});}}
             />
             <Header>Termine</Header>
             {this.state.currentEventsArr.length === 0
@@ -224,16 +221,10 @@ class App extends Component {
                         <TCell primary>{'[' + doc.time + '] ' + doc.summ}</TCell>
                         <TCell>
                           <OButton
-                            size={20}
-                            onClick={() => {this.setState({dptr: doc, newEntry: 'event'})}}
+                            size='20px'
+                            onClick={() => {this.setState({dptr: doc, formType: 'event', formMode: 'edit'})}}
                           />
                         </TCell>
-                        {/* <TCell>
-                          <XButton
-                            size={20}
-                            onClick={() => {this.deleteFromDB(doc)}}
-                          />
-                        </TCell> */}
                       </TRow>
                     );
                   })}
@@ -253,16 +244,10 @@ class App extends Component {
                         <TCell primary>{'[' + doc.date + ' ' + doc.time + '] ' + doc.summ}</TCell>
                         <TCell>
                           <OButton
-                            size={20}
-                            onClick={() => {this.setState({dptr: doc, newEntry: 'event'})}}
+                            size='20px'
+                            onClick={() => {this.setState({dptr: doc, formType: 'event', formMode: 'edit'})}}
                           />
                         </TCell>
-                        {/* <TCell>
-                          <XButton
-                            size={20}
-                            onClick={() => {this.deleteFromDB(doc)}}
-                          />
-                        </TCell> */}
                       </TRow>
                     );
                   })}

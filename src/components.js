@@ -1,10 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 
 export const fontcolor = 'rgb(184, 184, 184)';
 export const bgcolor = 'rgb(33, 34, 37)';
 export const accentcolor = 'rgb(111, 178, 156)';
-export const invisible = 'rgba(0, 0, 0, 0)';
+export const transparent = 'rgba(0, 0, 0, 0)';
 
 //=============================================================================
 //       Content Container
@@ -30,15 +31,26 @@ export const ContentWrapper = styled.div`
     margin-right: 0;
   }
   box-sizing: border-box;
-  padding: 12px;
+  padding: 48px 12px;
 `;
 
 export const Section = styled.div`
-  margin-top: 48px;
+  margin-bottom: 64px;
+`;
+
+export const Subsection = styled.div`
+  margin-bottom: 12px;
 `;
 
 export const PaleSection = Section.extend`
   opacity: 0.3;
+`;
+
+export const FlexContainer = styled.div`
+  display: flex;
+  justify-content: ${props => props.jc};
+  align-items: center;
+  flex-flow: ${props => props.wrap ? 'row wrap' : 'row nowrap'};
 `;
 
 //=============================================================================
@@ -47,6 +59,7 @@ export const PaleSection = Section.extend`
 
 export const Table = styled.table`
   border-collapse: collapse;
+  width: 100%;
 `;
 
 export const TRow = styled.tr`
@@ -55,7 +68,7 @@ export const TRow = styled.tr`
 export const TCell = styled.td`
   width: ${props => props.primary ? '99%' : 'auto'};
   white-space: ${props => props.primary ? 'normal' : 'nowrap'};
-  padding: 2px 10px;
+  padding: ${props => props.padding || '2px 10px'};
   vertical-align: middle;
   /* border: 1px solid black; */
 `;
@@ -64,13 +77,49 @@ export const TCell = styled.td`
 //       Inputs
 //=============================================================================
 
-const StyledCheckbox = styled.input`
-  float: left;
+const RawInput = styled.input`
+  display: block;
+  width: 100%;
+  background-color: ${fontcolor};
+  border: none;
+  height: 32px;
 `;
 
-export const Checkbox = (props) => {
+const Textarea = styled.textarea`
+  width: 100%;
+  height: ${props => props.height || '128px'};
+  background-color: ${fontcolor};
+`;
+
+const Inputlabel = styled.label`
+  display: block;
+  font-size: 16px;
+`;
+
+const Inputfield = styled.div`
+  margin-top: 16px;
+  width: ${props => props.width || '100%'};
+  display: ${props => props.display};
+`;
+
+export const Input = (props) => {
+  this.propTypes = {
+    type: PropTypes.string.isRequired,
+    value: PropTypes.any.isRequired,
+    onChange: PropTypes.func.isRequired,
+    width: PropTypes.string,
+    height: PropTypes.string,
+    children: PropTypes.node.isRequired
+  }
+  let {type, value, onChange, taheight, ...rest} = props;
   return (
-    <StyledCheckbox type='checkbox' {...props} />
+    <Inputfield {...rest}>
+      <Inputlabel htmlFor="id">{props.children}</Inputlabel>
+      {type === 'textarea'
+        ? <Textarea height={taheight} id="id" value={value} onChange={onChange} />
+        : <RawInput type={type} id="id" value={value} onChange={onChange} />
+      }
+    </Inputfield>
   );
 }
 
@@ -80,7 +129,7 @@ export const Checkbox = (props) => {
 
 export const Header = styled.p`
   font-size: 36px;
-  margin-bottom: 16px;
+  margin-bottom: 36px;
 `;
 
 export const Infotext = styled.p`
@@ -90,56 +139,34 @@ export const Successtext = Infotext.extend`
   color: forestgreen;
 `;
 
-export const Inputfield = styled.div`
-  margin-top: 16px;
-`;
-
-export const Input = styled.input`
-  display: block;
-  width: 100%;
-  background-color: ${fontcolor};
-  border: none;
-`;
-
-export const Textarea = styled.textarea`
-  width: 100%;
-  height: 128px;
-  background-color: ${fontcolor};
-`;
-
-export const Inputlabel = styled.label`
-  display: block;
-  font-size: 16px;
-`;
-
 //=============================================================================
 //       SVG Buttons
 //=============================================================================
 
 const SVG = styled.svg`
   display: ${props => props.display || 'inline'};
-  width: ${props => props.size || 10}px;
-  height: ${props => props.size || 10}px;
+  width: ${props => props.size || '10px'};
+  height: ${props => props.size || '10px'};
   cursor: pointer;
   float: ${props => props.float || 'none'}
 `;
 
 const SVGPath = styled.path`
-  stroke: ${props => props.color || invisible};
+  stroke: ${props => props.color || transparent};
   stroke-width: 10;
   fill: none;
 `;
 
 const SVGRect = styled.rect`
-  stroke: ${props => props.color || invisible};
+  stroke: ${props => props.color || transparent};
   stroke-width: 10;
-  fill: ${props => props.filled ? props.color || invisible : 'none;'};
+  fill: ${props => props.filled ? props.color || transparent : 'none'};
 `;
 
 const SVGCircle = styled.circle`
-  stroke: ${props => props.color || invisible};
+  stroke: ${props => props.color || transparent};
   stroke-width: 10;
-  ${props => props.filled ? '' : 'fill: none;'};
+  fill: ${props => props.filled ? props.color || transparent : 'none'};
 `;
 
 export const PlusButton = props => {
@@ -169,6 +196,7 @@ export const XButton = props => {
 }
 
 export const OButton = props => {
+  let {checked, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -176,7 +204,7 @@ export const OButton = props => {
       {...props}
     >
       <SVGRect x="0" y="0" width="100" height="100" />
-      <SVGCircle cx='50' cy='50' r='30' color={accentcolor} />
+      <SVGCircle cx='50' cy='50' r='30' color={accentcolor} filled={checked} />
     </SVG>
   );
 }
@@ -201,16 +229,24 @@ export const CBButton = props => {
 //       Text Buttons
 //=============================================================================
 
-export const TextButton = styled.p`
-  display: inline-block;
-  background-color: ${accentcolor};
-  cursor: pointer;
-  color: black;
-  padding: 8px;
-  margin-left: 16px;
-  &:first-child {
-    margin-left: 0;
-  }
+const RawButton = styled.p`
+  cursor: ${props => props.invisible ? '' : 'pointer'};
+  padding: ${props => props.small ? '4px' : '8px'};
+  width: ${props => props.width || 'auto'};
+  height: ${props => props.square ? props.width : 'auto'};
+  text-align: center;
+  font-size: ${props => props.small ? '16px' : 'inherit'};
+  line-height: ${props => props.square ? props.width : 'normal'};
+`;
+
+export const TextButton = RawButton.extend`
+  background-color: ${props => props.invisible ? transparent : accentcolor};
+  color: ${props => props.invisible ? transparent : 'black'};
+`;
+
+export const Selector = RawButton.extend`
+  border: 2px solid ${props => props.selected && !props.invisible ? accentcolor : transparent};
+  color: ${props => props.invisible ? transparent : accentcolor};
 `;
 
 //=============================================================================
