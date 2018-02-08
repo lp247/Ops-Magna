@@ -153,29 +153,30 @@ const SVG = styled.svg`
   width: ${props => props.size || '10px'};
   height: ${props => props.size || '10px'};
   cursor: pointer;
-  float: ${props => props.float || 'none'}
+  float: ${props => props.float || 'none'};
+  margin: ${props => props.margin ? props.margin : 0};
 `;
 
 const SVGPath = styled.path`
   stroke: ${props => props.color || transparent};
-  stroke-width: ${props => props.thin ? '1' : '2'}px;
+  stroke-width: ${props => props.weight === 'thin' ? '1' : (props.weight === 'thick' ? '4' : '2')}px;
   fill: none;
 `;
 
 const SVGRect = styled.rect`
   stroke: ${props => props.color || transparent};
-  stroke-width: ${props => props.thin ? '2' : '4'}px;
+  stroke-width: ${props => props.weight === 'thin' ? '2' : props.weight === 'thick' ? '8' : '4'}px;
   fill: ${props => props.filled ? props.color || transparent : 'none'};
 `;
 
 const SVGCircle = styled.circle`
   stroke: ${props => props.color || transparent};
-  stroke-width: ${props => props.thin ? '2' : '4'}px;
+  stroke-width: ${props => props.weight === 'thin' ? '2' : props.weight === 'thick' ? '8' : '4'}px;
   fill: ${props => props.filled ? props.color || transparent : 'none'};
 `;
 
 export const PlusButton = props => {
-  let {thin, ...rest} = props;
+  let {weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -183,13 +184,13 @@ export const PlusButton = props => {
       {...rest}
     >
       <SVGRect x="0" y="0" width="100" height="100" vectorEffect='non-scaling-stroke' />
-      <SVGPath d="M50 0 L50 100 M0 50 L100 50" vectorEffect='non-scaling-stroke' color={accentcolor} thin={thin} />
+      <SVGPath d="M50 0 L50 100 M0 50 L100 50" vectorEffect='non-scaling-stroke' color={accentcolor} weight={weight} />
     </SVG>
   );
 }
 
 export const XButton = props => {
-  let {thin, ...rest} = props;
+  let {weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -197,13 +198,13 @@ export const XButton = props => {
       {...rest}
     >
       <SVGRect x="0" y="0" width="100" height="100" vectorEffect='non-scaling-stroke' />
-      <SVGPath d="M0 0 L100 100 M0 100 L100 0" vectorEffect='non-scaling-stroke' color={accentcolor} thin={thin} />
+      <SVGPath d="M0 0 L100 100 M0 100 L100 0" vectorEffect='non-scaling-stroke' color={accentcolor} weight={weight} />
     </SVG>
   );
 }
 
 export const OButton = props => {
-  let {checked, thin, ...rest} = props;
+  let {checked, weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -229,7 +230,7 @@ export const OButton = props => {
         r='50%'
         vectorEffect='non-scaling-stroke'
         color={accentcolor}
-        thin={thin}
+        weight={weight}
         filled={checked}
         clipPath='url(#clip)'
       />
@@ -238,7 +239,7 @@ export const OButton = props => {
 }
 
 export const CBButton = props => {
-  let {checked, thin, ...rest} = props;
+  let {checked, weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -246,8 +247,8 @@ export const CBButton = props => {
       {...rest}
     >
       {checked
-        ? <SVGPath d="M50 0 L50 100" vectorEffect='non-scaling-stroke' color={accentcolor} thin={thin} />
-        : <SVGPath d="M0 50 L100 50" vectorEffect='non-scaling-stroke' color={accentcolor} thin={thin} />
+        ? <SVGPath d="M50 0 L50 100" vectorEffect='non-scaling-stroke' color={accentcolor} weight={weight} />
+        : <SVGPath d="M0 50 L100 50" vectorEffect='non-scaling-stroke' color={accentcolor} weight={weight} />
       }
     </SVG>
   );

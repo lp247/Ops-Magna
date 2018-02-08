@@ -168,8 +168,10 @@ class App extends Component {
         <ContentWrapper>
           <Section>
             <PlusButton
-              size='36px'
+              size='24px'
               float='right'
+              margin='10px 6px 0 0'
+              weight='thick'
               onClick={() => {this.setState({dptr: {}, formType: 'task', formMode: 'new'});}}
             />
             <Header>Aufgaben</Header>
@@ -194,6 +196,7 @@ class App extends Component {
                             <OButton
                               size='16px'
                               display='table-cell'
+                              weight='thin'
                               onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit'})}}
                             />
                           </TCell>
@@ -207,8 +210,10 @@ class App extends Component {
           </Section>
           <Section>
             <PlusButton
-              size='36px'
+              size='24px'
               float='right'
+              margin='10px 6px 0 0'
+              weight='thick'
               onClick={() => {this.setState({dptr: {}, formType: 'event', formMode: 'new'});}}
             />
             <Header>Termine</Header>
