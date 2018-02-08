@@ -9,29 +9,13 @@ import {
 } from './components.js';
 import Form from './Form.js';
 
-// function match(now, rid, startdate, enddate) {
-//   if (!moment.isMoment(now)) now = moment(now);
-//   if (!moment.isMoment(startdate)) startdate = moment(startdate);
-//   if (!moment.isMoment(enddate)) enddate = moment(enddate);
-//   if (!rid) return false;
-//   var iwd = now.isoWeekday();
-//   var dom = now.date();
-//   var [rid_wd, rid_oc, rid_st, rid_os] = rid.split('-').map(n => parseInt(n, 10));
-//   if (
-//     now.isBetween(startdate, enddate, 'day', '[]') &&
-//     (
-//       (rid_wd === 0   && rid_oc === 0                  && rid_st  >  0 && (now.diff(startdate, 'days')   % rid_st - rid_os) === 0) ||
-//       (rid_wd === 0   && rid_oc === dom                && rid_st  >  0 && (now.diff(startdate, 'months') % rid_st - rid_os) === 0) ||
-//       (rid_wd === iwd && rid_oc === 0                  && rid_st  >  0 && (now.diff(startdate, 'weeks')  % rid_st - rid_os) === 0) ||
-//       (rid_wd === iwd && rid_oc === Math.ceil(dom / 7) && rid_st  >  0 && (now.diff(startdate, 'months') % rid_st - rid_os) === 0) ||
-//       (rid_wd === 0   && rid_oc === 0                  && rid_st === 0 && now.isSame(startdate, 'day')) ||
-//       (rid_wd === 0   && rid_oc === dom                && rid_st === 0 && now.isSame(startdate, 'day')) ||
-//       (rid_wd === iwd && rid_oc === 0                  && rid_st === 0 && now.isSame(startdate, 'day')) ||
-//       (rid_wd === iwd && rid_oc === Math.ceil(dom / 7) && rid_st === 0 && now.isSame(startdate, 'day'))
-//     )
-//   ) return true;
-//   return false;
-// }
+function keysort(key, order='asc') {
+  let sortorder = order === 'asc' ? 1 : -1;
+  return function (a, b) {
+    let result = (a[key] < b[key]) ? -1 : (a[key] > b[key]) ? 1 : 0;
+    return result * sortorder;
+  }
+}
 
 class App extends Component {
   constructor(props) {
@@ -45,14 +29,6 @@ class App extends Component {
       formType: '',
       formMode: '',
       dptr: {}
-      // _id: '',
-      // summ: '',
-      // desc: '',
-      // done: false,
-      // rid: '',
-      // sd: '',
-      // ed: '',
-      // time: ''
     };
 
     this.localDB = new PouchDB('todos');
@@ -106,8 +82,8 @@ class App extends Component {
         if (a.futuredate > b.futuredate) return 1;
         return 0;
       })
-      let ctarr = result.rows.filter(el => el.doc.type === 'task' && Recur.matches(el.doc, moment())).map(el => el.doc);
-      let cearr = result.rows.filter(el => el.doc.type === 'event' && Recur.matches(el.doc, moment())).map(el => el.doc);
+      let ctarr = result.rows.filter(el => el.doc.type === 'task' && Recur.matches(el.doc, moment())).map(el => el.doc).sort(keysort('summ'));
+      let cearr = result.rows.filter(el => el.doc.type === 'event' && Recur.matches(el.doc, moment())).map(el => el.doc).sort(keysort('r_time'));
       let cotdoc = (result.rows.find(el => el.doc._id === 'cotid') || {doc: {_id: 'cotid'}}).doc;
       this.setState({currentTasksArr: ctarr, currentEventsArr: cearr, upcomingEventsArr: uearr, cotdoc: cotdoc});
     }).catch((err) => {
@@ -196,7 +172,6 @@ class App extends Component {
                             <OButton
                               size='16px'
                               display='table-cell'
-                              weight='thin'
                               onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit'})}}
                             />
                           </TCell>
@@ -224,7 +199,7 @@ class App extends Component {
                   {this.state.currentEventsArr.map((doc, index) => {
                     return (
                       <TRow key={index}>
-                        <TCell primary>{'[' + doc.r_time + '] ' + doc.summ}</TCell>
+                        <TCell primary opaque={moment().format('HH:mm') > doc.r_time}>{'[' + doc.r_time + '] ' + doc.summ}</TCell>
                         <TCell>
                           <OButton
                             size='16px'
