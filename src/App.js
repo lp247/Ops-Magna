@@ -2,35 +2,36 @@ import React, {Component} from 'react';
 import PouchDB from 'pouchdb';
 import moment from 'moment';
 
+import Recur from './Recur.js';
 import {
   Page, ContentWrapper, Section, PlusButton, Header, Infotext,
   CBButton, PaleSection, Successtext, Table, TRow, TCell, OButton, Subsection
 } from './components.js';
 import Form from './Form.js';
 
-function match(now, rid, startdate, enddate) {
-  if (!moment.isMoment(now)) now = moment(now);
-  if (!moment.isMoment(startdate)) startdate = moment(startdate);
-  if (!moment.isMoment(enddate)) enddate = moment(enddate);
-  if (!rid) return false;
-  var iwd = now.isoWeekday();
-  var dom = now.date();
-  var [rid_wd, rid_oc, rid_st, rid_os] = rid.split('-').map(n => parseInt(n, 10));
-  if (
-    now.isBetween(startdate, enddate, 'day', '[]') &&
-    (
-      (rid_wd === 0   && rid_oc === 0                  && rid_st  >  0 && (now.diff(startdate, 'days')   % rid_st - rid_os) === 0) ||
-      (rid_wd === 0   && rid_oc === dom                && rid_st  >  0 && (now.diff(startdate, 'months') % rid_st - rid_os) === 0) ||
-      (rid_wd === iwd && rid_oc === 0                  && rid_st  >  0 && (now.diff(startdate, 'weeks')  % rid_st - rid_os) === 0) ||
-      (rid_wd === iwd && rid_oc === Math.ceil(dom / 7) && rid_st  >  0 && (now.diff(startdate, 'months') % rid_st - rid_os) === 0) ||
-      (rid_wd === 0   && rid_oc === 0                  && rid_st === 0 && now.isSame(startdate, 'day')) ||
-      (rid_wd === 0   && rid_oc === dom                && rid_st === 0 && now.isSame(startdate, 'day')) ||
-      (rid_wd === iwd && rid_oc === 0                  && rid_st === 0 && now.isSame(startdate, 'day')) ||
-      (rid_wd === iwd && rid_oc === Math.ceil(dom / 7) && rid_st === 0 && now.isSame(startdate, 'day'))
-    )
-  ) return true;
-  return false;
-}
+// function match(now, rid, startdate, enddate) {
+//   if (!moment.isMoment(now)) now = moment(now);
+//   if (!moment.isMoment(startdate)) startdate = moment(startdate);
+//   if (!moment.isMoment(enddate)) enddate = moment(enddate);
+//   if (!rid) return false;
+//   var iwd = now.isoWeekday();
+//   var dom = now.date();
+//   var [rid_wd, rid_oc, rid_st, rid_os] = rid.split('-').map(n => parseInt(n, 10));
+//   if (
+//     now.isBetween(startdate, enddate, 'day', '[]') &&
+//     (
+//       (rid_wd === 0   && rid_oc === 0                  && rid_st  >  0 && (now.diff(startdate, 'days')   % rid_st - rid_os) === 0) ||
+//       (rid_wd === 0   && rid_oc === dom                && rid_st  >  0 && (now.diff(startdate, 'months') % rid_st - rid_os) === 0) ||
+//       (rid_wd === iwd && rid_oc === 0                  && rid_st  >  0 && (now.diff(startdate, 'weeks')  % rid_st - rid_os) === 0) ||
+//       (rid_wd === iwd && rid_oc === Math.ceil(dom / 7) && rid_st  >  0 && (now.diff(startdate, 'months') % rid_st - rid_os) === 0) ||
+//       (rid_wd === 0   && rid_oc === 0                  && rid_st === 0 && now.isSame(startdate, 'day')) ||
+//       (rid_wd === 0   && rid_oc === dom                && rid_st === 0 && now.isSame(startdate, 'day')) ||
+//       (rid_wd === iwd && rid_oc === 0                  && rid_st === 0 && now.isSame(startdate, 'day')) ||
+//       (rid_wd === iwd && rid_oc === Math.ceil(dom / 7) && rid_st === 0 && now.isSame(startdate, 'day'))
+//     )
+//   ) return true;
+//   return false;
+// }
 
 class App extends Component {
   constructor(props) {
@@ -92,21 +93,21 @@ class App extends Component {
         for (var j = 1; j < this.state.numUpcoming; j++) {
           if (result.rows[i].doc.type === 'event') {
             var doc = result.rows[i].doc;
-            if (match(moment().add(j, 'days'), doc.rid, doc.sd, doc.ed)) {
-              var tmp = JSON.parse(JSON.stringify(doc));
-              tmp.date = moment().add(j, 'days').format('YYYY-MM-DD');
-              uearr.push(tmp);
+            if (Recur.matches(doc, moment().add(j, 'days'))) {
+              doc = JSON.parse(JSON.stringify(doc));
+              doc.futuredate = moment().add(j, 'days').format('YYYY-MM-DD');
+              uearr.push(doc);
             }
           }
         }
       }
       uearr.sort((a, b) => {
-        if (a.date < b.date) return -1;
-        if (a.date > b.date) return 1;
+        if (a.futuredate < b.futuredate) return -1;
+        if (a.futuredate > b.futuredate) return 1;
         return 0;
       })
-      let ctarr = result.rows.filter(el => el.doc.type === 'task' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)).map(el => el.doc);
-      let cearr = result.rows.filter(el => el.doc.type === 'event' && match(moment(), el.doc.rid, el.doc.sd, el.doc.ed)).map(el => el.doc);
+      let ctarr = result.rows.filter(el => el.doc.type === 'task' && Recur.matches(el.doc, moment())).map(el => el.doc);
+      let cearr = result.rows.filter(el => el.doc.type === 'event' && Recur.matches(el.doc, moment())).map(el => el.doc);
       let cotdoc = (result.rows.find(el => el.doc._id === 'cotid') || {doc: {_id: 'cotid'}}).doc;
       this.setState({currentTasksArr: ctarr, currentEventsArr: cearr, upcomingEventsArr: uearr, cotdoc: cotdoc});
     }).catch((err) => {
@@ -134,11 +135,10 @@ class App extends Component {
     let index = this.state.cotdoc[cdate].findIndex(id => id === taskid);
     if (index === -1) {
       tmp[cdate] = [...tmp[cdate], taskid];
-      this.writeToDB(tmp);
     } else {
       tmp[cdate].splice(index, 1);
-      this.writeToDB(tmp);
     }
+    this.writeToDB(tmp);
   }
 
   render() {
@@ -168,7 +168,7 @@ class App extends Component {
         <ContentWrapper>
           <Section>
             <PlusButton
-              size='40px'
+              size='36px'
               float='right'
               onClick={() => {this.setState({dptr: {}, formType: 'task', formMode: 'new'});}}
             />
@@ -183,7 +183,7 @@ class App extends Component {
                         <TRow key={index}>
                           <TCell onClick={() => {this.toggleTask(doc._id)}}>
                             <CBButton
-                              size='20px'
+                              size='16px'
                               display='table-cell'
                               checked={this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1}
                             />
@@ -191,7 +191,7 @@ class App extends Component {
                           <TCell primary onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
                           <TCell>
                             <OButton
-                              size='20px'
+                              size='16px'
                               display='table-cell'
                               onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit'})}}
                             />
@@ -206,7 +206,7 @@ class App extends Component {
           </Section>
           <Section>
             <PlusButton
-              size='40px'
+              size='36px'
               float='right'
               onClick={() => {this.setState({dptr: {}, formType: 'event', formMode: 'new'});}}
             />
@@ -218,10 +218,10 @@ class App extends Component {
                   {this.state.currentEventsArr.map((doc, index) => {
                     return (
                       <TRow key={index}>
-                        <TCell primary>{'[' + doc.time + '] ' + doc.summ}</TCell>
+                        <TCell primary>{'[' + doc.r_time + '] ' + doc.summ}</TCell>
                         <TCell>
                           <OButton
-                            size='20px'
+                            size='16px'
                             onClick={() => {this.setState({dptr: doc, formType: 'event', formMode: 'edit'})}}
                           />
                         </TCell>
@@ -235,16 +235,16 @@ class App extends Component {
           <PaleSection>
             <Header>Kommende Termine</Header>
             {this.state.upcomingEventsArr.length === 0
-              ? <Infotext>Keine Aufgaben in den nächsten {this.state.numUpcoming} Tagen!</Infotext>
+              ? <Infotext>Keine Termine in den nächsten {this.state.numUpcoming} Tagen!</Infotext>
               : <Table>
                 <tbody>
                   {this.state.upcomingEventsArr.map((doc, index) => {
                     return (
                       <TRow key={index}>
-                        <TCell primary>{'[' + doc.date + ' ' + doc.time + '] ' + doc.summ}</TCell>
+                        <TCell primary>{'[' + doc.futuredate + ' ' + doc.r_time + '] ' + doc.summ}</TCell>
                         <TCell>
                           <OButton
-                            size='20px'
+                            size='16px'
                             onClick={() => {this.setState({dptr: doc, formType: 'event', formMode: 'edit'})}}
                           />
                         </TCell>
