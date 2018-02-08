@@ -140,10 +140,6 @@ export const Header = styled.p`
 export const Infotext = styled.p`
 `;
 
-export const Successtext = Infotext.extend`
-  color: forestgreen;
-`;
-
 //=============================================================================
 //       SVG Buttons
 //=============================================================================

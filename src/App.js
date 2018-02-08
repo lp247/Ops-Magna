@@ -236,12 +236,6 @@ class App extends Component {
               </Table>
             }
           </Section>
-          <Section>
-            {this.state.cotdoc[cdate] && this.state.currentTasksArr.map(doc => doc._id).sort().join(',') === this.state.cotdoc[cdate].sort().join(',')
-              ? <Successtext>Alle Aufgaben erfüllt!</Successtext>
-              : null
-            }
-          </Section>
         </ContentWrapper>
       </Page>
     );
