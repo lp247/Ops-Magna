@@ -5,7 +5,7 @@ import moment from 'moment';
 import Recur from './Recur.js';
 import {
   Page, ContentWrapper, Section, PlusButton, Header, Infotext,
-  CBButton, PaleSection, Successtext, Table, TRow, TCell, OButton, Subsection
+  CBButton, Successtext, Table, TRow, TCell, OButton, Subsection
 } from './components.js';
 import Form from './Form.js';
 
@@ -179,16 +179,17 @@ class App extends Component {
                 : <Table>
                   <tbody>
                     {this.state.currentTasksArr.map((doc, index) => {
+                      let checked = this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1;
                       return (
                         <TRow key={index}>
                           <TCell onClick={() => {this.toggleTask(doc._id)}}>
                             <CBButton
                               size='16px'
                               display='table-cell'
-                              checked={this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1}
+                              checked={checked}
                             />
                           </TCell>
-                          <TCell primary onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
+                          <TCell primary opaque={checked} onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
                           <TCell>
                             <OButton
                               size='16px'
@@ -232,7 +233,7 @@ class App extends Component {
               </Table>
             }
           </Section>
-          <PaleSection>
+          <Section opaque>
             <Header>Kommende Termine</Header>
             {this.state.upcomingEventsArr.length === 0
               ? <Infotext>Keine Termine in den nächsten {this.state.numUpcoming} Tagen!</Infotext>
@@ -254,7 +255,7 @@ class App extends Component {
                 </tbody>
               </Table>
             }
-          </PaleSection>
+          </Section>
           <Section>
             {this.state.cotdoc[cdate] && this.state.currentTasksArr.map(doc => doc._id).sort().join(',') === this.state.cotdoc[cdate].sort().join(',')
               ? <Successtext>Alle Aufgaben erfüllt!</Successtext>

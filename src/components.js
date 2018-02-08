@@ -36,14 +36,11 @@ export const ContentWrapper = styled.div`
 
 export const Section = styled.div`
   margin-bottom: 64px;
+  opacity: ${props => props.opaque ? 0.3 : 1};
 `;
 
 export const Subsection = styled.div`
   margin-bottom: 12px;
-`;
-
-export const PaleSection = Section.extend`
-  opacity: 0.3;
 `;
 
 export const FlexContainer = styled.div`
@@ -71,6 +68,7 @@ export const TCell = styled.td`
   white-space: ${props => props.primary ? 'normal' : 'nowrap'};
   padding: ${props => props.padding || '2px 10px'};
   vertical-align: middle;
+  opacity: ${props => props.opaque ? 0.3 : 1};
   /* border: 1px solid black; */
 `;
 
