@@ -69,6 +69,7 @@ export const TCell = styled.td`
   padding: ${props => props.padding || '2px 10px'};
   vertical-align: middle;
   opacity: ${props => props.opaque ? 0.3 : 1};
+  user-select: none;
   /* border: 1px solid black; */
 `;
 
@@ -138,6 +139,7 @@ export const Header = styled.p`
 `;
 
 export const Infotext = styled.p`
+
 `;
 
 //=============================================================================
@@ -155,8 +157,13 @@ const SVG = styled.svg`
 
 const SVGPath = styled.path`
   stroke: ${props => props.color || transparent};
-  stroke-width: ${props => props.weight === 'thin' ? '1' : (props.weight === 'thick' ? '4' : '2')}px;
-  fill: none;
+  stroke-width: ${props => {
+    let sw;
+    props.weight === 'thin' ? sw = 1 : (props.weight === 'thick' ? sw = 4 : sw = 2);
+    if (props.clipped) sw = sw * 2;
+    return sw;
+  }}px;
+  fill: ${props => props.filled ? accentcolor : 'none'};
 `;
 
 const SVGRect = styled.rect`
@@ -208,17 +215,17 @@ export const OButton = props => {
       {...rest}
     >
       <defs>
-        <clipPath id='clip'>
+        <clipPath id='circleclip'>
           <circle cx='50%' cy='50%' r='50%' />
         </clipPath>
       </defs>
-      <SVGRect
+      {/* <SVGRect
         x="0"
         y="0"
         width="100"
         height="100"
         vectorEffect='non-scaling-stroke'
-      />
+      /> */}
       <SVGCircle
         id='cicle'
         cx='50%'
@@ -228,11 +235,38 @@ export const OButton = props => {
         color={accentcolor}
         weight={weight}
         filled={checked}
-        clipPath='url(#clip)'
+        clipPath='url(#circleclip)'
       />
     </SVG>
   );
 }
+
+export const RhombusButton = props => {
+  let {checked, weight, ...rest} = props;
+  return (
+    <SVG
+      viewBox="0 0 100 100"
+      xmlns="http://www.w3.org/2000/svg"
+      {...rest}
+    >
+      <defs>
+        <clipPath id='rhombusclip'>
+          <path d='M50 0 L100 50 L50 100 L0 50 Z' />
+        </clipPath>
+      </defs>
+      <SVGPath
+        d='M50 0 L100 50 L50 100 L0 50 Z'
+        vectorEffect='non-scaling-stroke'
+        color={accentcolor}
+        weight={weight}
+        filled={checked}
+        clipPath='url(#rhombusclip)'
+        clipped={true}
+      />
+    </SVG>
+  );
+}
+
 
 export const CBButton = props => {
   let {checked, weight, ...rest} = props;

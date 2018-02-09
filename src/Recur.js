@@ -1,9 +1,13 @@
 import moment from 'moment';
 
+function InvalidRecurException(msg) {
+  this.message = msg;
+}
+
 class Recur {
   static isvalid(robj) {
     if (!robj.r_months || !robj.r_weeks || !robj.r_days) return false;
-    if (robj.r_days.length === 0) return false;
+    if (robj.r_days.length === 0 && robj.single === false) return false;
     if (Math.max(...robj.r_months) > 11) return false;
     if (Math.max(...robj.r_weeks) > 52) return false;
     if (Math.max(...robj.r_days) > 366) return false;
@@ -18,9 +22,17 @@ class Recur {
   }
 
   static matches(robj, date) {
-    if (!Recur.isvalid(robj)) return false;
+    if (!Recur.isvalid(robj)) throw InvalidRecurException;
     
     if (!moment.isMoment()) date = moment(date);
+    
+    if (robj.single) {
+      if (date.isSame(robj.r_start, 'day')) {
+        return true;
+      } else {
+        return false;
+      }
+    }
 
     let months = (robj.r_months.length > 0);
     let weeks = (robj.r_weeks.length > 0);
