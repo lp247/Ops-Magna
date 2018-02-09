@@ -89,7 +89,6 @@ class App extends Component {
       })
       let allTasks = result.rows.filter(el => el.doc.type === 'task').map(el => el.doc);
       let allEvents = result.rows.filter(el => el.doc.type === 'event').map(el => el.doc);
-      console.log(allEvents);
       let currentTasks = allTasks.filter(doc => Recur.matches(doc, moment())).sort(keysort('summ'));
       let currentEvents = allEvents.filter(doc => Recur.matches(doc, moment())).sort(keysort('r_time'));
       let cotdoc = (result.rows.find(el => el.doc._id === 'cotid') || {doc: {_id: 'cotid'}}).doc;
@@ -167,7 +166,6 @@ class App extends Component {
               onClick={e => this.setState({showAllTasks: !this.state.showAllTasks})}
             />
             <Header>Aufgaben</Header>
-
             <Subsection>
               {this.state.showAllTasks
                 ? (this.state.allTasks.length === 0
@@ -222,54 +220,6 @@ class App extends Component {
                 )
               }
             </Subsection>
-
-            {/* <Subsection>
-              {this.state.currentTasks.length === 0
-                ? <Infotext>Heute keine Aufgaben!</Infotext>
-                : <Table>
-                  <tbody>
-                    {this.state.showAllTasks
-                      ? this.state.allTasks.map((doc, index) => {
-                        return (
-                          <TRow key={index}>
-                            <TCell primary>{doc.summ}</TCell>
-                            <TCell>
-                              <OButton
-                                size='16px'
-                                display='table-cell'
-                                onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit', page: 'form'})}}
-                              />
-                            </TCell>
-                          </TRow>
-                        );
-                      })
-                      : this.state.currentTasks.map((doc, index) => {
-                        let checked = this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1;
-                        return (
-                          <TRow key={index}>
-                            <TCell onClick={() => {this.toggleTask(doc._id)}}>
-                              <CBButton
-                                size='16px'
-                                display='table-cell'
-                                checked={checked}
-                              />
-                            </TCell>
-                            <TCell primary opaque={checked} onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
-                            <TCell>
-                              <OButton
-                                size='16px'
-                                display='table-cell'
-                                onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit', page: 'form'})}}
-                              />
-                            </TCell>
-                          </TRow>
-                        );
-                      })
-                    }
-                  </tbody>
-                </Table>
-              }
-            </Subsection> */}
           </Section>
           <Section>
             <PlusButton
@@ -333,44 +283,6 @@ class App extends Component {
                 )
               }
             </Subsection>
-
-            {/* {this.state.currentEvents.length === 0
-              ? <Infotext>Heute keine Termine!</Infotext>
-              : <Table>
-                <tbody>
-                  {this.state.showAllEvents
-                    ? this.state.allEvents.map((doc, index) => {
-                      console.log(this.state.allTasks);
-                      return (
-                        <TRow key={index}>
-                          <TCell primary>{doc.summ}</TCell>
-                          <TCell>
-                            <OButton
-                              size='16px'
-                              display='table-cell'
-                              onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit', page: 'form'})}}
-                            />
-                          </TCell>
-                        </TRow>
-                      );
-                    })
-                    : this.state.currentEvents.map((doc, index) => {
-                      return (
-                        <TRow key={index}>
-                          <TCell primary opaque={moment().format('HH:mm') > doc.r_time}>{'[' + doc.r_time + '] ' + doc.summ}</TCell>
-                          <TCell>
-                            <OButton
-                              size='16px'
-                              onClick={() => {this.setState({dptr: doc, formType: 'event', formMode: 'edit', page: 'form'})}}
-                            />
-                          </TCell>
-                        </TRow>
-                      );
-                    })
-                  }
-                </tbody>
-              </Table>
-            } */}
           </Section>
           <Section opaque>
             <Header>Kommende Termine</Header>

@@ -9,7 +9,7 @@ class Form extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      single: true,
+      single: this.props.data.single === undefined ? true : this.props.data.single,
       _id: this.props.data._id || moment().format(),
       _rev: this.props.data._rev || '',
       summ: this.props.data.summ || '',

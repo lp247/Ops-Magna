@@ -4,7 +4,9 @@ import PropTypes from 'prop-types';
 
 export const fontcolor = 'rgb(184, 184, 184)';
 export const bgcolor = 'rgb(33, 34, 37)';
-export const accentcolor = 'rgb(111, 178, 156)';
+// export const accentcolor = 'rgb(111, 178, 156)';
+// export const accentcolor = '#6BB2B0'
+export const accentcolor = '#279EB2'
 export const transparent = 'rgba(0, 0, 0, 0)';
 
 //=============================================================================
@@ -69,7 +71,6 @@ export const TCell = styled.td`
   padding: ${props => props.padding || '2px 10px'};
   vertical-align: middle;
   opacity: ${props => props.opaque ? 0.3 : 1};
-  user-select: none;
   /* border: 1px solid black; */
 `;
 
