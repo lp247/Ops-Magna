@@ -146,6 +146,7 @@ class App extends Component {
         />
       );
     }
+    var cdate = moment().subtract(this.state.dayChangeHour, 'hours').format('YYYY-MM-DD');
     return (
       <Page>
         <ContentWrapper>
@@ -165,11 +166,11 @@ class App extends Component {
               checked={this.state.showAllTasks}
               onClick={e => this.setState({showAllTasks: !this.state.showAllTasks})}
             />
-            <Header>Aufgaben</Header>
+            <Header>Aufgaben ({(this.state.cotdoc[cdate] || []).length}/{this.state.currentTasks.length})</Header>
             <Subsection>
               {this.state.showAllTasks
                 ? (this.state.allTasks.length === 0
-                  ? <Infotext>Keine Aufgaben!</Infotext>
+                  ? null
                   : <Table>
                     <tbody>
                       {this.state.allTasks.map((doc, index) => {
@@ -190,11 +191,10 @@ class App extends Component {
                   </Table>
                 )
                 : (this.state.currentTasks.length === 0
-                  ? <Infotext>Heute keine Aufgaben!</Infotext>
+                  ? null
                   : <Table>
                     <tbody>
                       {this.state.currentTasks.map((doc, index) => {
-                        let cdate = moment().subtract(this.state.dayChangeHour, 'hours').format('YYYY-MM-DD');
                         let checked = this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1;
                         return (
                           <TRow key={index}>
@@ -238,11 +238,11 @@ class App extends Component {
               checked={this.state.showAllEvents}
               onClick={e => this.setState({showAllEvents: !this.state.showAllEvents})}
             />
-            <Header>Termine</Header>
+            <Header>Termine ({this.state.currentEvents.length})</Header>
             <Subsection>
               {this.state.showAllEvents
                 ? (this.state.allEvents.length === 0
-                  ? <Infotext>Keine Termine!</Infotext>
+                  ? null
                   : <Table>
                     <tbody>
                       {this.state.allEvents.map((doc, index) => {
@@ -263,7 +263,7 @@ class App extends Component {
                   </Table>
                 )
                 : (this.state.currentEvents.length === 0
-                  ? <Infotext>Heute keine Termine!</Infotext>
+                  ? null
                   : <Table>
                     <tbody>
                       {this.state.currentEvents.map((doc, index) => {

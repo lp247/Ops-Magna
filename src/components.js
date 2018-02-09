@@ -71,7 +71,7 @@ export const TCell = styled.td`
   padding: ${props => props.padding || '2px 10px'};
   vertical-align: middle;
   opacity: ${props => props.opaque ? 0.3 : 1};
-  /* border: 1px solid black; */
+  /* border: 1px solid white; */
 `;
 
 //=============================================================================
@@ -140,7 +140,7 @@ export const Header = styled.p`
 `;
 
 export const Infotext = styled.p`
-
+  text-align: center;
 `;
 
 //=============================================================================
