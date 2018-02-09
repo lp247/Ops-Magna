@@ -26,6 +26,7 @@ class App extends Component {
       currentTasks: [],
       currentEvents: [],
       upcomingEvents: [],
+      dayChangeHour: 5,
       cotdoc: {},
       numUpcoming: 7,
       showAllTasks: false,
@@ -89,8 +90,8 @@ class App extends Component {
       })
       let allTasks = result.rows.filter(el => el.doc.type === 'task').map(el => el.doc);
       let allEvents = result.rows.filter(el => el.doc.type === 'event').map(el => el.doc);
-      let currentTasks = allTasks.filter(doc => Recur.matches(doc, moment())).sort(keysort('summ'));
-      let currentEvents = allEvents.filter(doc => Recur.matches(doc, moment())).sort(keysort('r_time'));
+      let currentTasks = allTasks.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('summ'));
+      let currentEvents = allEvents.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('r_time'));
       let cotdoc = (result.rows.find(el => el.doc._id === 'cotid') || {doc: {_id: 'cotid'}}).doc;
       this.setState({allTasks, allEvents, currentTasks, currentEvents, upcomingEvents, cotdoc});
     }).catch((err) => {
@@ -110,7 +111,7 @@ class App extends Component {
   }
 
   toggleTask(taskid) {
-    let cdate = moment().format('YYYY-MM-DD');
+    let cdate = moment().subtract(this.state.dayChangeHour, 'hours').format('YYYY-MM-DD');
     let tmp = this.state.cotdoc;
     if (!tmp[cdate]) {
       tmp[cdate] = [];
@@ -125,7 +126,6 @@ class App extends Component {
   }
 
   render() {
-    let cdate = moment().format('YYYY-MM-DD');
     if (this.state.page === 'form') {
       return (
         <Form
@@ -194,6 +194,7 @@ class App extends Component {
                   : <Table>
                     <tbody>
                       {this.state.currentTasks.map((doc, index) => {
+                        let cdate = moment().subtract(this.state.dayChangeHour, 'hours').format('YYYY-MM-DD');
                         let checked = this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1;
                         return (
                           <TRow key={index}>
