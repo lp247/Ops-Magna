@@ -211,7 +211,7 @@ class Form extends Component {
                 square
                 selected={this.state.r_weeks.findIndex(v => v === val) > -1}
                 onClick={() => this.toggleRAV('r_weeks', val)}
-              >{val}.</Selector>
+              >w{val}</Selector>
             );
           })}
           <Selector width='48px' square invisible></Selector>
