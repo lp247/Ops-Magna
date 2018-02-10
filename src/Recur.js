@@ -17,7 +17,7 @@ class Recur {
     if (robj.r_months.length > 0 && Math.max(...robj.r_weeks) > 5) return false;
     if (robj.r_months.length > 0 && robj.r_weeks.length === 0 && Math.max(...robj.r_days) > 31) return false;
     if (robj.r_weeks.length > 0 && Math.max(...robj.r_days) > 7) return false;
-    if (robj.r_start > robj.r_end) return false;
+    if (robj.r_start > robj.r_end && !!robj.r_end) return false;
     return true;
   }
 

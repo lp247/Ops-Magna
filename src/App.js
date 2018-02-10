@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import PouchDB from 'pouchdb';
 import moment from 'moment';
+import autosize from 'autosize';
 
 import Recur from './Recur.js';
 import {
-  Page, ContentWrapper, Section, PlusButton, Header, Infotext,
-  CBButton, Table, TRow, TCell, OButton, Subsection, RhombusButton
+  Page, ContentWrapper, Section, PlusButton, Header, Infotext, CBButton, Table, TRow, TCell, OButton, Subsection, RhombusButton, Input
 } from './components.js';
 import Form from './Form.js';
 
@@ -31,6 +31,10 @@ class App extends Component {
       numUpcoming: 7,
       showAllTasks: false,
       showAllEvents: false,
+      fastTaskInput: null,
+      fastTaskText: '',
+      fastEventInput: null,
+      fastEventText: '',
       page: '',
       formType: '',
       formMode: '',
@@ -62,6 +66,8 @@ class App extends Component {
     this.writeToDB = this.writeToDB.bind(this);
     this.deleteFromDB = this.deleteFromDB.bind(this);
     this.toggleTask = this.toggleTask.bind(this);
+    this.showForm = this.showForm.bind(this);
+    this.fastInsert = this.fastInsert.bind(this);
   }
 
   componentDidMount() {
@@ -88,8 +94,8 @@ class App extends Component {
         if (a.futuredate > b.futuredate) return 1;
         return 0;
       })
-      let allTasks = result.rows.filter(el => el.doc.type === 'task').map(el => el.doc);
-      let allEvents = result.rows.filter(el => el.doc.type === 'event').map(el => el.doc);
+      let allTasks = result.rows.filter(el => el.doc.type === 'task').map(el => el.doc).sort(keysort('summ'));
+      let allEvents = result.rows.filter(el => el.doc.type === 'event').map(el => el.doc).sort(keysort('summ'));
       let currentTasks = allTasks.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('summ'));
       let currentEvents = allEvents.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('r_time'));
       let cotdoc = (result.rows.find(el => el.doc._id === 'cotid') || {doc: {_id: 'cotid'}}).doc;
@@ -100,7 +106,7 @@ class App extends Component {
   }
 
   writeToDB(doc) {
-    this.localDB.put(doc).catch(err => {
+    return this.localDB.put(doc).catch(err => {
       throw err;
     });
   }
@@ -123,6 +129,42 @@ class App extends Component {
       tmp[cdate].splice(index, 1);
     }
     this.writeToDB(tmp);
+  }
+
+  showForm(type, mode, dptr = {}) {
+    this.setState({
+      dptr,
+      formType: type,
+      formMode: mode,
+      page: 'form'
+    });
+  }
+
+  fastInsert(type, summ) {
+    if (!summ) {
+      alert('Geben Sie eine Beschreibung an!');
+    } else {
+      this.writeToDB({
+        single: true,
+        _id: moment().format(),
+        _rev: '',
+        type,
+        summ,
+        desc: '',
+        r_months: [],
+        r_weeks: [],
+        r_days: [],
+        r_time: '',
+        r_start: moment().format('YYYY-MM-DD'),
+        r_end: ''
+      }).then(() => {
+        if (type === 'task') {
+          this.setState({fastTaskText: ''});
+        } else {
+          this.setState({fastEventText: ''});
+        }
+      });
+    }
   }
 
   render() {
@@ -151,13 +193,6 @@ class App extends Component {
       <Page>
         <ContentWrapper>
           <Section>
-            <PlusButton
-              size='24px'
-              float='right'
-              margin='10px 6px 0 24px'
-              weight='thick'
-              onClick={() => {this.setState({dptr: {}, formType: 'task', formMode: 'new', page: 'form'});}}
-            />
             <RhombusButton
               size='24px'
               float='right'
@@ -168,68 +203,73 @@ class App extends Component {
             />
             <Header>Aufgaben ({(this.state.cotdoc[cdate] || []).length}/{this.state.currentTasks.length})</Header>
             <Subsection>
-              {this.state.showAllTasks
-                ? (this.state.allTasks.length === 0
-                  ? null
-                  : <Table>
-                    <tbody>
-                      {this.state.allTasks.map((doc, index) => {
-                        return (
-                          <TRow key={index}>
-                            <TCell primary>{doc.summ}</TCell>
-                            <TCell>
-                              <OButton
-                                size='16px'
-                                display='table-cell'
-                                onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit', page: 'form'})}}
-                              />
-                            </TCell>
-                          </TRow>
-                        );
-                      })}
-                    </tbody>
-                  </Table>
-                )
-                : (this.state.currentTasks.length === 0
-                  ? null
-                  : <Table>
-                    <tbody>
-                      {this.state.currentTasks.map((doc, index) => {
-                        let checked = this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1;
-                        return (
-                          <TRow key={index}>
-                            <TCell onClick={() => {this.toggleTask(doc._id)}}>
-                              <CBButton
-                                size='16px'
-                                display='table-cell'
-                                checked={checked}
-                              />
-                            </TCell>
-                            <TCell primary opaque={checked} onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
-                            <TCell>
-                              <OButton
-                                size='16px'
-                                display='table-cell'
-                                onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit', page: 'form'})}}
-                              />
-                            </TCell>
-                          </TRow>
-                        );
-                      })}
-                    </tbody>
-                  </Table>
-                )
-              }
+              <Table>
+                <tbody>
+                  {this.state.showAllTasks
+                    ? this.state.allTasks.map((doc, index) => {
+                      return (
+                        <TRow key={index}>
+                          <TCell><OButton size='16px' nopointer='true' checked='true' /></TCell>
+                          <TCell primary>{doc.summ}</TCell>
+                          <TCell>
+                            <OButton
+                              size='16px'
+                              onClick={() => {this.showForm('task', 'edit', doc)}}
+                            />
+                          </TCell>
+                        </TRow>
+                      );
+                    })
+                    : this.state.currentTasks.map((doc, index) => {
+                      let checked = this.state.cotdoc[cdate] && this.state.cotdoc[cdate].findIndex(id => id === doc._id) > -1;
+                      return (
+                        <TRow key={index}>
+                          <TCell onClick={() => {this.toggleTask(doc._id)}}>
+                            <CBButton
+                              size='16px'
+                              checked={checked}
+                            />
+                          </TCell>
+                          <TCell primary opaque={checked} onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
+                          <TCell>
+                            <OButton
+                              size='16px'
+                              onClick={() => {this.showForm('task', 'edit', doc)}}
+                            />
+                          </TCell>
+                        </TRow>
+                      );
+                    })
+                  }
+                  <TRow>
+                    <TCell>
+                      <PlusButton
+                        size='16px'
+                        onClick={() => {this.fastInsert('task', this.state.fastTaskText)}}
+                      />
+                    </TCell>
+                    <TCell primary padding='0px 10px'>
+                      <Input type='textarea' value={this.state.fastTaskText} onChange={e => {
+                        if (e.target.value.endsWith('\n')) {
+                          this.fastInsert('task', e.target.value.slice(0, -1));
+                        } else {
+                          autosize(e.target);
+                          this.setState({fastTaskText: e.target.value});
+                        }
+                      }} />
+                    </TCell>
+                    <TCell>
+                      <OButton
+                        size='16px'
+                        onClick={() => {this.showForm('task', 'new', {summ: this.state.fastTaskText})}}
+                      />
+                    </TCell>
+                  </TRow>
+                </tbody>
+              </Table>
             </Subsection>
           </Section>
           <Section>
-            <PlusButton
-              size='24px'
-              float='right'
-              margin='10px 6px 0 24px'
-              weight='thick'
-              onClick={() => {this.setState({dptr: {}, formType: 'event', formMode: 'new', page: 'form'});}}
-            />
             <RhombusButton
               size='24px'
               float='right'
@@ -240,49 +280,64 @@ class App extends Component {
             />
             <Header>Termine ({this.state.currentEvents.length})</Header>
             <Subsection>
-              {this.state.showAllEvents
-                ? (this.state.allEvents.length === 0
-                  ? null
-                  : <Table>
-                    <tbody>
-                      {this.state.allEvents.map((doc, index) => {
-                        return (
-                          <TRow key={index}>
-                            <TCell primary>{doc.summ}</TCell>
-                            <TCell>
-                              <OButton
-                                size='16px'
-                                display='table-cell'
-                                onClick={() => {this.setState({dptr: doc, formType: 'task', formMode: 'edit', page: 'form'})}}
-                              />
-                            </TCell>
-                          </TRow>
-                        );
-                      })}
-                    </tbody>
-                  </Table>
-                )
-                : (this.state.currentEvents.length === 0
-                  ? null
-                  : <Table>
-                    <tbody>
-                      {this.state.currentEvents.map((doc, index) => {
-                        return (
-                          <TRow key={index}>
-                            <TCell primary opaque={moment().format('HH:mm') > doc.r_time}>{'[' + doc.r_time + '] ' + doc.summ}</TCell>
-                            <TCell>
-                              <OButton
-                                size='16px'
-                                onClick={() => {this.setState({dptr: doc, formType: 'event', formMode: 'edit', page: 'form'})}}
-                              />
-                            </TCell>
-                          </TRow>
-                        );
-                      })}
-                    </tbody>
-                  </Table>
-                )
-              }
+              <Table>
+                <tbody>
+                  {this.state.showAllEvents
+                    ? this.state.allEvents.map((doc, index) => {
+                      return (
+                        <TRow key={index}>
+                          <TCell><OButton size='16px' nopointer='true' checked='true' /></TCell>
+                          <TCell primary>{doc.summ}</TCell>
+                          <TCell>
+                            <OButton
+                              size='16px'
+                              onClick={() => {this.showForm('event', 'edit', doc)}}
+                            />
+                          </TCell>
+                        </TRow>
+                      );
+                    })
+                    : this.state.currentEvents.map((doc, index) => {
+                      return (
+                        <TRow key={index}>
+                          <TCell><OButton size='16px' nopointer='true' checked='true' /></TCell>
+                          <TCell primary opaque={moment().format('HH:mm') > doc.r_time}>{'[' + doc.r_time + '] ' + doc.summ}</TCell>
+                          <TCell>
+                            <OButton
+                              size='16px'
+                              onClick={() => {this.showForm('event', 'edit', doc)}}
+                            />
+                          </TCell>
+                        </TRow>
+                      );
+                    })
+                  }
+                  <TRow>
+                    <TCell>
+                      <PlusButton
+                        size='16px'
+                        onClick={() => {this.fastInsert('event', this.state.fastEventText)}}
+                      />
+                    </TCell>
+                    <TCell primary padding='0px 10px'>
+                      <Input type='textarea' value={this.state.fastEventText} onChange={e => {
+                        if (e.target.value.endsWith('\n')) {
+                          this.fastInsert('event', e.target.value.slice(0, -1));
+                        } else {
+                          autosize(e.target);
+                          this.setState({fastEventText: e.target.value});
+                        }
+                      }} />
+                    </TCell>
+                    <TCell>
+                      <OButton
+                        size='16px'
+                        onClick={() => {this.showForm('event', 'new', {summ: this.state.fastEventText})}}
+                      />
+                    </TCell>
+                  </TRow>
+                </tbody>
+              </Table>
             </Subsection>
           </Section>
           <Section opaque>
@@ -299,7 +354,7 @@ class App extends Component {
                           <TCell>
                             <OButton
                               size='16px'
-                              onClick={() => {this.setState({dptr: doc, formType: 'event', formMode: 'edit', page: 'form'})}}
+                              onClick={() => {this.showForm('event', 'edit', doc)}}
                             />
                           </TCell>
                         </TRow>

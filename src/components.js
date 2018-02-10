@@ -1,6 +1,7 @@
 import React from 'react';
 import styled, {css} from 'styled-components';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 
 export const fontcolor = 'rgb(184, 184, 184)';
 export const bgcolor = 'rgb(33, 34, 37)';
@@ -82,20 +83,21 @@ const basicstyle = css`
   width: 100%;
   background-color: ${transparent};
   border: 1px solid ${accentcolor};
-  color: white;
+  color: ${fontcolor};
+  box-sizing: border-box;
+  display: block;
 `;
 
 const RawInput = styled.input`
   ${basicstyle}
   height: 32px;
-  color: ${fontcolor};
 `;
 
 const Textarea = styled.textarea`
   ${basicstyle}
-  height: ${props => props.height || '128px'};
+  height: ${props => props.height ? props.height : ''};
   resize: none;
-  color: ${fontcolor};
+  overflow-y: hidden;
 `;
 
 const Inputlabel = styled.label`
@@ -104,7 +106,7 @@ const Inputlabel = styled.label`
 `;
 
 const Inputfield = styled.div`
-  margin-top: 16px;
+  margin: ${props => props.margin || '0'};
   width: ${props => props.width || '100%'};
   display: ${props => props.display};
 `;
@@ -123,7 +125,7 @@ export const Input = (props) => {
     <Inputfield {...rest}>
       <Inputlabel htmlFor="id">{props.children}</Inputlabel>
       {type === 'textarea'
-        ? <Textarea height={taheight} id="id" value={value} onChange={onChange} />
+        ? <Textarea rows='1' height={taheight} id="id" value={value} onChange={onChange} />
         : <RawInput type={type} id="id" value={value} onChange={onChange} />
       }
     </Inputfield>
@@ -151,7 +153,7 @@ const SVG = styled.svg`
   display: ${props => props.display || 'inline'};
   width: ${props => props.size || '10px'};
   height: ${props => props.size || '10px'};
-  cursor: pointer;
+  cursor: ${props => props.nopointer ? 'auto' : 'pointer'};
   float: ${props => props.float || 'none'};
   margin: ${props => props.margin ? props.margin : 0};
 `;
@@ -208,6 +210,7 @@ export const XButton = props => {
 }
 
 export const OButton = props => {
+  let id = _.uniqueId('circleclip_');
   let {checked, weight, ...rest} = props;
   return (
     <SVG
@@ -216,7 +219,7 @@ export const OButton = props => {
       {...rest}
     >
       <defs>
-        <clipPath id='circleclip'>
+        <clipPath id={id}>
           <circle cx='50%' cy='50%' r='50%' />
         </clipPath>
       </defs>
@@ -236,7 +239,7 @@ export const OButton = props => {
         color={accentcolor}
         weight={weight}
         filled={checked}
-        clipPath='url(#circleclip)'
+        clipPath={'url(#' + id + ')'}
       />
     </SVG>
   );
