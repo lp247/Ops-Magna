@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import moment from 'moment';
+import autosize from 'autosize';
 
 import {
   Page, ContentWrapper, Header, Input, TextButton, FlexContainer, Selector, Section, Subsection
@@ -346,7 +347,12 @@ class Form extends Component {
             }
             <Subsection>
               <Input type='text' value={this.state.summ} onChange={e => this.setState({summ: e.target.value})}>Kurzbeschreibung</Input>
-              <Input type='textarea' height='128px' value={this.state.desc} onChange={e => this.setState({desc: e.target.value})}>Beschreibung</Input>
+            </Subsection>
+            <Subsection>
+              <Input type='textarea' value={this.state.desc} onChange={e => {
+                autosize(e.target);
+                this.setState({desc: e.target.value});
+              }}>Beschreibung</Input>
             </Subsection>
             <Subsection>
               <FlexContainer jc='space-evenly'>

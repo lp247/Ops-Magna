@@ -12,6 +12,9 @@ import Form from './Form.js';
 function keysort(key, order='asc') {
   let sortorder = order === 'asc' ? 1 : -1;
   return function (a, b) {
+    if (!a[key] && !b[key]) return 0;
+    if (!a[key] && !!b[key]) return 1;
+    if (!!a[key] && !b[key]) return -1;
     let result = (a[key] < b[key]) ? -1 : (a[key] > b[key]) ? 1 : 0;
     return result * sortorder;
   }
@@ -96,7 +99,7 @@ class App extends Component {
       })
       let allTasks = result.rows.filter(el => el.doc.type === 'task').map(el => el.doc).sort(keysort('summ'));
       let allEvents = result.rows.filter(el => el.doc.type === 'event').map(el => el.doc).sort(keysort('summ'));
-      let currentTasks = allTasks.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('summ'));
+      let currentTasks = allTasks.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('r_time'));
       let currentEvents = allEvents.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('r_time'));
       let cotdoc = (result.rows.find(el => el.doc._id === 'cotid') || {doc: {_id: 'cotid'}}).doc;
       this.setState({allTasks, allEvents, currentTasks, currentEvents, upcomingEvents, cotdoc});
@@ -138,6 +141,11 @@ class App extends Component {
       formMode: mode,
       page: 'form'
     });
+    if (type === 'task') {
+      this.setState({fastTaskText: ''});
+    } else {
+      this.setState({fastEventText: ''});
+    }
   }
 
   fastInsert(type, summ) {
@@ -230,7 +238,7 @@ class App extends Component {
                               checked={checked}
                             />
                           </TCell>
-                          <TCell primary opaque={checked} onClick={() => {this.toggleTask(doc._id)}}>{doc.summ}</TCell>
+                          <TCell primary opaque={checked} onClick={() => {this.toggleTask(doc._id)}}>{doc.r_time ? '[' + doc.r_time + '] ' + doc.summ : doc.summ}</TCell>
                           <TCell>
                             <OButton
                               size='16px'
@@ -301,7 +309,7 @@ class App extends Component {
                       return (
                         <TRow key={index}>
                           <TCell><OButton size='16px' nopointer='true' checked='true' /></TCell>
-                          <TCell primary opaque={moment().format('HH:mm') > doc.r_time}>{'[' + doc.r_time + '] ' + doc.summ}</TCell>
+                          <TCell primary opaque={moment().format('HH:mm') > doc.r_time}>{doc.r_time ? '[' + doc.r_time + '] ' + doc.summ : doc.summ}</TCell>
                           <TCell>
                             <OButton
                               size='16px'

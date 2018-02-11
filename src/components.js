@@ -90,7 +90,6 @@ const basicstyle = css`
 
 const RawInput = styled.input`
   ${basicstyle}
-  height: 32px;
 `;
 
 const Textarea = styled.textarea`
