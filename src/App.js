@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import PouchDB from 'pouchdb';
 import moment from 'moment';
 import autosize from 'autosize';
+import {List, Map} from 'immutable';
 
 import Recur from './Recur.js';
 import {
@@ -24,13 +25,13 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      allTasks: [],
-      allEvents: [],
-      currentTasks: [],
-      currentEvents: [],
-      upcomingEvents: [],
+      allTasks: List(),
+      allEvents: List(),
+      currentTasks: List(),
+      currentEvents: List(),
+      upcomingEvents: List(),
       dayChangeHour: 5,
-      cotdoc: {},
+      cotdoc: Map(),
       numUpcoming: 7,
       showAllTasks: false,
       showAllEvents: false,
@@ -41,7 +42,7 @@ class App extends Component {
       page: '',
       formType: '',
       formMode: '',
-      dptr: {}
+      doc: Map()
     };
 
     this.localDB = new PouchDB('todos');
@@ -122,21 +123,21 @@ class App extends Component {
   toggleTask(taskid) {
     let cdate = moment().subtract(this.state.dayChangeHour, 'hours').format('YYYY-MM-DD');
     let tmp = this.state.cotdoc;
-    if (!tmp[cdate]) {
-      tmp[cdate] = [];
+    if (!this.state.cotdoc[cdate]) {
+      tmp = this.state.cotdoc.set(cdate, List());
     }
     let index = this.state.cotdoc[cdate].findIndex(id => id === taskid);
     if (index === -1) {
-      tmp[cdate] = [...tmp[cdate], taskid];
+      tmp = this.state.cotdoc[cdate].push(taskid);
     } else {
-      tmp[cdate].splice(index, 1);
+      tmp = this.state.cotdoc[cdate].delete(index);
     }
     this.writeToDB(tmp);
   }
 
-  showForm(type, mode, dptr = {}) {
+  showForm(type, mode, doc = {}) {
     this.setState({
-      dptr,
+      doc,
       formType: type,
       formMode: mode,
       page: 'form'
@@ -181,7 +182,7 @@ class App extends Component {
         <Form
           type={this.state.formType}
           mode={this.state.formMode}
-          data={this.state.dptr}
+          data={this.state.doc}
           save={(obj) => {
             this.writeToDB(obj);
             this.setState({formType: '', formMode: '', page: ''});
@@ -209,7 +210,7 @@ class App extends Component {
               checked={this.state.showAllTasks}
               onClick={e => this.setState({showAllTasks: !this.state.showAllTasks})}
             />
-            <Header>Aufgaben ({(this.state.cotdoc[cdate] || []).length}/{this.state.currentTasks.length})</Header>
+            <Header>Aufgaben ({(this.state.cotdoc[cdate] || List()).length}/{this.state.currentTasks.length})</Header>
             <Subsection>
               <Table>
                 <tbody>

@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import moment from 'moment';
 import autosize from 'autosize';
+import {List} from 'immutable';
 
 import {
   Page, ContentWrapper, Header, Input, TextButton, FlexContainer, Selector, Section, Subsection
@@ -15,9 +16,9 @@ class Form extends Component {
       _rev: this.props.data._rev || '',
       summ: this.props.data.summ || '',
       desc: this.props.data.desc || '',
-      r_months: this.props.data.r_months || [],
-      r_weeks: this.props.data.r_weeks || [],
-      r_days: this.props.data.r_days || [],
+      r_months: this.props.data.r_months || List(),
+      r_weeks: this.props.data.r_weeks || List(),
+      r_days: this.props.data.r_days || List(),
       r_time: this.props.data.r_time || '',
       r_start: this.props.data.r_start || '',
       r_end: this.props.data.r_end || ''
@@ -76,80 +77,77 @@ class Form extends Component {
   }
 
   toggleRAV(arr, value) {
-    let tmp = this.state[arr];
+    // let tmp = this.state[arr];
     
-    if (arr === 'r_months' && tmp.length === 0) {
-      this.setState({r_weeks: [], r_days: []});
+    if (arr === 'r_months' && this.state[arr].length === 0) {
+      this.setState({r_weeks: this.state.r_weeks.clear(), r_days: this.state.r_days.clear()});
     }
-    if (arr === 'r_weeks' && tmp.length === 0) {
-      this.setState({r_days: []});
+    if (arr === 'r_weeks' && this.state[arr].length === 0) {
+      this.setState({r_days: this.state.r_days.clear()});
     }
     
+    var newarr;
     if (value === 'all') {
       if (arr === 'r_months') {
-        if (tmp.length === 12) {
-          tmp = [];
+        if (this.state[arr].length === 12) {
+          newarr = List();
         } else {
-          tmp = [0,1,2,3,4,5,6,7,8,9,10,11];
+          newarr = List(Range(0, 12));
         }
       } else if (arr === 'r_weeks') {
         if (this.state.r_months.length === 0) {
-          if (tmp.length === 52) {
-            tmp = [];
+          if (this.state[arr].length === 52) {
+            newarr = List();
           } else {
-            tmp = [...Array(53).keys()];
-            tmp.shift();
+            newarr = List(Range(1, 53));
           }
         } else {
-          if (tmp.length === 5) {
-            tmp = [];
+          if (this.state[arr].length === 5) {
+            newarr = List();
           } else {
-            tmp = [1,2,3,4,5];
+            newarr = List(Range(1, 6));
           }
         }
       } else {
         if (this.state.r_weeks.length === 0) {
           if (this.state.r_months.length === 0) {
-            if (tmp.length === 366) {
-              tmp = [];
+            if (this.state[arr].length === 366) {
+              newarr = List();
             } else {
-              tmp = [...Array(367).keys()];
-              tmp.shift();
+              newarr = List(Range(1, 367));
             }
           } else {
-            if (tmp.length === 31) {
-              tmp = [];
+            if (this.state[arr].length === 31) {
+              newarr = List();
             } else {
-              tmp = [...Array(32).keys()];
-              tmp.shift();
+              newarr = List(Range(1, 32));
             }
           }
         } else {
-          if (tmp.length === 7) {
-            tmp = [];
+          if (this.state[arr].length === 7) {
+            newarr = List();
           } else {
-            tmp = [1,2,3,4,5,6,7];
+            newarr = List(Range(1, 8));
           }
         }
       }
     } else {
-      let index = tmp.findIndex(v => v === value);
+      let index = this.state[arr].findIndex(v => v === value);
       if (index > -1) {
-        tmp.splice(index, 1);
+        newarr = this.state[arr].delete(index);
       } else {
-        tmp.push(value);
+        newarr = this.state[arr].push(value);
       }
     }
 
-
-    if (arr === 'r_months' && tmp.length === 0) {
-      this.setState({r_weeks: [], r_days: []});
+    if (arr === 'r_months' && this.state[arr].length === 0) {
+      this.setState({r_weeks: this.state.r_weeks.clear(), r_days: this.state.r_days.clear()});
     }
-    if (arr === 'r_weeks' && tmp.length === 0) {
-      this.setState({r_days: []});
+    if (arr === 'r_weeks' && this.state[arr].length === 0) {
+      this.setState({r_days: this.state.r_days.clear()});
     }
 
-    this.setState({[arr]: tmp});
+    this.setState({[arr]: newarr});
   }
   
   createMonthFilter() {
