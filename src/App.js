@@ -1,218 +1,236 @@
 import React, {Component} from 'react';
-import PouchDB from 'pouchdb';
-import moment from 'moment';
-import autosize from 'autosize';
-import {List, Map} from 'immutable';
+import {Route} from 'react-router-dom';
+// import PouchDB from 'pouchdb';
+// import moment from 'moment';
+// import autosize from 'autosize';
+// import {List, Map} from 'immutable';
 
-import Recur from './Recur.js';
+// import Recur from './Recur.js';
 import {
-  Page, ContentWrapper, Section, PlusButton, Header, Infotext, CBButton, Table, TRow, TCell, OButton, Subsection, RhombusButton, Input
-} from './components.js';
-import Form from './Form.js';
+  Page, ContentWrapper//, Section, Subsection
+} from './sc/container';
+// import {
+//   PlusButton, CBButton, OButton, RhombusButton
+// } from './sc/buttons';
+// import {
+//   Header, Infotext
+// } from './sc/texts';
+// import {
+//   Table, TCell
+// } from './sc/table';
+// import {
+//   Input
+// } from './sc/inputs';
+// import Form from './Form.js';
+import {ConnTaskList, ConnEventList} from './ConnList';
+import ConnForm from './ConnForm';
 
-function keysort(key, order='asc') {
-  let sortorder = order === 'asc' ? 1 : -1;
-  return function (a, b) {
-    if (!a[key] && !b[key]) return 0;
-    if (!a[key] && !!b[key]) return 1;
-    if (!!a[key] && !b[key]) return -1;
-    let result = (a[key] < b[key]) ? -1 : (a[key] > b[key]) ? 1 : 0;
-    return result * sortorder;
-  }
-}
+// function keysort(key, order='asc') {
+//   let sortorder = order === 'asc' ? 1 : -1;
+//   return function (a, b) {
+//     if (!a[key] && !b[key]) return 0;
+//     if (!a[key] && !!b[key]) return 1;
+//     if (!!a[key] && !b[key]) return -1;
+//     let result = (a[key] < b[key]) ? -1 : (a[key] > b[key]) ? 1 : 0;
+//     return result * sortorder;
+//   }
+// }
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      allTasks: List(),
-      allEvents: List(),
-      currentTasks: List(),
-      currentEvents: List(),
-      upcomingEvents: List(),
-      dayChangeHour: 5,
-      cotdoc: Map(),
-      numUpcoming: 7,
-      showAllTasks: false,
-      showAllEvents: false,
-      fastTaskInput: null,
-      fastTaskText: '',
-      fastEventInput: null,
-      fastEventText: '',
-      page: '',
-      formType: '',
-      formMode: '',
-      doc: Map()
-    };
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     allTasks: List(),
+  //     allEvents: List(),
+  //     currentTasks: List(),
+  //     currentEvents: List(),
+  //     upcomingEvents: List(),
+  //     dayChangeHour: 5,
+  //     cotdoc: Map(),
+  //     numUpcoming: 7,
+  //     showAllTasks: false,
+  //     showAllEvents: false,
+  //     fastTaskText: '',
+  //     fastEventText: '',
+  //     page: '',
+  //     formType: '',
+  //     formMode: '',
+  //     doc: Map()
+  //   };
 
-    this.localDB = new PouchDB('todos');
-    this.remoteDB = new PouchDB('http://192.168.0.111:5984/todos');
+  //   this.localDB = new PouchDB('todos');
+  //   this.remoteDB = new PouchDB('http://192.168.0.111:5984/todos');
 
-    this.localDB.changes({
-      since: 'now',
-      live: true
-    }).on('change', this.readDB.bind(this));
+  //   this.localDB.changes({
+  //     since: 'now',
+  //     live: true
+  //   }).on('change', this.readDB.bind(this));
 
-    this.localDB.sync(this.remoteDB, {
-      live: true,
-      retry: true
-    }).on('change', function (change) {
-      // yo, something changed!
-    }).on('paused', function (info) {
-      // replication was paused, usually because of a lost connection
-    }).on('active', function (info) {
-      // replication was resumed
-    }).on('error', function (err) {
-      // totally unhandled error (shouldn't happen)
-    });
+  //   this.localDB.sync(this.remoteDB, {
+  //     live: true,
+  //     retry: true
+  //   }).on('change', function (change) {
+  //     // yo, something changed!
+  //   }).on('paused', function (info) {
+  //     // replication was paused, usually because of a lost connection
+  //   }).on('active', function (info) {
+  //     // replication was resumed
+  //   }).on('error', function (err) {
+  //     // totally unhandled error (shouldn't happen)
+  //   });
 
-    this.readDB = this.readDB.bind(this);
-    this.writeToDB = this.writeToDB.bind(this);
-    this.deleteFromDB = this.deleteFromDB.bind(this);
-    this.toggleTask = this.toggleTask.bind(this);
-    this.showForm = this.showForm.bind(this);
-    this.fastInsert = this.fastInsert.bind(this);
-  }
+  //   this.readDB = this.readDB.bind(this);
+  //   this.writeToDB = this.writeToDB.bind(this);
+  //   this.deleteFromDB = this.deleteFromDB.bind(this);
+  //   this.toggleTask = this.toggleTask.bind(this);
+  //   this.showForm = this.showForm.bind(this);
+  //   this.fastInsert = this.fastInsert.bind(this);
+  // }
 
-  componentDidMount() {
-    this.readDB();
-  }
+  // componentDidMount() {
+  //   this.readDB();
+  // }
 
-  readDB() {
-    this.localDB.allDocs({include_docs: true}).then((result) => {
-      let upcomingEvents = [];
-      for (var i = 0; i < result.rows.length; i++) {
-        for (var j = 1; j < this.state.numUpcoming; j++) {
-          if (result.rows[i].doc.type === 'event') {
-            var doc = result.rows[i].doc;
-            if (Recur.matches(doc, moment().add(j, 'days'))) {
-              doc = JSON.parse(JSON.stringify(doc));
-              doc.futuredate = moment().add(j, 'days').format('YYYY-MM-DD');
-              upcomingEvents.push(doc);
-            }
-          }
-        }
-      }
-      upcomingEvents.sort((a, b) => {
-        if (a.futuredate < b.futuredate) return -1;
-        if (a.futuredate > b.futuredate) return 1;
-        return 0;
-      })
-      let allTasks = result.rows.filter(el => el.doc.type === 'task').map(el => el.doc).sort(keysort('summ'));
-      let allEvents = result.rows.filter(el => el.doc.type === 'event').map(el => el.doc).sort(keysort('summ'));
-      let currentTasks = allTasks.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('r_time'));
-      let currentEvents = allEvents.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('r_time'));
-      let cotdoc = (result.rows.find(el => el.doc._id === 'cotid') || {doc: {_id: 'cotid'}}).doc;
-      this.setState({allTasks, allEvents, currentTasks, currentEvents, upcomingEvents, cotdoc});
-    }).catch((err) => {
-      throw err;
-    });
-  }
+  // readDB() {
+  //   this.localDB.allDocs({include_docs: true}).then((result) => {
+  //     let upcomingEvents = [];
+  //     for (var i = 0; i < result.rows.length; i++) {
+  //       for (var j = 1; j < this.state.numUpcoming; j++) {
+  //         if (result.rows[i].doc.type === 'event') {
+  //           var doc = result.rows[i].doc;
+  //           if (Recur.matches(doc, moment().add(j, 'days'))) {
+  //             doc = JSON.parse(JSON.stringify(doc));
+  //             doc.futuredate = moment().add(j, 'days').format('YYYY-MM-DD');
+  //             upcomingEvents.push(doc);
+  //           }
+  //         }
+  //       }
+  //     }
+  //     upcomingEvents.sort((a, b) => {
+  //       if (a.futuredate < b.futuredate) return -1;
+  //       if (a.futuredate > b.futuredate) return 1;
+  //       return 0;
+  //     })
+  //     let allTasks = result.rows.filter(el => el.doc.type === 'task').map(el => el.doc).sort(keysort('summ'));
+  //     let allEvents = result.rows.filter(el => el.doc.type === 'event').map(el => el.doc).sort(keysort('summ'));
+  //     let currentTasks = allTasks.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('r_time'));
+  //     let currentEvents = allEvents.filter(doc => Recur.matches(doc, moment().subtract(this.state.dayChangeHour, 'hours'))).sort(keysort('r_time'));
+  //     let cotdoc = (result.rows.find(el => el.doc._id === 'cotid') || {doc: {_id: 'cotid'}}).doc;
+  //     this.setState({allTasks, allEvents, currentTasks, currentEvents, upcomingEvents, cotdoc});
+  //   }).catch((err) => {
+  //     throw err;
+  //   });
+  // }
 
-  writeToDB(doc) {
-    return this.localDB.put(doc).catch(err => {
-      throw err;
-    });
-  }
+  // writeToDB(doc) {
+  //   return this.localDB.put(doc).catch(err => {
+  //     throw err;
+  //   });
+  // }
 
-  deleteFromDB(doc) {
-    doc._deleted = true;
-    return this.writeToDB(doc);
-  }
+  // deleteFromDB(doc) {
+  //   doc._deleted = true;
+  //   return this.writeToDB(doc);
+  // }
 
-  toggleTask(taskid) {
-    let cdate = moment().subtract(this.state.dayChangeHour, 'hours').format('YYYY-MM-DD');
-    let tmp = this.state.cotdoc;
-    if (!this.state.cotdoc[cdate]) {
-      tmp = this.state.cotdoc.set(cdate, List());
-    }
-    let index = this.state.cotdoc[cdate].findIndex(id => id === taskid);
-    if (index === -1) {
-      tmp = this.state.cotdoc[cdate].push(taskid);
-    } else {
-      tmp = this.state.cotdoc[cdate].delete(index);
-    }
-    this.writeToDB(tmp);
-  }
+  // toggleTask(taskid) {
+  //   let cdate = moment().subtract(this.state.dayChangeHour, 'hours').format('YYYY-MM-DD');
+  //   let tmp = this.state.cotdoc;
+  //   if (!this.state.cotdoc[cdate]) {
+  //     tmp = this.state.cotdoc.set(cdate, List());
+  //   }
+  //   let index = this.state.cotdoc[cdate].findIndex(id => id === taskid);
+  //   if (index === -1) {
+  //     tmp = this.state.cotdoc[cdate].push(taskid);
+  //   } else {
+  //     tmp = this.state.cotdoc[cdate].delete(index);
+  //   }
+  //   this.writeToDB(tmp);
+  // }
 
-  showForm(type, mode, doc = {}) {
-    this.setState({
-      doc,
-      formType: type,
-      formMode: mode,
-      page: 'form'
-    });
-    if (type === 'task') {
-      this.setState({fastTaskText: ''});
-    } else {
-      this.setState({fastEventText: ''});
-    }
-  }
+  // showForm(type, mode, doc = {}) {
+  //   this.setState({
+  //     doc,
+  //     formType: type,
+  //     formMode: mode,
+  //     page: 'form'
+  //   });
+  //   if (type === 'task') {
+  //     this.setState({fastTaskText: ''});
+  //   } else {
+  //     this.setState({fastEventText: ''});
+  //   }
+  // }
 
-  fastInsert(type, summ) {
-    if (!summ) {
-      alert('Geben Sie eine Beschreibung an!');
-    } else {
-      this.writeToDB({
-        single: true,
-        _id: moment().format(),
-        _rev: '',
-        type,
-        summ,
-        desc: '',
-        r_months: [],
-        r_weeks: [],
-        r_days: [],
-        r_time: '',
-        r_start: moment().format('YYYY-MM-DD'),
-        r_end: ''
-      }).then(() => {
-        if (type === 'task') {
-          this.setState({fastTaskText: ''});
-        } else {
-          this.setState({fastEventText: ''});
-        }
-      });
-    }
-  }
+  // fastInsert(type, summ) {
+  //   if (!summ) {
+  //     alert('Geben Sie eine Beschreibung an!');
+  //   } else {
+  //     this.writeToDB({
+  //       single: true,
+  //       _id: moment().format(),
+  //       _rev: '',
+  //       type,
+  //       summ,
+  //       desc: '',
+  //       r_months: [],
+  //       r_weeks: [],
+  //       r_days: [],
+  //       r_time: '',
+  //       r_start: moment().format('YYYY-MM-DD'),
+  //       r_end: ''
+  //     }).then(() => {
+  //       if (type === 'task') {
+  //         this.setState({fastTaskText: ''});
+  //       } else {
+  //         this.setState({fastEventText: ''});
+  //       }
+  //     });
+  //   }
+  // }
 
   render() {
-    if (this.state.page === 'form') {
-      return (
-        <Form
-          type={this.state.formType}
-          mode={this.state.formMode}
-          data={this.state.doc}
-          save={(obj) => {
-            this.writeToDB(obj);
-            this.setState({formType: '', formMode: '', page: ''});
-          }}
-          discard={() => {
-            this.setState({formType: '', formMode: '', page: ''});
-          }}
-          delete={(obj) => {
-            this.deleteFromDB(obj);
-            this.setState({formType: '', formMode: '', page: ''});
-          }}
-        />
-      );
-    }
-    var cdate = moment().subtract(this.state.dayChangeHour, 'hours').format('YYYY-MM-DD');
+    // if (this.state.page === 'form') {
+    //   return (
+    //     <Form
+    //       type={this.state.formType}
+    //       mode={this.state.formMode}
+    //       data={this.state.doc}
+    //       save={(obj) => {
+    //         this.writeToDB(obj);
+    //         this.setState({formType: '', formMode: '', page: ''});
+    //       }}
+    //       discard={() => {
+    //         this.setState({formType: '', formMode: '', page: ''});
+    //       }}
+    //       delete={(obj) => {
+    //         this.deleteFromDB(obj);
+    //         this.setState({formType: '', formMode: '', page: ''});
+    //       }}
+    //     />
+    //   );
+    // }
+    // var cdate = moment().subtract(5, 'hours').format('YYYY-MM-DD');
     return (
       <Page>
         <ContentWrapper>
-          <Section>
-            <RhombusButton
+          <Route exact path='/' component={ConnTaskList} />
+          <Route exact path='/' component={ConnEventList} />
+          <Route path='/:type/:id' component={ConnForm} />
+          {/* <TaskList />
+          <EventList /> */}
+          {/* <Section> */}
+            {/* <RhombusButton
               size='24px'
               float='right'
               margin='10px 6px 0 24px'
               weight='thick'
               checked={this.state.showAllTasks}
               onClick={e => this.setState({showAllTasks: !this.state.showAllTasks})}
-            />
-            <Header>Aufgaben ({(this.state.cotdoc[cdate] || List()).length}/{this.state.currentTasks.length})</Header>
-            <Subsection>
-              <Table>
+            /> */}
+            {/* <Header>Aufgaben (x / y)</Header>
+            <Subsection> */}
+              {/* <Table>
                 <tbody>
                   {this.state.showAllTasks
                     ? this.state.allTasks.map((doc, index) => {
@@ -275,21 +293,21 @@ class App extends Component {
                     </TCell>
                   </TRow>
                 </tbody>
-              </Table>
-            </Subsection>
+              </Table> */}
+            {/* </Subsection>
           </Section>
-          <Section>
-            <RhombusButton
+          <Section> */}
+            {/* <RhombusButton
               size='24px'
               float='right'
               margin='10px 6px 0 24px'
               weight='thick'
               checked={this.state.showAllEvents}
               onClick={e => this.setState({showAllEvents: !this.state.showAllEvents})}
-            />
-            <Header>Termine ({this.state.currentEvents.length})</Header>
-            <Subsection>
-              <Table>
+            /> */}
+            {/* <Header>Termine (z)</Header> */}
+            {/* <Subsection> */}
+              {/* <Table>
                 <tbody>
                   {this.state.showAllEvents
                     ? this.state.allEvents.map((doc, index) => {
@@ -346,10 +364,10 @@ class App extends Component {
                     </TCell>
                   </TRow>
                 </tbody>
-              </Table>
-            </Subsection>
-          </Section>
-          <Section opaque>
+              </Table> */}
+            {/* </Subsection>
+          </Section> */}
+          {/* <Section opaque>
             <Header>Kommende Termine</Header>
             <Subsection>
               {this.state.upcomingEvents.length === 0
@@ -358,7 +376,7 @@ class App extends Component {
                   <tbody>
                     {this.state.upcomingEvents.map((doc, index) => {
                       return (
-                        <TRow key={index}>
+                        <tr key={index}>
                           <TCell primary>{'[' + doc.futuredate + ' ' + doc.r_time + '] ' + doc.summ}</TCell>
                           <TCell>
                             <OButton
@@ -366,14 +384,14 @@ class App extends Component {
                               onClick={() => {this.showForm('event', 'edit', doc)}}
                             />
                           </TCell>
-                        </TRow>
+                        </tr>
                       );
                     })}
                   </tbody>
                 </Table>
               }
             </Subsection>
-          </Section>
+          </Section> */}
         </ContentWrapper>
       </Page>
     );
