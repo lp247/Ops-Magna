@@ -1,8 +1,7 @@
 import {Map, List} from 'immutable';
-import moment from 'moment';
 
 const core = Map({
-  id: moment().format(),
+  id: '',
   summ: '',
   desc: '',
   single: true,
@@ -10,16 +9,26 @@ const core = Map({
   weeks: List(),
   days: List(),
   time: '',
-  start: moment().format('YYYY-MM-DD'),
-  end: '2999-12-31'
+  start: '',
+  end: ''
 });
 
 export const emptyTask = Map({
   data: core.set('doneAt', List()),
-  backup: core
+  backup: core.set('doneAt', List())
 });
 
 export const emptyEvent = Map({
   data: core,
   backup: core
+});
+
+export const newTask = Map({
+  data: core.set('doneAt', List()).set('id', 'new'),
+  backup: core.set('doneAt', List()).set('id', 'new')
+});
+
+export const newEvent = Map({
+  data: core.set('id', 'new'),
+  backup: core.set('id', 'new')
 });

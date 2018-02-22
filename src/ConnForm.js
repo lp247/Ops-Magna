@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 
 // import {toggleTask, editTask, updateFTT, addTask, newTask} from './actions';
 import Form from './Form';
-import { updateTaskKey, addTask, addEvent, clearFormdata, removeTask, removeEvent, updateEventKey } from './actions';
+import { updateTaskKey, removeTask, removeEvent, updateEventKey, updateTaskBackup, updateEventBackup, resetTaskData, resetEventData, ejectNewTask, ejectNewEvent } from './actions';
 import history from './history';
 // import Recur from './Recur';
 // import {DAY_CHANGE_HOUR} from './constants';
@@ -29,30 +29,56 @@ const mapStateToProps = (state, ownProps) => {
   }
   return {
     header,
-    data: state.formData
+    data: type === 'task' ? state.ptasks.find(t => t.get('data').get('id') === id) : state.pevents.find(e => e.get('data').get('id') === id)
   }
 }
 
 const mapDispatchToProps = (dispatch, ownProps) => {
-  let {type, id} = ownProps.match.params;
+  let {type} = ownProps.match.params;
   return {
-    updateKeyValue: (key, value) => {
-      if (type === 'task') dispatch(updateTaskKey(id, key, value));
-      else if (type === 'event') dispatch(updateEventKey(id, key, value));
-    },
-    save: (data) => {
-      if (type === 'task') dispatch(addTask(data));
-      else if (type === 'event') dispatch(addEvent(data));
-    },
-    discard: () => {
-      dispatch(clearFormdata());
-      history.push('/');
-    },
-    del: id === 'new' ? null : (elid) => {
-      if (type === 'task') dispatch(removeTask(elid));
-      else if (type === 'event') dispatch(removeEvent(elid));
-    }
-  }
+    updateKeyValue: type === 'task'
+      ? (id, key, value) => {
+        dispatch(updateTaskKey(id, key, value));
+      }
+      : (id, key, value) => {
+        dispatch(updateEventKey(id, key, value));
+      },
+    save: type === 'task'
+      ? id => {
+        if (id === 'new') {
+          dispatch(ejectNewTask());
+        } else {
+          dispatch(updateTaskBackup(id));
+        }
+        history.push('/');
+      }
+      : id => {
+        if (id === 'new') {
+          dispatch(ejectNewEvent());
+        } else {
+          dispatch(updateEventBackup(id));
+        }
+        history.push('/');
+      },
+    discard: type === 'task'
+      ? id => {
+        dispatch(resetTaskData(id));
+        history.push('/');
+      }
+      : id => {
+        dispatch(resetEventData(id));
+        history.push('/');
+      },
+    del: type === 'task'
+      ? id => {
+        dispatch(removeTask(id));
+        history.push('/');
+      }
+      : id => {
+        dispatch(removeEvent(id));
+        history.push('/');
+      }
+  };
 }
 
 const ConnForm = connect(

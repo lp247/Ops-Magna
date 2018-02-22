@@ -1,14 +1,13 @@
 import {connect} from 'react-redux';
 import moment from 'moment';
 // import autosize from 'autosize';
-import {List, Map} from 'immutable';
+import {List} from 'immutable';
 
-import {toggleTask, editTask, updateFTT, addTask, newTask, editEvent, addEvent, updateFET, newEvent} from './actions';
+import {toggleTask, ejectNewTask, updateTaskKey, ejectNewEvent, updateEventKey} from './actions';
 import EntryList from './EntryList';
 import Recur from './Recur';
 import {DAY_CHANGE_HOUR} from './constants';
 import history from './history';
-import {emptyTask, emptyEvent} from './objects';
 
 const getVisible = (entries, filter) => {
   switch (filter) {
@@ -16,13 +15,12 @@ const getVisible = (entries, filter) => {
       return entries;
     case 'SHOW_TODAY':
       if (entries.size > 0) {
-        // return entries;
-        return entries.filter(x => Recur.matches(x, moment().subtract(DAY_CHANGE_HOUR, 'hours')));
+        return entries.filter(x => x.get('data').get('id') === 'new' || Recur.matches(x.get('data'), moment().subtract(DAY_CHANGE_HOUR, 'hours')));
       } else {
-        return [];
+        return List();
       }
     default:
-      return [];
+      return List();
   }
 }
 
@@ -31,14 +29,12 @@ const mstp = (type) => {
     if (type === 'task') {
       return {
         entries: getVisible(state.tasks, state.taskVisibilityFilter),
-        header: 'Aufgaben (' + state.tasks.filter(t => t.get('doneAt').includes(moment().format('YYYY-MM-DD'))).size + '/' + state.tasks.size + ')',
-        fastInputText: state.fastTaskText
+        header: 'Aufgaben (' + state.tasks.filter(t => t.get('data').get('doneAt').includes(moment().format('YYYY-MM-DD'))).size + '/' + (state.tasks.size - 1) + ')'
       }
     } else if (type === 'event') {
       return {
         entries: getVisible(state.events, state.eventVisibilityFilter),
-        header: 'Termine (' + state.events.filter(x => moment().isAfter(x.get('time'))).size + '/' + state.events.size + ')',
-        fastInputText: state.fastEventText
+        header: 'Termine (' + state.events.filter(x => moment().isAfter(x.get('time'))).size + '/' + (state.events.size - 1) + ')'
       }
     }
   }
@@ -57,16 +53,13 @@ const mdtp = (type) => {
         },
         fastInputUpdater: e => {
           if (e.target.value.endsWith('\n')) {
-            dispatch(addTask(emptyTask.set('summ', e.target.value.slice(0, -1))));
+            dispatch(ejectNewTask());
           } else {
-            dispatch(updateFTT(e.target.value));
+            dispatch(updateTaskKey('new', 'summ', e.target.value));
           }
         },
-        fastAddEntry: text => {
-          dispatch(addTask(emptyTask.set('summ', text)));
-        },
-        newEntry: text => {
-          dispatch(newTask(text));
+        fastAddEntry: () => {
+          dispatch(ejectNewTask());
         }
       }
     } else if (type === 'event') {
@@ -77,16 +70,13 @@ const mdtp = (type) => {
         },
         fastInputUpdater: e => {
           if (e.target.value.endsWith('\n')) {
-            dispatch(addEvent(emptyEvent.set('summ', e.target.value.slice(0, -1))));
+            dispatch(ejectNewEvent());
           } else {
-            dispatch(updateFET(e.target.value));
+            dispatch(updateEventKey('new', 'summ', e.target.value));
           }
         },
-        fastAddEntry: text => {
-          dispatch(addEvent(emptyEvent.set('summ', text)));
-        },
-        newEntry: text => {
-          dispatch(newEvent(text));
+        fastAddEntry: () => {
+          dispatch(ejectNewEvent());
         }
       }
     }

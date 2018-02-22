@@ -13,30 +13,28 @@ const EntryList = ({
   header,
   toggleEntry,
   editEntry,
-  fastInputText,
   fastInputUpdater,
-  fastAddEntry,
-  newEntry
+  fastAddEntry
 }) => (
   <Section>
     <Header>{header}</Header>
     <Subsection>
       <Table>
         <tbody>
-          {entries.map((entry, index) => {
+          {entries.rest().map((entry, index) => {
             return (
               <tr key={index}>
                 <TCell>
                 <CBButton
                   size='16px'
-                  vertical={toggleEntry ? entry.get('data').get('doneAt').has(moment().format('YYYY-MM-DD')) : false}
+                  vertical={toggleEntry ? entry.get('data').get('doneAt').includes(moment().format('YYYY-MM-DD')) : false}
                   inactive={!toggleEntry}
                   onClick={toggleEntry ? () => toggleEntry(entry.get('data').get('id')) : null}
                 />
                 </TCell>
                 <TCell
                   primary
-                  opaque={toggleEntry ? entry.get('data').get('doneAt').has(moment().format('YYYY-MM-DD')) : false}
+                  opaque={toggleEntry ? entry.get('data').get('doneAt').includes(moment().format('YYYY-MM-DD')) : false}
                   onClick={toggleEntry ? () => toggleEntry(entry.get('data').get('id')) : null}
                 >{entry.get('data').get('summ')}</TCell>
                 <TCell>
@@ -52,15 +50,15 @@ const EntryList = ({
             <TCell>
               <PlusButton
                 size='16px'
-                onClick={() => {fastAddEntry(fastInputText)}}
+                onClick={() => {fastAddEntry()}}
               />
             </TCell>
             <TCell primary padding='0px 10px'>
               <Input
                 type='textarea'
-                value={fastInputText}
+                value={entries.get(0).get('data').get('summ')}
                 onChange={(e) => {
-                  autosize(e.target.value);
+                  autosize(e.target);
                   fastInputUpdater(e);
                 }}
               />
@@ -68,7 +66,7 @@ const EntryList = ({
             <TCell>
               <OButton
                 size='16px'
-                onClick={() => {newEntry(fastInputText)}}
+                onClick={() => {editEntry('new')}}
               />
             </TCell>
           </tr>

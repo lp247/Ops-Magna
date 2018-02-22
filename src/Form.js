@@ -3,7 +3,7 @@ import autosize from 'autosize';
 import {List, Range} from 'immutable';
 
 import {
-  Page, ContentWrapper, FlexContainer, Section, Subsection
+  FlexContainer, Section, Subsection
 } from './sc/container';
 import {
   Header
@@ -84,29 +84,48 @@ import {
   //   };
   // }
 
-const toggleAV = (arr, value) => {
-  // let tmp = this.state[arr];
-
-  if (arr.has(value)) {
-    return arr.delete(value);
+const togglePeriod = (list, value) => {
+  if (List.isList(value)) {
+    if (list.size === value.size) {
+      return List();
+    } else {
+      return value;
+    }
   } else {
-    return arr.push(value);
+    if (list.includes(value)) {
+      let index = list.findIndex(v => v === value);
+      return list.delete(index);
+    } else {
+      return list.push(value);
+    }
   }
+}
+
+// const toggleAV = (arr, value) => {
+//   // let tmp = this.state[arr];
+
+//   if (arr.includes(value)) {
+//     let index = arr.findIndex(v => v === value);
+//     return arr.delete(index);
+//   } else {
+//     return arr.push(value);
+//   }
+// }
   
   // if (arr === 'r_months' && this.state[arr].length === 0) {
   //   this.setState({r_weeks: this.state.r_weeks.clear(), r_days: this.state.r_days.clear()});
   // }
   // if (arr === 'r_weeks' && this.state[arr].length === 0) {
   //   this.setState({r_days: this.state.r_days.clear()});
-  }
+  // }
 
-const toggleAll = (list, fulllist) => {
-  if (list.size === fulllist.size) {
-    return List();
-  } else {
-    return fulllist;
-  }
-}
+// const toggleAll = (list, fulllist) => {
+//   if (list.size === fulllist.size) {
+//     return List();
+//   } else {
+//     return fulllist;
+//   }
+// }
     
   //   var newarr;
   //   if (value === 'all') {
@@ -335,41 +354,47 @@ const Form = ({header, data, updateKeyValue, save, discard, del}) => (
         <Subsection>
           <FlexContainer jc='space-evenly'>
             <Selector
-              selected={data.get('single')}
-              onClick={() => updateKeyValue('single', true)}
+              selected={data.get('data').get('single')}
+              onClick={() => updateKeyValue(data.get('data').get('id'), 'single', true)}
             >Einmalig</Selector>
             <Selector
-              selected={!data.get('single')}
-              onClick={() => updateKeyValue('single', false)}
+              selected={!data.get('data').get('single')}
+              onClick={() => updateKeyValue(data.get('data').get('id'), 'single', false)}
             >Regelmäßig</Selector>
           </FlexContainer>
         </Subsection>
-        {data.get('single')
+        {data.get('data').get('single')
           ? <Subsection>
             <FlexContainer jc='space-between'>
               <Input
                 type='date'
                 width='60%'
-                value={data.get('start')}
-                onChange={e => updateKeyValue('start', e.target.value)}
+                value={data.get('data').get('start')}
+                onChange={e => updateKeyValue(data.get('data').get('id'), 'start', e.target.value)}
               >Datum</Input>
               <Input
                 type='time'
                 width='30%'
-                value={data.get('time')}
-                onChange={e => updateKeyValue('time', e.target.value)}
+                value={data.get('data').get('time')}
+                onChange={e => updateKeyValue(data.get('data').get('id'), 'time', e.target.value)}
               >Uhrzeit</Input>
             </FlexContainer>
           </Subsection>
           : [
             <Subsection key='1'>
               <FlexContainer jc='space-between'>
-                {console.log(data.keySeq().toArray())}
                 <Selector
                   width='48px'
                   square
-                  selected={data.get('months').size === 12}
-                  onClick={() => updateKeyValue('months', toggleAll(data.get('months'), List(Range(0, 12))))}
+                  selected={data.get('data').get('months').size === 12}
+                  onClick={() => {
+                    let toggledMonths = togglePeriod(data.get('data').get('months'), List(Range(0, 12)));
+                    if (data.get('data').get('months').isEmpty() || toggledMonths.isEmpty()) {
+                      updateKeyValue(data.get('data').get('id'), 'weeks', List());
+                      updateKeyValue(data.get('data').get('id'), 'days', List());
+                    }
+                    updateKeyValue(data.get('data').get('id'), 'months', toggledMonths);
+                  }}
                 >Λ</Selector>
                 {List(['J', 'F', 'M', 'A', 'M', 'J']).map((val, index) => {
                   return (
@@ -377,8 +402,15 @@ const Form = ({header, data, updateKeyValue, save, discard, del}) => (
                       key={index}
                       width='48px'
                       square
-                      selected={data.get('months').has(index)}
-                      onClick={() => updateKeyValue('months', toggleAV(data.get('months'), index))}
+                      selected={data.get('data').get('months').includes(index)}
+                      onClick={() => {
+                        let toggledMonths = togglePeriod(data.get('data').get('months'), index);
+                        if (data.get('data').get('months').isEmpty() || toggledMonths.isEmpty()) {
+                          updateKeyValue(data.get('data').get('id'), 'weeks', List());
+                          updateKeyValue(data.get('data').get('id'), 'days', List());
+                        }
+                        updateKeyValue(data.get('data').get('id'), 'months', toggledMonths);
+                      }}
                     >{val}</Selector>
                   );
                 })}
@@ -391,21 +423,34 @@ const Form = ({header, data, updateKeyValue, save, discard, del}) => (
                       key={index}
                       width='48px'
                       square
-                      selected={data.get('months').has(index + 6)}
-                      onClick={() => updateKeyValue('months', toggleAV(data.get('months'), index + 6))}
+                      selected={data.get('data').get('months').includes(index + 6)}
+                      onClick={() => {
+                        let toggledMonths = togglePeriod(data.get('data').get('months'), index + 6);
+                        if (data.get('data').get('months').isEmpty() || toggledMonths.isEmpty()) {
+                          updateKeyValue(data.get('data').get('id'), 'weeks', List());
+                          updateKeyValue(data.get('data').get('id'), 'days', List());
+                        }
+                        updateKeyValue(data.get('data').get('id'), 'months', toggledMonths);
+                      }}
                     >{val}</Selector>
                   );
                 })}
               </FlexContainer>
             </Subsection>,
             <Subsection key='2'>
-              {data.get('months').size > 0
+              {data.get('data').get('months').size > 0
                 ? <FlexContainer jc='space-between' wrap='true'>
                   <Selector
                     width='48px'
                     square
-                    selected={data.get('weeks').length === 5}
-                    onClick={() => updateKeyValue('weeks', toggleAll(data.get('weeks'), List(Range(1, 6))))}
+                    selected={data.get('data').get('weeks').size === 5}
+                    onClick={() => {
+                      let toggledWeeks = togglePeriod(data.get('data').get('weeks'), List(Range(1, 6)));
+                      if (data.get('data').get('weeks').isEmpty() || toggledWeeks.isEmpty()) {
+                        updateKeyValue(data.get('data').get('id'), 'days', List());
+                      }
+                      updateKeyValue(data.get('data').get('id'), 'weeks', toggledWeeks);
+                    }}
                   >Λ</Selector>
                   {List(Range(1, 6)).map((val, index) => {
                     return (
@@ -413,8 +458,14 @@ const Form = ({header, data, updateKeyValue, save, discard, del}) => (
                         key={index}
                         width='48px'
                         square
-                        selected={data.get('weeks').has(val)}
-                        onClick={() => updateKeyValue('weeks', toggleAV(data.get('weeks'), val))}
+                        selected={data.get('data').get('weeks').includes(val)}
+                        onClick={() => {
+                          let toggledWeeks = togglePeriod(data.get('data').get('weeks'), val);
+                          if (data.get('data').get('weeks').isEmpty() || toggledWeeks.isEmpty()) {
+                            updateKeyValue(data.get('data').get('id'), 'days', List());
+                          }
+                          updateKeyValue(data.get('data').get('id'), 'weeks', toggledWeeks);
+                        }}
                       >{val}.</Selector>
                     );
                   })}
@@ -423,17 +474,29 @@ const Form = ({header, data, updateKeyValue, save, discard, del}) => (
                   <Selector
                     width='48px'
                     square
-                    selected={data.get('weeks').size === 52}
-                    onClick={() => updateKeyValue('weeks', toggleAll(data.get('weeks'), List(Range(1, 53))))}
+                    selected={data.get('data').get('weeks').size === 52}
+                    onClick={() => {
+                      let toggledWeeks = togglePeriod(data.get('data').get('weeks'), List(Range(1, 54)));
+                      if (data.get('data').get('weeks').isEmpty() || toggledWeeks.isEmpty()) {
+                        updateKeyValue(data.get('data').get('id'), 'days', List());
+                      }
+                      updateKeyValue(data.get('data').get('id'), 'weeks', toggledWeeks);
+                    }}
                   >Λ</Selector>
-                  {List(Range(1, 53)).map((val, index) => {
+                  {List(Range(1, 54)).map((val, index) => {
                     return (
                       <Selector
                         key={index}
                         width='48px'
                         square
-                        selected={data.get('weeks').has(val)}
-                        onClick={() => updateKeyValue('weeks', toggleAV(data.get('weeks'), val))}
+                        selected={data.get('data').get('weeks').includes(val)}
+                        onClick={() => {
+                          let toggledWeeks = togglePeriod(data.get('data').get('weeks'), val);
+                          if (data.get('data').get('weeks').isEmpty() || toggledWeeks.isEmpty()) {
+                            updateKeyValue(data.get('data').get('id'), 'days', List());
+                          }
+                          updateKeyValue(data.get('data').get('id'), 'weeks', toggledWeeks);
+                        }}
                       >w{val}</Selector>
                     );
                   })}
@@ -442,33 +505,42 @@ const Form = ({header, data, updateKeyValue, save, discard, del}) => (
               }
             </Subsection>,
             <Subsection key='3'>
-              {data.get('weeks').size > 0
+              {data.get('data').get('weeks').size > 0
                 ? <FlexContainer jc='space-between'>
                   <Selector
                     width='48px'
                     square
-                    selected={data.get('days').size === 7}
-                    onClick={() => updateKeyValue('days', toggleAll(data.get('days'), List(['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'])))}
+                    selected={data.get('data').get('days').size === 7}
+                    onClick={() => {
+                      let toggledDays = togglePeriod(data.get('data').get('days'), List(Range(1, 8)));
+                      updateKeyValue(data.get('data').get('id'), 'days', toggledDays);
+                    }}
                   >Λ</Selector>
-                  {List(['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']).map((val, index) => {
+                  {List(['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']).map((val, index, list) => {
                     return (
                       <Selector
                         key={index}
                         width='48px'
                         square
-                        selected={data.get('days').has(index + 1)}
-                        onClick={() => updateKeyValue('days', toggleAV(data.get('days'), index + 1))}
+                        selected={data.get('data').get('days').includes(index + 1)}
+                        onClick={() => {
+                          let toggledDays = togglePeriod(data.get('data').get('days'), index + 1);
+                          updateKeyValue(data.get('data').get('id'), 'days', toggledDays);
+                        }}
                       >{val}</Selector>
                     );
                   })}
                 </FlexContainer>
-                : data.get('months').size > 0
+                : data.get('data').get('months').size > 0
                   ? <FlexContainer jc='space-between' wrap='true'>
                     <Selector
                       width='48px'
                       square
-                      selected={data.get('days').size === 31}
-                      onClick={() => this.toggleRAV('r_days', 'all')}
+                      selected={data.get('data').get('days').size === 31}
+                      onClick={() => {
+                        let toggledDays = togglePeriod(data.get('data').get('days'), List(Range(1, 32)));
+                        updateKeyValue(data.get('data').get('id'), 'days', toggledDays);
+                      }}
                     >Λ</Selector>
                     {List(Range(1, 32)).map((val, index) => {
                       return (
@@ -476,8 +548,11 @@ const Form = ({header, data, updateKeyValue, save, discard, del}) => (
                           key={index}
                           width='48px'
                           square
-                          selected={data.get('days').has(val)}
-                          onClick={() => updateKeyValue('days', toggleAV(data.get('days'), val))}
+                          selected={data.get('data').get('days').includes(val)}
+                          onClick={() => {
+                            let toggledDays = togglePeriod(data.get('data').get('days'), val);
+                            updateKeyValue(data.get('data').get('id'), 'days', toggledDays);
+                          }}
                         >{val}</Selector>
                       );
                     })}
@@ -494,20 +569,20 @@ const Form = ({header, data, updateKeyValue, save, discard, del}) => (
                 <Input
                   type='date'
                   width='35%'
-                  value={data.start}
-                  onChange={e => updateKeyValue('start', e.target.value)}
+                  value={data.get('data').get('start')}
+                  onChange={e => updateKeyValue(data.get('data').get('id'), 'start', e.target.value)}
                 >Startdatum</Input>
                 <Input
                   type='date'
                   width='35%'
-                  value={data.end}
-                  onChange={e => updateKeyValue('end', e.target.value)}
+                  value={data.get('data').get('end')}
+                  onChange={e => updateKeyValue(data.get('data').get('id'), 'end', e.target.value)}
                 >Enddatum</Input>
                 <Input
                   type='time'
                   width='20%'
-                  value={data.time}
-                  onChange={e => updateKeyValue('time', e.target.value)}
+                  value={data.get('data').get('time')}
+                  onChange={e => updateKeyValue(data.get('data').get('id'), 'time', e.target.value)}
                 >Uhrzeit</Input>
               </FlexContainer>
             </Subsection>
@@ -516,35 +591,35 @@ const Form = ({header, data, updateKeyValue, save, discard, del}) => (
         <Subsection>
           <Input
             type='text'
-            value={data.summ}
-            onChange={e => updateKeyValue('summ', e.target.value)}
+            value={data.get('data').get('summ')}
+            onChange={e => updateKeyValue(data.get('data').get('id'), 'summ', e.target.value)}
           >Kurzbeschreibung</Input>
         </Subsection>
         <Subsection>
           <Input
             type='textarea'
-            value={data.desc}
+            value={data.get('data').get('desc')}
             onChange={e => {
               autosize(e.target);
-              updateKeyValue('desc', e.target.value);
+              updateKeyValue(data.get('data').get('id'), 'desc', e.target.value);
             }}
             >Beschreibung</Input>
         </Subsection>
         <Subsection>
           <FlexContainer jc='space-evenly'>
             <TextButton
-              onClick={save}
+              onClick={() => save(data.get('data').get('id'))}
             >Speichern</TextButton>
             <TextButton
               padding={8}
-              onClick={discard}
+              onClick={() => discard(data.get('data').get('id'))}
             >Abbrechen</TextButton>
-            {del === null
+            {data.get('data').get('id') === 'new'
               ? null
               : <TextButton
                 padding={8}
                 onClick={() => {
-                  if (!!data.id && window.confirm('Möchten Sie den Eintrag wirklich löschen?')) del(data.id);
+                  if (window.confirm('Möchten Sie den Eintrag wirklich löschen?')) del(data.get('data').get('id'));
                 }}
               >Löschen</TextButton>
             }
