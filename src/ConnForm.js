@@ -1,14 +1,8 @@
 import {connect} from 'react-redux';
-// import moment from 'moment';
-// import autosize from 'autosize';
-// import {List} from 'immutable';
 
-// import {toggleTask, editTask, updateFTT, addTask, newTask} from './actions';
 import Form from './Form';
 import { updateTaskKey, removeTask, removeEvent, updateEventKey, updateTaskBackup, updateEventBackup, resetTaskData, resetEventData, ejectNewTask, ejectNewEvent } from './actions';
 import history from './history';
-// import Recur from './Recur';
-// import {DAY_CHANGE_HOUR} from './constants';
 
 const mapStateToProps = (state, ownProps) => {
   let {type, id} = ownProps.match.params;
@@ -29,7 +23,7 @@ const mapStateToProps = (state, ownProps) => {
   }
   return {
     header,
-    data: type === 'task' ? state.ptasks.find(t => t.get('data').get('id') === id) : state.pevents.find(e => e.get('data').get('id') === id)
+    data: type === 'task' ? state.get('tasks').find(t => t.get('data').get('id') === id) : state.get('events').find(e => e.get('data').get('id') === id)
   }
 }
 

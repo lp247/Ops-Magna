@@ -1,4 +1,4 @@
-import {combineReducers} from 'redux';
+import {combineReducers} from 'redux-immutable';
 import {List} from 'immutable';
 import moment from 'moment';
 import _ from 'lodash';
@@ -11,19 +11,12 @@ import {
   TOGGLE_TASK_VISIBILITY_FILTER,
   TOGGLE_EVENT_VISIBILITY_FILTER,
   VisibilityFilters,
-  // UPDATE_FTT,
-  // UPDATE_FET,
   UPDATE_TASK_KEY,
   UPDATE_EVENT_KEY,
   UPDATE_TASK_BACKUP,
   RESET_TASK_DATA,
   RESET_EVENT_DATA,
   UPDATE_EVENT_BACKUP,
-  // CLR_FORMDATA,
-  // EDIT_TASK,
-  // EDIT_EVENT,
-  // NEW_TASK,
-  // NEW_EVENT
 } from './actions';
 import { newTask, newEvent } from './objects';
 const {SHOW_ALL, SHOW_TODAY} = VisibilityFilters;
@@ -67,8 +60,6 @@ function tasks(state = List([newTask]), action) {
       let backupAdded = miscadd.setIn([0, 'backup'], miscadd.get(0).get('data'));
       let ejected = backupAdded.push(backupAdded.get(0));
       let cleared = ejected.set(0, newTask);
-      // dispatch(updateTaskKey('new', 'start', moment().subtract(5, 'hours').format('YYYY-MM-DD')));
-      //       dispatch(updateTaskKey('new', 'end', '2999-12-31'));
       return cleared;
     case REMOVE_TASK:
       if (action.id === 'new') {
@@ -145,51 +136,6 @@ function events(state = List([newEvent]), action) {
       return state;
   }
 }
-
-// function fastTaskText(state = '', action) {
-//   switch (action.type) {
-//     case UPDATE_FTT:
-//       return action.text;
-//     case ADD_TASK:
-//       return '';
-//     default:
-//       return state;
-//   }
-// }
-
-// function fastEventText(state = '', action) {
-//   switch (action.type) {
-//     case UPDATE_FET:
-//       return action.text;
-//     case ADD_EVENT:
-//       return '';
-//     default:
-//       return state;
-//   }
-// }
-
-// function formData(state = emptyTask, action) {
-//   switch (action.type) {
-//     case UPDATE_FORMDATA_KEY:
-//       return state.set(action.key, action.value);
-//     case ADD_TASK:
-//       return emptyTask;
-//     case ADD_EVENT:
-//       return emptyEvent;
-//     case NEW_TASK:
-//       return emptyTask.set('summ', action.text);
-//     case NEW_EVENT:
-//       return emptyEvent.set('summ', action.text);
-//     case CLR_FORMDATA:
-//       return emptyTask;
-//     case EDIT_TASK:
-//       return action.task;
-//     case EDIT_EVENT:
-//       return action.event;
-//     default:
-//       return state;
-//   }
-// }
 
 const ops = combineReducers({
   taskVisibilityFilter,

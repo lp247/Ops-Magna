@@ -1,6 +1,5 @@
 import {connect} from 'react-redux';
 import moment from 'moment';
-// import autosize from 'autosize';
 import {List} from 'immutable';
 
 import {toggleTask, ejectNewTask, updateTaskKey, ejectNewEvent, updateEventKey} from './actions';
@@ -8,6 +7,7 @@ import EntryList from './EntryList';
 import Recur from './Recur';
 import {DAY_CHANGE_HOUR} from './constants';
 import history from './history';
+import taresize from './taresize';
 
 const getVisible = (entries, filter) => {
   switch (filter) {
@@ -27,14 +27,16 @@ const getVisible = (entries, filter) => {
 const mstp = (type) => {
   const mapStateToProps = state => {
     if (type === 'task') {
+      let numCompleted = state.get('tasks').filter(t => t.get('data').get('doneAt').includes(moment().format('YYYY-MM-DD'))).size;
       return {
-        entries: getVisible(state.tasks, state.taskVisibilityFilter),
-        header: 'Aufgaben (' + state.tasks.filter(t => t.get('data').get('doneAt').includes(moment().format('YYYY-MM-DD'))).size + '/' + (state.tasks.size - 1) + ')'
+        entries: getVisible(state.get('tasks'), state.get('taskVisibilityFilter')),
+        header: 'Aufgaben (' + numCompleted + '/' + (state.get('tasks').size - 1) + ')'
       }
     } else if (type === 'event') {
+      let numCompleted = state.get('events').filter(x => moment().isAfter(x.get('time'))).size;
       return {
-        entries: getVisible(state.events, state.eventVisibilityFilter),
-        header: 'Termine (' + state.events.filter(x => moment().isAfter(x.get('time'))).size + '/' + (state.events.size - 1) + ')'
+        entries: getVisible(state.get('events'), state.get('eventVisibilityFilter')),
+        header: 'Termine (' + numCompleted + '/' + (state.get('events').size - 1) + ')'
       }
     }
   }
@@ -56,6 +58,7 @@ const mdtp = (type) => {
             dispatch(ejectNewTask());
           } else {
             dispatch(updateTaskKey('new', 'summ', e.target.value));
+            taresize(e.target);
           }
         },
         fastAddEntry: () => {

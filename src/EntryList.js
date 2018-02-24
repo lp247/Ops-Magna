@@ -1,7 +1,5 @@
 import React from 'react';
 import moment from 'moment';
-import autosize from 'autosize';
-// import PropTypes from 'prop-types';
 import {Table, TCell} from './sc/table';
 import {CBButton, PlusButton, OButton} from './sc/buttons';
 import {Input} from './sc/inputs';
@@ -58,8 +56,8 @@ const EntryList = ({
                 type='textarea'
                 value={entries.get(0).get('data').get('summ')}
                 onChange={(e) => {
-                  autosize(e.target);
                   fastInputUpdater(e);
+                  // autosize(e.target);
                 }}
               />
             </TCell>
@@ -75,25 +73,5 @@ const EntryList = ({
     </Subsection>
   </Section>
 );
-
-// List.propTypes = {
-//   entries: PropTypes.arrayOf(
-//     PropTypes.shape({
-//       id: PropTypes.number.isRequired,
-//       summ: PropTypes.string.isRequired,
-//       desc: PropTypes.string,
-//       single: PropTypes.bool.isRequired,
-//       months: PropTypes.arrayOf(PropTypes.number).isRequired,
-//       weeks: PropTypes.arrayOf(PropTypes.number).isRequired,
-//       days: PropTypes.arrayOf(PropTypes.number).isRequired,
-//       time: PropTypes.string.isRequired,
-//       start: PropTypes.string.isRequired,
-//       end: PropTypes.string.isRequired
-//     }).isRequired
-//   ).isRequired,
-//   togglable: PropTypes.bool.isRequired,
-//   toggleEntry: PropTypes.func,
-//   edit: PropTypes.func.isRequired
-// };
 
 export default EntryList;

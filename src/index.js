@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom';
 import {Router} from 'react-router-dom';
 import {createStore} from 'redux';
 import {Provider} from 'react-redux';
-import {Map} from 'immutable';
+import {Map, fromJS} from 'immutable';
+import _ from 'lodash';
 
 import registerServiceWorker from './registerServiceWorker';
 import ops from './reducers';
@@ -17,7 +18,7 @@ const loadState = () => {
     if (serializedState === null) {
       return undefined;
     }
-    return Map(JSON.parse(serializedState));
+    return fromJS(JSON.parse(serializedState));
   } catch (err) {
     return undefined;
   }
@@ -25,7 +26,7 @@ const loadState = () => {
 
 const saveState = (state) => {
   try {
-    const serializedState = JSON.stringify(state);
+    const serializedState = JSON.stringify(state.toJS());
     localStorage.setItem('state', serializedState);
   } catch (err) {
 
@@ -35,22 +36,17 @@ const saveState = (state) => {
 const persistedState = loadState();
 const store = createStore(ops, persistedState);
 
-store.subscribe(() => {
-  saveState({
-    tasks: store.getState().tasks,
-    events: store.getState().events
-  });
-});
+store.subscribe(_.throttle(() => {
+  saveState(Map({
+    tasks: store.getState().get('tasks'),
+    events: store.getState().get('events')
+  }));
+}, 1000));
 
 ReactDOM.render(
   <Provider store={store}>
     <Router history={history}>
       <App />
-      {/* <Switch>
-        <Route path='/new/:type/:text' component={Form} />
-        <Route path='/edit/:type/:id' component={Form} />
-        <Route path='/' component={Home} />
-      </Switch> */}
     </Router>
   </Provider>,
   document.getElementById('root')
