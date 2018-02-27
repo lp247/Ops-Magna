@@ -1,6 +1,6 @@
 import {connect} from 'react-redux';
 
-import {ejectNewRule, updateRuleKey} from './actions';
+import {ejectNewRule, updateRuleKey} from '../redux/actions';
 import RuleList from './RuleList';
 import history from '../utils/history';
 import taresize from '../utils/taresize';

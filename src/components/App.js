@@ -3,7 +3,7 @@ import {Route} from 'react-router-dom';
 
 import {
   Page, ContentWrapper
-} from './sc/container';
+} from '../sc/container';
 import ConnTaskList from './ConnTaskList';
 import ConnEventList from './ConnEventList';
 import ConnRuleList from './ConnRuleList';

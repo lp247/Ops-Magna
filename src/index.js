@@ -8,12 +8,12 @@ import _ from 'lodash';
 import moment from 'moment';
 
 import registerServiceWorker from './registerServiceWorker';
-import ops from './reducers';
+import ops from './redux/reducers';
 import './index.css';
 import App from './components/App';
-import history from './history';
+import history from './utils/history';
 import Recur from './utils/Recur';
-import { updateTaskKey, incrementWorkDate } from './actions';
+import { updateTaskKey, incrementWorkDate } from './redux/actions';
 
 const loadState = () => {
   try {
