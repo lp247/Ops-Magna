@@ -4,9 +4,9 @@ import PropTypes from 'prop-types';
 
 import {
   TRANSPARENT,
-  ACCENT_COLOR,
-  FONT_COLOR
-} from '../constants';
+  FONT_COLOR,
+  ACCENT_COLOR
+} from '../utils/constants';
 
 const basicstyle = css`
   width: 100%;

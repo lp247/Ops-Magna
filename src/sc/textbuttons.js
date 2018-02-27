@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import {
   TRANSPARENT,
   ACCENT_COLOR
-} from '../constants';
+} from '../utils/constants';
 
 const RawButton = styled.p`
   cursor: ${props => props.invisible ? '' : 'pointer'};

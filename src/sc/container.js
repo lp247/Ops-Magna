@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import {
   BACKGROUND_COLOR,
   FONT_COLOR
-} from '../constants';
+} from '../utils/constants';
 
 export const Page = styled.div`
   width: 100vw;
@@ -30,7 +30,7 @@ export const ContentWrapper = styled.div`
 
 export const Section = styled.div`
   margin-bottom: 64px;
-  opacity: ${props => props.opaque ? 0.3 : 1};
+  opacity: ${props => props.opacity || 1};
 `;
 
 export const Subsection = styled.div`

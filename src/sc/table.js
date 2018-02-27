@@ -10,6 +10,8 @@ export const TCell = styled.td`
   white-space: ${props => props.primary ? 'normal' : 'nowrap'};
   padding: ${props => props.padding || '2px 10px'};
   vertical-align: middle;
-  opacity: ${props => props.opaque ? 0.3 : 1};
+  opacity: ${props => props.opacity || 1};
+  text-decoration: ${props => props.lineThrough ? 'line-through' : 'none'}
+
   /* border: 1px solid white; */
 `;

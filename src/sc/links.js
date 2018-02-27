@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import {accentcolor} from '../constants';
+import {accentcolor} from '../utils/constants';
 
 export const Link = styled.a`
   color: ${accentcolor};

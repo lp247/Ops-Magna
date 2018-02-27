@@ -25,7 +25,7 @@ class Recur {
   static matches(robj, date) {
     if (!Recur.isvalid(robj)) throw new InvalidRecurException('Invalid recur!');
     
-    if (!moment.isMoment()) date = moment(date);
+    if (!moment.isMoment(date)) date = moment(date);
     
     if (robj.get('single')) {
       if (date.isSame(robj.get('start'), 'day')) {
