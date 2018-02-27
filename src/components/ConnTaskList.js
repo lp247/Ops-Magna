@@ -8,8 +8,9 @@ import Recur from '../utils/Recur';
 import {DAY_CHANGE_HOUR} from '../utils/constants';
 import history from '../utils/history';
 import taresize from '../utils/taresize';
+import { maplistsort } from '../utils/sort';
 
-const getToday = (entries, filter) => {
+const getToday = (entries) => {
   if (entries.size > 0) {
     return entries.filter(x => Recur.matches(x.get('data'), moment().subtract(DAY_CHANGE_HOUR, 'hours')));
   } else {
@@ -23,7 +24,7 @@ const getUncompleted = (tasks) => {
 
 const mapStateToProps = state => {
   return {
-    currentEntries: getToday(state.get('tasks'), state.get('taskVisibilityFilter')),
+    currentEntries: getToday(state.get('tasks')).sort(maplistsort(['data', 'time'])),
     uncompletedEntries: getUncompleted(state.get('tasks')),
     allEntries: state.get('tasks').rest(),
     fastInputObj: state.getIn(['tasks', 0]),

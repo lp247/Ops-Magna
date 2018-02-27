@@ -66,14 +66,14 @@ const EntryList = ({
                   <TCell>
                     <CBButton
                       size='16px'
-                      vertical={entry.getIn(['data', 'time']) < moment().format('HH:mm') ? true : false}
+                      vertical={entry.getIn(['data', 'time']) && entry.getIn(['data', 'time']) < moment().format('HH:mm') ? true : false}
                       color={ACCENT_COLOR}
                     />
                   </TCell>
                   <TCell
                     primary
-                    opacity={entry.getIn(['data', 'time']) < moment().format('HH:mm') ? 0.3 : 1.0}
-                    lineThrough={entry.getIn(['data', 'time']) < moment().format('HH:mm') ? true : false}
+                    opacity={entry.getIn(['data', 'time']) && entry.getIn(['data', 'time']) < moment().format('HH:mm') ? 0.3 : 1.0}
+                    lineThrough={entry.getIn(['data', 'time']) && entry.getIn(['data', 'time']) < moment().format('HH:mm') ? true : false}
                   >{entry.getIn(['data', 'time'])
                     ? '[' + entry.getIn(['data', 'time']) + '] ' + entry.getIn(['data', 'summ'])
                     : entry.getIn(['data', 'summ'])

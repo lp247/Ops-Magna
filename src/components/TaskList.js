@@ -99,7 +99,10 @@ const EntryList = ({
                     opacity={toggleEntry ? entry.getIn(['data', 'lastExec', 'done']) * 0.3 : 1.0}
                     lineThrough={toggleEntry ? entry.getIn(['data', 'lastExec', 'done']) : false}
                     onClick={toggleEntry ? () => toggleEntry(entry.getIn(['data', 'id'])) : null}
-                  >{entry.getIn(['data', 'summ'])}</TCell>
+                  >{entry.getIn(['data', 'time'])
+                    ? '[' + entry.getIn(['data', 'time']) + '] ' + entry.getIn(['data', 'summ'])
+                    : entry.getIn(['data', 'summ'])
+                  }</TCell>
                   <TCell>
                     <OButton
                       size='16px'

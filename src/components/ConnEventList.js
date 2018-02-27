@@ -9,7 +9,7 @@ import {DAY_CHANGE_HOUR, UPCOMING_DAYS} from '../utils/constants';
 import history from '../utils/history';
 import taresize from '../utils/taresize';
 
-const getToday = (entries, filter) => {
+const getToday = (entries) => {
   if (entries.size > 0) {
     return entries.filter(x => Recur.matches(x.get('data'), moment().subtract(DAY_CHANGE_HOUR, 'hours')));
   } else {
@@ -37,7 +37,7 @@ const getUpcoming = (events) => {
 
 const mapStateToProps = state => {
   return {
-    currentEntries: getToday(state.get('events'), state.get('eventVisibilityFilter')),
+    currentEntries: getToday(state.get('events')),
     upcomingEntries: getUpcoming(state.get('events')),
     allEntries: state.get('events').rest(),
     fastInputObj: state.getIn(['events', 0]),
