@@ -19,7 +19,7 @@ const getToday = (entries) => {
 }
 
 const getUncompleted = (tasks) => {
-  return tasks.filter(x => !x.getIn(['data', 'lastExec', 'done']) && moment().subtract(5, 'hours').isAfter(x.getIn(['data', 'lastExec', 'date']), 'day'));
+  return tasks.filter(x => !x.getIn(['data', 'lastExec', 'done']) && moment().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.getIn(['data', 'lastExec', 'date']), 'day'));
 }
 
 const mapStateToProps = state => {

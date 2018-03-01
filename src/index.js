@@ -14,6 +14,7 @@ import App from './components/App';
 import history from './utils/history';
 import Recur from './utils/Recur';
 import { updateTaskKey, incrementWorkDate } from './redux/actions';
+import { DAY_CHANGE_HOUR } from './utils/constants';
 
 const loadState = () => {
   try {
@@ -50,7 +51,7 @@ store.subscribe(_.throttle(() => {
 }, 1000));
 
 let wd = moment(store.getState().get('workDate'));
-while (wd.isBefore(moment(), 'day')) {
+while (wd.isBefore(moment().subtract(DAY_CHANGE_HOUR, 'hours'), 'day')) {
   wd = wd.add(1, 'days');
   let tasks = store.getState().get('tasks');
   for (var i = 1; i < tasks.size; i++) {
