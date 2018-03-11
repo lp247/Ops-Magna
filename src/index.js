@@ -80,12 +80,12 @@ for (let i = 1; i < tasks.size; i++) {
     store.dispatch(removeTask(tasks.getIn([i, 'data', 'id'])));
   }
 }
-for (let j = 1; j < events.size; i++) {
+for (let j = 1; j < events.size; j++) {
   if (
-    moment().isAfter(events.getIn([i, 'data', 'end']), 'day') ||
-    (moment().isAfter(events.getIn([i, 'data', 'start']), 'day') && events.getIn([i, 'data', 'single']))
+    moment().isAfter(events.getIn([j, 'data', 'end']), 'day') ||
+    (moment().isAfter(events.getIn([j, 'data', 'start']), 'day') && events.getIn([j, 'data', 'single']))
   ) {
-    store.dispatch(removeEvent(events.getIn([i, 'data', 'id'])));
+    store.dispatch(removeEvent(events.getIn([j, 'data', 'id'])));
   }
 }
 
