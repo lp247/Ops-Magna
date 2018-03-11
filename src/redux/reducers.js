@@ -93,7 +93,7 @@ function tasks(state = List([newTask]), action) {
       // task in the list of not completed tasks, or it can remain at today, where it acts like a current task and
       // therefore is not shown in the list of incompleted tasks.
       if (action.key === 'start') {
-        mod = mod.setIn(['data', 'lastExec'], Map({date: action.value, done: false}));
+        mod = mod.setIn([update_index, 'data', 'lastExec'], Map({date: action.value, done: false}));
       }
       return mod;
     case RESET_TASK_DATA:
