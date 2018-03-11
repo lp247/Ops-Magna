@@ -1,5 +1,5 @@
 import {combineReducers} from 'redux-immutable';
-import {List} from 'immutable';
+import {List, Map} from 'immutable';
 import moment from 'moment';
 import _ from 'lodash';
 import {
