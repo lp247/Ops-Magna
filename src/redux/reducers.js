@@ -25,6 +25,7 @@ import {
   UPDATE_RULE_BACKUP
 } from './actions';
 import { newTask, newEvent, newRule } from '../utils/objects';
+import Recur from '../utils/Recur';
 const {SHOW_ALL, SHOW_TODAY} = VisibilityFilters;
 
 function taskVisibilityFilter(state = SHOW_TODAY, action) {
@@ -63,7 +64,11 @@ function tasks(state = List([newTask]), action) {
       if (!miscadd.getIn([0, 'data', 'end'])) {
         miscadd = miscadd.setIn([0, 'data', 'end'], '2999-12-31');
       }
-      miscadd = miscadd.setIn([0, 'data', 'lastExec', 'date'], miscadd.getIn([0, 'data', 'start']));
+      // Change last execution date to today, if today matches recur data. Otherwise let it empty and wait, until
+      // maintenance routines set lastExec on their own.
+      if (Recur.matches(miscadd.getIn([0, 'data']), moment().format('YYYY-MM-DD'))) {
+        miscadd = miscadd.setIn([0, 'data', 'lastExec', 'date'], moment().format('YYYY-MM-DD'));
+      }
       let backupAdded = miscadd.setIn([0, 'backup'], miscadd.getIn([0, 'data']));
       let ejected = backupAdded.push(backupAdded.get(0));
       let cleared = ejected.set(0, newTask);
