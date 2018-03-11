@@ -96,8 +96,9 @@ function tasks(state = List([newTask]), action) {
       let mod = state.setIn([update_index, 'data', action.key], action.value);
       // If the start changes, reset 'lastExec', because otherwise it can remain in past, where it generates a ghost
       // task in the list of not completed tasks, or it can remain at today, where it acts like a current task and
-      // therefore is not shown in the list of incompleted tasks.
-      if (action.key === 'start') {
+      // therefore is not shown in the list of incompleted tasks. Do this only, if the task is single. Only then, there
+      // is a sane relationship between lastExec date and start.
+      if (action.key === 'start' && mod.getIn([update_index, 'data', 'single'])) {
         mod = mod.setIn([update_index, 'data', 'lastExec'], Map({date: action.value, done: false}));
       }
       return mod;
