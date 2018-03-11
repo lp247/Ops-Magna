@@ -1,7 +1,23 @@
 import {connect} from 'react-redux';
 
 import Form from './Form';
-import { updateTaskKey, removeTask, removeEvent, updateEventKey, updateTaskBackup, updateEventBackup, resetTaskData, resetEventData, ejectNewTask, ejectNewEvent, updateRuleKey, ejectNewRule, updateRuleBackup, resetRuleData, removeRule } from '../redux/actions';
+import {
+  updateTaskKey,
+  removeTask,
+  removeEvent,
+  updateEventKey,
+  updateTaskBackup,
+  updateEventBackup,
+  resetTaskData,
+  resetEventData,
+  ejectNewTask,
+  ejectNewEvent,
+  updateRuleKey,
+  ejectNewRule,
+  updateRuleBackup,
+  resetRuleData,
+  removeRule
+} from '../redux/actions';
 import history from '../utils/history';
 
 const mapStateToProps = (state, ownProps) => {

@@ -29,7 +29,7 @@ const EntryList = ({
       checked={filter === 'SHOW_ALL'}
       onClick={toggleFilter}
     />
-    <Header>Termine ({currentEntries.filter(e => e.getIn(['data', 'time']) < moment().format('HH:mm')).size}/{currentEntries.size})</Header>
+    <Header>Termine</Header>
     <Subsection>
       <Table>
         {filter === 'SHOW_ALL'

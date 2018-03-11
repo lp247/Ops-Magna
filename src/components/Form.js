@@ -1,5 +1,6 @@
 import React from 'react';
 import {List, Range} from 'immutable';
+import moment from 'moment';
 
 import {
   FlexContainer, Section, Subsection
@@ -14,6 +15,7 @@ import {
   TextButton, Selector
 } from '../sc/textbuttons';
 import taresize from '../utils/taresize';
+import { DAY_CHANGE_HOUR } from '../utils/constants';
 
 const togglePeriod = (list, value) => {
   if (List.isList(value)) {
@@ -92,7 +94,8 @@ const MonthsSelector = ({data, updateKeyValue}) => (
   <Subsection>
     <FlexContainer jc='space-between'>
       <Selector
-        width='48px'
+        width='46px'
+        margin='8px 0px 0px 0px'
         square
         selected={data.getIn(['data', 'months']).size === 12}
         onClick={() => {
@@ -108,7 +111,8 @@ const MonthsSelector = ({data, updateKeyValue}) => (
         return (
           <Selector
             key={index}
-            width='48px'
+            width='46px'
+            margin='8px 0px 0px 0px'
             square
             selected={data.getIn(['data', 'months']).includes(index)}
             onClick={() => {
@@ -124,12 +128,13 @@ const MonthsSelector = ({data, updateKeyValue}) => (
       })}
     </FlexContainer>
     <FlexContainer jc='space-between'>
-      <Selector width='48px' square invisible></Selector>
+      <Selector width='46px' margin='8px 0px 0px 0px' square invisible></Selector>
       {List(['J', 'A', 'S', 'O', 'N', 'D']).map((val, index) => {
         return (
           <Selector
             key={index}
-            width='48px'
+            width='46px'
+            margin='12px 0px 0px 0px'
             square
             selected={data.getIn(['data', 'months']).includes(index + 6)}
             onClick={() => {
@@ -152,7 +157,8 @@ const WeeksSelector = ({data, updateKeyValue}) => (
     {data.getIn(['data', 'months']).size > 0
       ? <FlexContainer jc='space-between' wrap='true'>
         <Selector
-          width='48px'
+          width='46px'
+          margin='12px 0px 0px 0px'
           square
           selected={data.getIn(['data', 'weeks']).size === 5}
           onClick={() => {
@@ -167,7 +173,8 @@ const WeeksSelector = ({data, updateKeyValue}) => (
           return (
             <Selector
               key={index}
-              width='48px'
+              width='46px'
+              margin='12px 0px 0px 0px'
               square
               selected={data.getIn(['data', 'weeks']).includes(val)}
               onClick={() => {
@@ -183,9 +190,10 @@ const WeeksSelector = ({data, updateKeyValue}) => (
       </FlexContainer>
       : <FlexContainer jc='space-between' wrap='true'>
         <Selector
-          width='48px'
+          width='46px'
+          margin='3px 0px 0px 0px'
           square
-          selected={data.getIn(['data', 'weeks']).size === 52}
+          selected={data.getIn(['data', 'weeks']).size === 53}
           onClick={() => {
             let toggledWeeks = togglePeriod(data.getIn(['data', 'weeks']), List(Range(1, 54)));
             if (data.getIn(['data', 'weeks']).isEmpty() || toggledWeeks.isEmpty()) {
@@ -198,7 +206,8 @@ const WeeksSelector = ({data, updateKeyValue}) => (
           return (
             <Selector
               key={index}
-              width='48px'
+              width='46px'
+              margin='3px 0px 0px 0px'
               square
               selected={data.getIn(['data', 'weeks']).includes(val)}
               onClick={() => {
@@ -211,7 +220,6 @@ const WeeksSelector = ({data, updateKeyValue}) => (
             >w{val}</Selector>
           );
         })}
-        <Selector width='48px' square invisible></Selector>
       </FlexContainer>
     }
   </Subsection>
@@ -248,7 +256,8 @@ const DaysSelector = ({data, updateKeyValue}) => (
       : data.getIn(['data', 'months']).size > 0
         ? <FlexContainer jc='space-between' wrap='true'>
           <Selector
-            width='48px'
+            width='46px'
+            margin='3px 0px 0px 0px'
             square
             selected={data.getIn(['data', 'days']).size === 31}
             onClick={() => {
@@ -260,7 +269,8 @@ const DaysSelector = ({data, updateKeyValue}) => (
             return (
               <Selector
                 key={index}
-                width='48px'
+                width='46px'
+                margin='3px 0px 0px 0px'
                 square
                 selected={data.getIn(['data', 'days']).includes(val)}
                 onClick={() => {
@@ -270,12 +280,58 @@ const DaysSelector = ({data, updateKeyValue}) => (
               >{val}</Selector>
             );
           })}
-          <Selector width='48px' square invisible></Selector>
-          <Selector width='48px' square invisible></Selector>
-          <Selector width='48px' square invisible></Selector>
-          <Selector width='48px' square invisible></Selector>
+          <Selector width='46px' margin='3px 0px 0px 0px' square invisible></Selector>
+          <Selector width='46px' margin='3px 0px 0px 0px' square invisible></Selector>
+          <Selector width='46px' margin='3px 0px 0px 0px' square invisible></Selector>
+          <Selector width='46px' margin='3px 0px 0px 0px' square invisible></Selector>
         </FlexContainer>
-        : null
+        : [<FlexContainer key='1' jc='space-around'>
+          <Input
+            type='date'
+            width='35%'
+            value={''}
+            onChange={(e) => {
+              let toggledDays = togglePeriod(data.getIn(['data', 'days']), moment(e.target.value).dayOfYear());
+              updateKeyValue(data.getIn(['data', 'id']), 'days', toggledDays);
+            }}
+          ></Input>
+          <Selector
+            width='48px'
+            square
+            selected={
+              data.getIn(['data', 'days']).size === 366 ||
+              (data.getIn(['data', 'days']).size === 365 && !moment().subtract(DAY_CHANGE_HOUR, 'hours').isLeapYear())
+            }
+            onClick={() => {
+              let toggledDays;
+              if (moment().subtract(DAY_CHANGE_HOUR, 'hours').isLeapYear()) {
+                toggledDays = togglePeriod(data.getIn(['data', 'days']), List(Range(1, 367)));
+              } else {
+                toggledDays = togglePeriod(data.getIn(['data', 'days']), List(Range(1, 366)));
+              }
+              updateKeyValue(data.getIn(['data', 'id']), 'days', toggledDays);
+            }}
+          >Λ</Selector>
+        </FlexContainer>,
+        <FlexContainer key='2' jc='space-between' wrap='true'>
+          {data.getIn(['data', 'days']).map((val, index) => {
+            return (
+              <Selector
+                key={index + 3}
+                margin='12px 0px 0px 0px'
+                selected
+                onClick={() => {
+                  let toggledDays = togglePeriod(data.getIn(['data', 'days']), val);
+                  updateKeyValue(data.getIn(['data', 'id']), 'days', toggledDays);
+                }}
+              >{moment(val, 'DDD').format('MM-DD')}</Selector>
+            );
+          })}
+          {List(Range(0, (6 - data.getIn(['data', 'days']).size % 6) % 6)).map((val, index) => {
+            console.log(data.getIn(['data', 'days']).size);
+            return <Selector key={index} margin='12px 0px 0px 0px' invisible>01-01</Selector>;
+          })}
+        </FlexContainer>]
     }
   </Subsection>
 );

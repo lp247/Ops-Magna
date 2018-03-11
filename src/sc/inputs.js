@@ -51,7 +51,10 @@ export const Input = (props) => {
   let {type, value, onChange, ...rest} = props;
   return (
     <Inputfield {...rest}>
-      <Inputlabel htmlFor="id">{props.children}</Inputlabel>
+      {props.children 
+        ? <Inputlabel htmlFor="id">{props.children}</Inputlabel>
+        : null
+      }
       {type === 'textarea'
         ? <Textarea rows='1' id="id" value={value} onChange={onChange} />
         : <RawInput type={type} id="id" value={value} onChange={onChange} />

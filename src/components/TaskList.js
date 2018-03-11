@@ -28,7 +28,7 @@ const EntryList = ({
       checked={filter === 'SHOW_ALL'}
       onClick={toggleFilter}
     />
-    <Header>Aufgaben ({currentEntries.filter(t => t.getIn(['data', 'lastExec', 'done'])).size}/{currentEntries.size})</Header>
+    <Header>Aufgaben</Header>
     <Subsection>
       <Table>
         {filter === 'SHOW_ALL'

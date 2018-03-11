@@ -8,6 +8,7 @@ import {
 const RawButton = styled.p`
   cursor: ${props => props.invisible ? '' : 'pointer'};
   padding: ${props => !props.width ? (props.small ? '4px' : '8px') : '0px'};
+  margin: ${props => props.margin ? props.margin : '0'};
   width: ${props => props.width || 'auto'};
   height: ${props => props.square ? props.width : 'auto'};
   text-align: center;
