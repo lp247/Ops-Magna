@@ -35,7 +35,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     toggleEntry: id => {
-      dispatch(toggleTask(id, moment().format('YYYY-MM-DD')));
+      dispatch(toggleTask(id));
     },
     editEntry: id => {
       history.push('/task/' + id);

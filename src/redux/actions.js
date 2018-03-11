@@ -85,10 +85,9 @@ export function removeRule(id) {
   return {type: REMOVE_RULE, id};
 }
 
-export function toggleTask(id, date) {
+export function toggleTask(id) {
   if (id === undefined) throw new ValueMissingException('id undefined');
-  if (date === undefined) throw new ValueMissingException('date undefined');
-  return {type: TOGGLE_TASK, id, date};
+  return {type: TOGGLE_TASK, id};
 }
 
 export function toggleTaskVisibilityFilter() {

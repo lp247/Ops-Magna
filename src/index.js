@@ -13,7 +13,7 @@ import './index.css';
 import App from './components/App';
 import history from './utils/history';
 import Recur from './utils/Recur';
-import { updateTaskKey, incrementWorkDate } from './redux/actions';
+import { updateTaskKey, incrementWorkDate, removeTask, removeEvent } from './redux/actions';
 import { DAY_CHANGE_HOUR } from './utils/constants';
 
 const loadState = () => {
@@ -50,6 +50,7 @@ store.subscribe(_.throttle(() => {
   }));
 }, 1000));
 
+// Maintenance
 let wd = moment(store.getState().get('workDate'));
 while (wd.isBefore(moment().subtract(DAY_CHANGE_HOUR, 'hours'), 'day')) {
   wd = wd.add(1, 'days');
@@ -64,6 +65,20 @@ while (wd.isBefore(moment().subtract(DAY_CHANGE_HOUR, 'hours'), 'day')) {
     }
   }
   store.dispatch(incrementWorkDate());
+}
+
+let state = store.getState();
+let tasks = state.get('tasks');
+let events = state.get('events');
+for (let i = 1; i < tasks.size; i++) {
+  if (moment().isAfter(tasks.getIn([i, 'data', 'end']), 'day') && tasks.getIn([i, 'data', 'lastExec', 'done'])) {
+    store.dispatch(removeTask(tasks.getIn([i, 'data', 'id'])));
+  }
+}
+for (let j = 1; j < events.size; i++) {
+  if (moment().isAfter(events.getIn([i, 'data', 'end']), 'day')) {
+    store.dispatch(removeEvent(events.getIn([i, 'data', 'id'])));
+  }
 }
 
 ReactDOM.render(
