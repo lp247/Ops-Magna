@@ -327,10 +327,8 @@ const DaysSelector = ({data, updateKeyValue}) => (
               >{moment(val, 'DDD').format('MM-DD')}</Selector>
             );
           })}
-          {List(Range(0, (6 - data.getIn(['data', 'days']).size % 6) % 6)).map((val, index) => {
-            console.log(data.getIn(['data', 'days']).size);
-            return <Selector key={index} margin='12px 0px 0px 0px' invisible>01-01</Selector>;
-          })}
+          {List(Range(0, (6 - data.getIn(['data', 'days']).size % 6) % 6))
+            .map((val, index) => <Selector key={index} margin='12px 0px 0px 0px' invisible>01-01</Selector>)}
         </FlexContainer>]
     }
   </Subsection>

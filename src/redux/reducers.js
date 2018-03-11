@@ -88,7 +88,14 @@ function tasks(state = List([newTask]), action) {
       }
     case UPDATE_TASK_KEY:
       let update_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      return state.setIn([update_index, 'data', action.key], action.value);
+      let mod = state.setIn([update_index, 'data', action.key], action.value);
+      // If the start changes, reset 'lastExec', because otherwise it can remain in past, where it generates a ghost
+      // task in the list of not completed tasks, or it can remain at today, where it acts like a current task and
+      // therefore is not shown in the list of incompleted tasks.
+      if (action.key === 'start') {
+        mod = mod.setIn(['data', 'lastExec'], Map({date: action.value, done: false}));
+      }
+      return mod;
     case RESET_TASK_DATA:
       let data_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
       return state.setIn([data_index, 'data'], state.getIn([data_index, 'backup']));

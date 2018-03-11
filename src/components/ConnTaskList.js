@@ -4,7 +4,6 @@ import {List} from 'immutable';
 
 import {toggleTask, ejectNewTask, updateTaskKey, toggleTaskVisibilityFilter} from '../redux/actions';
 import TaskList from './TaskList';
-import Recur from '../utils/Recur';
 import {DAY_CHANGE_HOUR} from '../utils/constants';
 import history from '../utils/history';
 import taresize from '../utils/taresize';
@@ -12,7 +11,10 @@ import { maplistsort } from '../utils/sort';
 
 const getToday = (entries) => {
   if (entries.size > 0) {
-    return entries.filter(x => Recur.matches(x.get('data'), moment().subtract(DAY_CHANGE_HOUR, 'hours')));
+    return entries
+      .filter(x => moment()
+        .subtract(DAY_CHANGE_HOUR, 'hours')
+        .format('YYYY-MM-DD') === x.getIn(['data', 'lastExec', 'date']));
   } else {
     return List();
   }
