@@ -71,12 +71,20 @@ let state = store.getState();
 let tasks = state.get('tasks');
 let events = state.get('events');
 for (let i = 1; i < tasks.size; i++) {
-  if (moment().isAfter(tasks.getIn([i, 'data', 'end']), 'day') && tasks.getIn([i, 'data', 'lastExec', 'done'])) {
+  if (
+    tasks.getIn([i, 'data', 'lastExec', 'done']) && (
+      moment().isAfter(tasks.getIn([i, 'data', 'end']), 'day') ||
+      (moment().isAfter(tasks.getIn([i, 'data', 'start']), 'day') && tasks.getIn([i, 'data', 'single']))
+    )
+  ) {
     store.dispatch(removeTask(tasks.getIn([i, 'data', 'id'])));
   }
 }
 for (let j = 1; j < events.size; i++) {
-  if (moment().isAfter(events.getIn([i, 'data', 'end']), 'day')) {
+  if (
+    moment().isAfter(events.getIn([i, 'data', 'end']), 'day') ||
+    (moment().isAfter(events.getIn([i, 'data', 'start']), 'day') && events.getIn([i, 'data', 'single']))
+  ) {
     store.dispatch(removeEvent(events.getIn([i, 'data', 'id'])));
   }
 }
