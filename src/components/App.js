@@ -1,23 +1,23 @@
 import React from 'react';
 import {Route} from 'react-router-dom';
 
-import {
-  Page, ContentWrapper
-} from '../sc/container';
-import ConnTaskList from './ConnTaskList';
-import ConnEventList from './ConnEventList';
-import ConnRuleList from './ConnRuleList';
-import ConnForm from './ConnForm';
+import {Page, ContentWrapper} from '../sc/container';
+import TaskList from './TaskList.js';
+import EventList from './EventList.js';
+import RuleList from './RuleList.js';
+import TaskForm from './TaskForm.js';
+import EventForm from './EventForm.js';
 
 const App = () => (
   <Page>
     <ContentWrapper>
       <Route exact path='/' render={() => [
-        <ConnRuleList key={1} />,
-        <ConnTaskList key={2} />,
-        <ConnEventList key={3} />,
+        <RuleList key={1} />,
+        <TaskList key={2} />,
+        <EventList key={3} />,
       ]} />
-      <Route path='/:type/:id' component={ConnForm} />
+      <Route path='/task/:id' component={TaskForm} />
+      <Route path='/event/:id' component={EventForm} />
     </ContentWrapper>
   </Page>
 );

@@ -1,32 +1,166 @@
 import {combineReducers} from 'redux-immutable';
-import {List, Map} from 'immutable';
+import {List} from 'immutable';
 import moment from 'moment';
 import _ from 'lodash';
 import {
-  EJECT_NEW_TASK,
-  EJECT_NEW_EVENT,
+  UPDATE_TASK_TEMPLATE_SUMMARY,
+  UPDATE_TASK_TEMPLATE_DESCRIPTION,
+  UPDATE_TASK_TEMPLATE_N,
+  RESET_TASK_TEMPLATE_COUNTER,
+  INCREMENT_TASK_TEMPLATE_COUNTER,
+  TOGGLE_TASK_TEMPLATE_MONTH,
+  TOGGLE_TASK_TEMPLATE_WEEK,
+  TOGGLE_TASK_TEMPLATE_DAY,
+  UPDATE_TASK_TEMPLATE_TIME,
+  UPDATE_TASK_TEMPLATE_START,
+  UPDATE_TASK_TEMPLATE_END,
+  UPDATE_EVENT_TEMPLATE_SUMMARY,
+  UPDATE_EVENT_TEMPLATE_DESCRIPTION,
+  UPDATE_EVENT_TEMPLATE_N,
+  RESET_EVENT_TEMPLATE_COUNTER,
+  INCREMENT_EVENT_TEMPLATE_COUNTER,
+  TOGGLE_EVENT_TEMPLATE_MONTH,
+  TOGGLE_EVENT_TEMPLATE_WEEK,
+  TOGGLE_EVENT_TEMPLATE_DAY,
+  UPDATE_EVENT_TEMPLATE_TIME,
+  UPDATE_EVENT_TEMPLATE_START,
+  UPDATE_EVENT_TEMPLATE_END,
+  UPDATE_RULE_SUMMARY,
+  UPDATE_RULE_DESCRIPTION,
+  SAVE_TASK_TEMPLATE,
+  SAVE_EVENT_TEMPLATE,
+  SAVE_RULE,
+  DISCARD_TASK_TEMPLATE,
+  DISCARD_EVENT_TEMPLATE,
+  DISCARD_RULE,
   REMOVE_TASK,
   REMOVE_EVENT,
+  REMOVE_TASK_TEMPLATE,
+  REMOVE_EVENT_TEMPLATE,
+  REMOVE_RULE,
+  ADD_TASK,
+  ADD_EVENT,
   TOGGLE_TASK,
   TOGGLE_TASK_VISIBILITY_FILTER,
   TOGGLE_EVENT_VISIBILITY_FILTER,
-  VisibilityFilters,
-  UPDATE_TASK_KEY,
-  UPDATE_EVENT_KEY,
-  UPDATE_TASK_BACKUP,
-  RESET_TASK_DATA,
-  RESET_EVENT_DATA,
-  UPDATE_EVENT_BACKUP,
   INCREMENT_WORK_DATE,
-  EJECT_NEW_RULE,
-  REMOVE_RULE,
-  UPDATE_RULE_KEY,
-  RESET_RULE_DATA,
-  UPDATE_RULE_BACKUP
+  UNSET_SHOULD_SAVE,
+  VisibilityFilters
 } from './actions';
-import { newTask, newEvent, newRule } from '../utils/objects';
-import Recur from '../utils/Recur';
+import {
+  newRule,
+  newTaskTemplate,
+  newEventTemplate
+} from '../utils/objects';
+import {DAY_CHANGE_HOUR} from '../utils/constants';
 const {SHOW_ALL, SHOW_TODAY} = VisibilityFilters;
+
+/**
+ * Toggle a period list of a task template or event template
+ * @param {List.<Map>} state State to be modified.
+ * @param {string} id ID of element to be modified.
+ * @param {string} period 'months', 'weeks' or 'days' as toggle selection.
+ * @param {List|number} value Toggle value (can be List for full List toggling).
+ */
+function togglePeriod(state, id, period, value) {
+  let index = state.findIndex(x => x.get('id') === id);
+  let clearDays = false;
+  let clearWeeks = false;
+  let mod;
+  if (index > -1) {
+
+    // Clear days, if weeks have been empty before, because on empty weeks the monthly or yearly day
+    // selection is enabled and days of months must be cleared before selecting days of weeks.
+    if (state.getIn([index, 'template', 'weeks']).size === 0 && period === 'weeks') {
+      clearDays = true;
+    }
+
+    // Clear days and weeks, if months have been empty before, because on empty months the yearly
+    // day and week selection is enabled and days / weeks must be cleared before selecting days /
+    // weeks of months.
+    if (state.getIn([index, 'template', 'months']).size === 0 && period === 'months') {
+      clearDays = true;
+      clearWeeks = true;
+    }
+
+    // Full list toggle, if value is list.
+    if (List.isList(value)) {
+      if (state.getIn([index, 'template', period]).equals(value)) {
+        mod = state.updateIn([index, 'template', period], () => List());
+      } else {
+        mod = state.updateIn([index, 'template', period], () => value);
+      }
+
+    // Toggle single value (add / remove value to / from list).
+    } else {
+      let valueIndex = state.getIn([index, 'template', period].indexOf(value));
+      if (valueIndex > -1) {
+        mod = state.updateIn([index, 'template', period], list => list.delete(valueIndex));
+      } else {
+        mod = state.updateIn([index, 'template', period], list => list.push(value));
+      }
+
+    }
+
+    // Clear days like before, but the other way round.
+    if (mod.getIn([index, 'template', 'weeks']).size === 0 && period === 'weeks') {
+      clearDays = true;
+    }
+
+    // Clear days and weeks like before, but the other way round.
+    if (mod.getIn([index, 'template', 'months']).size === 0 && period === 'months') {
+      clearDays = true;
+      clearWeeks = true;
+    }
+
+    // Clear days, if boolean is set.
+    if (clearDays) {
+      mod = mod.updateIn([index, 'template', 'days'], () => List());
+    }
+
+    // Clear weeks, if boolean is set.
+    if (clearWeeks) {
+      mod = mod.updateIn([index, 'template', 'weeks'], () => List());
+    }
+
+    // Return modified value.
+    return mod;
+
+  } else {
+    return state;
+  }
+}
+
+/**
+ * Update a single field of a task template or event template.
+ * @param {List.<Map>} state State to be modified.
+ * @param {string} id ID of element to be modified.
+ * @param {string} field Name of field to be updated.
+ * @param {string|number} value New value.
+ */
+function updateValue(state, id, field, value) {
+  let index = state.findIndex(x => x.get('id') === id);
+  if (index > -1) {
+    return state.setIn([index, 'template', field], value);
+  } else {
+    return state;
+  }
+}
+
+/**
+ * Increment a number of a task template or event template.
+ * @param {List.<Map>} state State to be modified.
+ * @param {string} id ID of element to be modified.
+ * @param {string} field Name of field to be updated.
+ */
+function incrementValue(state, id, field) {
+  let index = state.findIndex(x => x.get('id') === id);
+  if (index > -1) {
+    return state.setIn([index, 'template', field], state.getIn([index, 'template', field]) + 1);
+  } else {
+    return state;
+  }
+}
 
 function taskVisibilityFilter(state = SHOW_TODAY, action) {
   switch (action.type) {
@@ -54,99 +188,191 @@ function eventVisibilityFilter(state = SHOW_TODAY, action) {
   }
 }
 
-function tasks(state = List([newTask]), action) {
+/**
+ * Redux reducer for the tasks.
+ * 
+ * @param {List.<Map>} state List of tasks.
+ * @param {Object} action Dispatched action.
+ */
+function tasks(state = List(), action) {
   switch (action.type) {
-    case EJECT_NEW_TASK:
-      let miscadd = state.setIn([0, 'data', 'id'], _.uniqueId());
-      if (!miscadd.getIn([0, 'data', 'start'])) {
-        miscadd = miscadd.setIn([0, 'data', 'start'], moment().subtract(5, 'hours').format('YYYY-MM-DD'));
-      }
-      if (!miscadd.getIn([0, 'data', 'end'])) {
-        miscadd = miscadd.setIn([0, 'data', 'end'], '2999-12-31');
-      }
-      // Change last execution date to today, if today matches recur data. Otherwise let it empty and wait, until
-      // maintenance routines set lastExec on their own.
-      if (Recur.matches(miscadd.getIn([0, 'data']), moment().format('YYYY-MM-DD'))) {
-        miscadd = miscadd.setIn([0, 'data', 'lastExec', 'date'], moment().format('YYYY-MM-DD'));
-      }
-      let backupAdded = miscadd.setIn([0, 'backup'], miscadd.getIn([0, 'data']));
-      let ejected = backupAdded.push(backupAdded.get(0));
-      let cleared = ejected.set(0, newTask);
-      return cleared;
-    case REMOVE_TASK:
-      if (action.id === 'new') {
-        return state.set(0, newTask);
-      } else {
-        let remove_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-        if (remove_index === -1) {
-          return state;
-        } else {
-          return state.remove(remove_index);
-        }
-      }
-    case TOGGLE_TASK:
-      let taskIndex = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      if (taskIndex > -1) {
-        return state.setIn([taskIndex, 'data', 'lastExec', 'done'], !state.getIn([taskIndex, 'data', 'lastExec', 'done']));
+
+    /** Toggle the 'done' property of a task. */
+    case TOGGLE_TASK: {
+      let index = state.findIndex(el => el.get('id') === action.id);
+      if (index > -1) {
+        return state.setIn([index, 'done'], !state.getIn([index, 'done']));
       } else {
         return state;
       }
-    case UPDATE_TASK_KEY:
-      let update_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      let mod = state.setIn([update_index, 'data', action.key], action.value);
-      // If the start changes, reset 'lastExec', because otherwise it can remain in past, where it generates a ghost
-      // task in the list of not completed tasks, or it can remain at today, where it acts like a current task and
-      // therefore is not shown in the list of incompleted tasks. Do this only, if the task is single. Only then, there
-      // is a sane relationship between lastExec date and start.
-      if (action.key === 'start' && mod.getIn([update_index, 'data', 'single'])) {
-        mod = mod.setIn([update_index, 'data', 'lastExec'], Map({date: action.value, done: false}));
+    }
+
+    /** Add a task to the array of tasks. */
+    case ADD_TASK: {
+      let index = state.findIndex(x => x.get('template_id') === action.template_id);
+      let mod = state;
+      if (index > -1 && action.template_id) {
+        mod = state.delete(index);
       }
-      return mod;
-    case RESET_TASK_DATA:
-      let data_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      return state.setIn([data_index, 'data'], state.getIn([data_index, 'backup']));
-    case UPDATE_TASK_BACKUP:
-      let backup_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      return state.setIn([backup_index, 'backup'], state.getIn([backup_index, 'data']));
+      return mod.push(Map({
+        template_id: action.template_id,
+        id: action.id,
+        summ: action.summ,
+        desc: action.desc,
+        date: action.date,
+        done: action.done
+      }));
+    }
+
+    /** Remove a task from the array of tasks. */
+    case REMOVE_TASK: {
+      return state.filterNot(x => x.get('id') === action.id);
+    }
+
+    /** Remove tasks corresponding to a task template, if the template is being removed. */
+    case REMOVE_TASK_TEMPLATE: {
+      return state.filterNot(x => x.get('template_id') === action.id);
+    }
+
+    /** Default case. */
     default:
       return state;
   }
 }
 
-function events(state = List([newEvent]), action) {
+function taskTemplates(state = List([newTaskTemplate]), action) {
   switch (action.type) {
-    case EJECT_NEW_EVENT:
-      let miscadd = state.setIn([0, 'data', 'id'], _.uniqueId());
-      if (!miscadd.getIn([0, 'data', 'start'])) {
-        miscadd = miscadd.setIn([0, 'data', 'start'], moment().subtract(5, 'hours').format('YYYY-MM-DD'));
-      }
-      if (!miscadd.getIn([0, 'data', 'end'])) {
-        miscadd = miscadd.setIn([0, 'data', 'end'], '2999-12-31');
-      }
-      let backupAdded = miscadd.setIn([0, 'backup'], miscadd.getIn([0, 'data']));
-      let ejected = backupAdded.push(backupAdded.get(0));
-      let cleared = ejected.set(0, newEvent);
-      return cleared;
-    case REMOVE_EVENT:
+    case UPDATE_TASK_TEMPLATE_SUMMARY: return updateValue(state, action.id, 'summ', action.value);
+    case UPDATE_TASK_TEMPLATE_DESCRIPTION: return updateValue(state, action.id, 'desc', action.value);
+    case UPDATE_TASK_TEMPLATE_N: return updateValue(state, action.id, 'n', action.value);
+    case RESET_TASK_TEMPLATE_COUNTER: return updateValue(state, action.id, 'cnt', 0);
+    case INCREMENT_TASK_TEMPLATE_COUNTER: return incrementValue(state, action.id, 'cnt');
+    case TOGGLE_TASK_TEMPLATE_MONTH: return togglePeriod(state, action.id, 'months', action.value);
+    case TOGGLE_TASK_TEMPLATE_WEEK: return togglePeriod(state, action.id, 'weeks', action.value);
+    case TOGGLE_TASK_TEMPLATE_DAY: return togglePeriod(state, action.id, 'days', action.value);
+    case UPDATE_TASK_TEMPLATE_TIME: return updateValue(state, action.id, 'time', action.value);
+    case UPDATE_TASK_TEMPLATE_START: return updateValue(state, action.id, 'start', action.value);
+    case UPDATE_TASK_TEMPLATE_END: return updateValue(state, action.id, 'end', action.value);
+    case SAVE_TASK_TEMPLATE: {
       if (action.id === 'new') {
-        return state.set(0, newEvent);
+        let mod = state.setIn([0, 'id'], _.uniqueId());
+        if (!mod.getIn([0, 'template', 'start'])) {
+          mod = mod.setIn([0, 'template', 'start'], moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD'));
+        }
+        if (!mod.getIn([0, 'template', 'end'])) {
+          mod = mod.setIn([0, 'template', 'end'], '2999-12-31');
+        }
+        let copied = mod.setIn([0, 'data'], mod.getIn([0, 'template']));
+        let ejected = copied.push(copied.get(0));
+        return ejected.set(0, newTaskTemplate);
       } else {
-        let remove_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-        if (remove_index === -1) {
-          return state;
+        let index = state.findIndex(el => el.get('id') === action.id);
+        return state.setIn([index, 'data'], state.getIn([index, 'template']));
+      }
+    }
+    case DISCARD_TASK_TEMPLATE: {
+      let index = state.findIndex(el => el.get('id') === action.id);
+      if (index > -1) {
+        return state.setIn([index, 'template'], state.getIn([index, 'data']));
+      } else {
+        return state;
+      }
+    }
+    case REMOVE_TASK_TEMPLATE: {
+      if (action.id === 'new') {
+        return state.set(0, newTaskTemplate);
+      } else {
+        let index = state.findIndex(el => el.get('id') === action.id);
+        if (index > -1) {
+          return state.remove(index);
         } else {
-          return state.remove(remove_index);
+          return state;
         }
       }
-    case UPDATE_EVENT_KEY:
-      let update_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      return state.setIn([update_index, 'data', action.key], action.value);
-    case RESET_EVENT_DATA:
-      let data_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      return state.setIn([data_index, 'data'], state.getIn([data_index, 'backup']));
-    case UPDATE_EVENT_BACKUP:
-      let backup_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      return state.setIn([backup_index, 'backup'], state.getIn([backup_index, 'data']));
+    }
+    default:
+      return state;
+  }
+}
+
+function events(state = List(), action) {
+  switch (action.type) {
+    case ADD_EVENT: {
+      let index = state.findIndex(x => x.get('template_id') === action.template_id);
+      let mod = state;
+      if (index > -1 && action.template_id) {
+        mod = state.delete(index);
+      }
+      return mod.push(Map({
+        template_id: action.template_id,
+        id: action.id,
+        summ: action.summ,
+        desc: action.desc,
+        date: action.date,
+        time: action.time
+      }));
+    }
+    case REMOVE_EVENT: {
+      return state.filterNot(x => x.get('id') === action.id);
+    }
+    case REMOVE_EVENT_TEMPLATE: {
+      return state.filterNot(x => x.get('template_id') === action.id);
+    }
+    default:
+      return state;
+  }
+}
+
+function eventTemplates(state = List([newEventTemplate]), action) {
+  switch (action.type) {
+    case UPDATE_EVENT_TEMPLATE_SUMMARY: return updateValue(state, action.id, 'summ', action.value);
+    case UPDATE_EVENT_TEMPLATE_DESCRIPTION: return updateValue(state, action.id, 'desc', action.value);
+    case UPDATE_EVENT_TEMPLATE_N: return updateValue(state, action.id, 'n', action.value);
+    case RESET_EVENT_TEMPLATE_COUNTER: return updateValue(state, action.id, 'cnt', 0);
+    case INCREMENT_EVENT_TEMPLATE_COUNTER: return incrementValue(state, action.id, 'cnt');
+    case TOGGLE_EVENT_TEMPLATE_MONTH: return togglePeriod(state, action.id, 'months', action.value);
+    case TOGGLE_EVENT_TEMPLATE_WEEK: return togglePeriod(state, action.id, 'weeks', action.value);
+    case TOGGLE_EVENT_TEMPLATE_DAY: return togglePeriod(state, action.id, 'days', action.value);
+    case UPDATE_EVENT_TEMPLATE_TIME: return updateValue(state, action.id, 'time', action.value);
+    case UPDATE_EVENT_TEMPLATE_START: return updateValue(state, action.id, 'start', action.value);
+    case UPDATE_EVENT_TEMPLATE_END: return updateValue(state, action.id, 'end', action.value);
+    case SAVE_EVENT_TEMPLATE: {
+      if (action.id === 'new') {
+        let mod = state.setIn([0, 'id'], _.uniqueId());
+        if (!mod.getIn([0, 'template', 'start'])) {
+          mod = mod.setIn([0, 'template', 'start'], moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD'));
+        }
+        if (!mod.getIn([0, 'template', 'end'])) {
+          mod = mod.setIn([0, 'template', 'end'], '2999-12-31');
+        }
+        let copied = mod.setIn([0, 'data'], mod.getIn([0, 'template']));
+        let ejected = copied.push(copied.get(0));
+        return ejected.set(0, newEventTemplate);
+      } else {
+        let index = state.findIndex(el => el.get('id') === action.id);
+        return state.setIn([index, 'data'], state.getIn([index, 'template']));
+      }
+    }
+    case DISCARD_EVENT_TEMPLATE: {
+      let index = state.findIndex(el => el.get('id') === action.id);
+      if (index > -1) {
+        return state.setIn([index, 'template'], state.getIn([index, 'data']));
+      } else {
+        return state;
+      }
+    }
+    case REMOVE_EVENT_TEMPLATE: {
+      if (action.id === 'new') {
+        return state.set(0, newEventTemplate);
+      } else {
+        let index = state.findIndex(el => el.get('id') === action.id);
+        if (index > -1) {
+          return state.remove(index);
+        } else {
+          return state;
+        }
+      }
+    }
     default:
       return state;
   }
@@ -154,43 +380,70 @@ function events(state = List([newEvent]), action) {
 
 function rules(state = List([newRule]), action) {
   switch (action.type) {
-    case EJECT_NEW_RULE:
-      let miscadd = state.setIn([0, 'data', 'id'], _.uniqueId());
-      let backupAdded = miscadd.setIn([0, 'backup'], miscadd.getIn([0, 'data']));
-      let ejected = backupAdded.push(backupAdded.get(0));
-      let cleared = ejected.set(0, newRule);
-      return cleared;
-    case REMOVE_RULE:
+    case UPDATE_RULE_SUMMARY: return updateValue(state, action.id, 'summ', action.value);
+    case UPDATE_RULE_DESCRIPTION: return updateValue(state, action.id, 'desc', action.value);
+    case SAVE_RULE: {
+      if (action.id === 'new') {
+        let mod = state.setIn([0, 'id'], _.uniqueId());
+        let copied = mod.setIn([0, 'data'], mod.getIn([0, 'template']));
+        let ejected = copied.push(copied.get(0));
+        return ejected.set(0, newRule);
+      } else {
+        let index = state.findIndex(el => el.get('id') === action.id);
+        return state.setIn([index, 'data'], state.getIn([index, 'template']));
+      }
+    }
+    case DISCARD_RULE: {
+      let index = state.findIndex(el => el.get('id') === action.id);
+      if (index > -1) {
+        return state.setIn([index, 'template'], state.getIn([index, 'data']));
+      } else {
+        return state;
+      }
+    }
+    case REMOVE_RULE: {
       if (action.id === 'new') {
         return state.set(0, newRule);
       } else {
-        let remove_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-        if (remove_index === -1) {
-          return state;
+        let index = state.findIndex(el => el.get('id') === action.id);
+        if (index > -1) {
+          return state.remove(index);
         } else {
-          return state.remove(remove_index);
+          return state;
         }
       }
-    case UPDATE_RULE_KEY:
-      let update_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      return state.setIn([update_index, 'data', action.key], action.value);
-    case RESET_RULE_DATA:
-      let data_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      return state.setIn([data_index, 'data'], state.getIn([data_index, 'backup']));
-    case UPDATE_RULE_BACKUP:
-      let backup_index = state.findIndex(el => el.getIn(['data', 'id']) === action.id);
-      return state.setIn([backup_index, 'backup'], state.getIn([backup_index, 'data']));
+    }
     default:
       return state;
   }
 }
 
-function workDate(state = moment().format('YYYY-MM-DD'), action) {
+function workDate(state = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD'), action) {
   switch (action.type) {
     case INCREMENT_WORK_DATE:
-      return moment(state).add(1, 'day').format('YYYY-MM-DD');
+      return moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');
     default:
       return state;
+  }
+}
+
+function shouldSave(state = false, action) {
+  switch (action.type) {
+    case ADD_TASK:
+    case SAVE_TASK_TEMPLATE:
+    case REMOVE_TASK:
+    case REMOVE_TASK_TEMPLATE:
+    case TOGGLE_TASK:
+    case ADD_EVENT:
+    case SAVE_EVENT_TEMPLATE:
+    case REMOVE_EVENT:
+    case REMOVE_EVENT_TEMPLATE:
+    case SAVE_RULE:
+    case INCREMENT_WORK_DATE:
+      return true;
+    case UNSET_SHOULD_SAVE:
+    default:
+      return false;
   }
 }
 
@@ -198,9 +451,12 @@ const ops = combineReducers({
   taskVisibilityFilter,
   eventVisibilityFilter,
   tasks,
+  taskTemplates,
   events,
+  eventTemplates,
   rules,
-  workDate
+  workDate,
+  shouldSave
 });
 
 export default ops;

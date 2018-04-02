@@ -1,27 +1,15 @@
 import {Map, List} from 'immutable';
 
-const taskcore = Map({
-  id: '',
-  summ: '',
-  desc: '',
-  single: true,
-  months: List(),
-  weeks: List(),
-  days: List(),
-  time: '',
-  start: '',
-  end: '',
-  lastExec: Map({
-    date: '',
-    done: false
-  })
-})
+// TASKS
 
-const eventcore = Map({
-  id: '',
+/**
+ * @typedef {Object} TaskTemplateCore 
+ */
+const taskTemplateCore = Map({
   summ: '',
   desc: '',
-  single: true,
+  n: 1,
+  cnt: 0,
   months: List(),
   weeks: List(),
   days: List(),
@@ -30,38 +18,71 @@ const eventcore = Map({
   end: ''
 });
 
-const rulecore = Map({
+/**
+ * @typedef {Object} EmptyTaskTemplate
+ */
+export const emptyTaskTemplate = Map({
+  id: '',
+  template: taskTemplateCore,
+  data: taskTemplateCore
+});
+
+export const newTaskTemplate = emptyTaskTemplate.set('id', 'new');
+
+export const task = Map({
+  template_id: '',
   id: '',
   summ: '',
+  desc: '',
+  date: '',
+  done: ''
+});
+
+// EVENTS
+
+const eventTemplateCore = Map({
+  summ: '',
+  desc: '',
+  n: 1,
+  cnt: 0,
+  months: List(),
+  weeks: List(),
+  days: List(),
+  time: '',
+  start: '',
+  end: ''
+});
+
+
+export const emptyEventTemplate = Map({
+  id: '',
+  template: eventTemplateCore,
+  data: eventTemplateCore
+});
+
+export const newEventTemplate = emptyEventTemplate.set('id', 'new');
+
+export const event = Map({
+  template_id: '',
+  id: '',
+  summ: '',
+  desc: '',
+  date: '',
+  time: ''
+});
+
+// RULES
+
+const ruleCore = Map({
+  summ: '',
   desc: ''
-})
-
-export const emptyTask = Map({
-  data: taskcore,
-  backup: taskcore
 });
 
-export const emptyEvent = Map({
-  data: eventcore,
-  backup: eventcore
-});
 
 export const emptyRule = Map({
-  data: rulecore,
-  backup: rulecore
-})
-
-export const newTask = Map({
-  data: taskcore.set('id', 'new'),
-  backup: taskcore.set('id', 'new')
+  id: '',
+  template: ruleCore,
+  data: ruleCore
 });
 
-export const newEvent = Map({
-  data: eventcore.set('id', 'new'),
-  backup: eventcore.set('id', 'new')
-});
-
-export const newRule = Map({
-  data: rulecore.set('id', 'new'),
-  backup: rulecore.set('id', 'new')
-});
+export const newRule = emptyRule.set('id', 'new');

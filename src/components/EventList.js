@@ -1,22 +1,29 @@
 import React from 'react';
 import moment from 'moment';
+import {connect} from 'react-redux';
+import {List} from 'immutable';
+import _ from 'lodash';
 
 import {Table, TCell} from '../sc/table';
 import {CBButton, PlusButton, OButton, RhombusButton, StarButton} from '../sc/buttons';
 import {Input} from '../sc/inputs';
 import {Section, Subsection} from '../sc/container';
 import {Header} from '../sc/texts';
-import { ACCENT_COLOR, ACCENT_COLOR_03 } from '../utils/constants';
+import {ACCENT_COLOR, ACCENT_COLOR_03, TRANSPARENT} from '../utils/constants';
+import getWeekday from '../utils/weekday';
+import {toggleEventVisibilityFilter, addEvent} from '../redux/actions';
+import Recur from '../utils/Recur';
+import {DAY_CHANGE_HOUR, UPCOMING_DAYS} from '../utils/constants';
+import history from '../utils/history';
+import taresize from '../utils/taresize';
 
-const EntryList = ({
-  currentEntries,
-  upcomingEntries,
-  allEntries,
-  fastInputObj,
+const RawEventList = ({
+  currentEvents,
+  upcomingEvents,
+  allEvents,
   filter,
   editEntry,
-  fastInputUpdater,
-  fastAddEntry,
+  fetHandler,
   toggleFilter
 }) => (
   <Section>
@@ -34,7 +41,7 @@ const EntryList = ({
       <Table>
         {filter === 'SHOW_ALL'
           ? <tbody>
-            {allEntries.map((entry, index) => {
+            {allEvents.map((entry, index) => {
               return (
                 <tr key={index}>
                   <TCell>
@@ -47,12 +54,12 @@ const EntryList = ({
                   <TCell
                     primary
                     lineThrough={false}
-                  >{entry.getIn(['data', 'summ'])}</TCell>
+                  >{entry.get('summ')}</TCell>
                   <TCell>
                     <OButton
                       size='16px'
                       color={ACCENT_COLOR}
-                      onClick={() => {editEntry(entry.getIn(['data', 'id']))}}
+                      onClick={() => {editEntry(entry.get('id'))}}
                     />
                   </TCell>
                 </tr>
@@ -60,35 +67,35 @@ const EntryList = ({
             })}
           </tbody>
           : <tbody>
-            {currentEntries.map((entry, index) => {
+            {currentEvents.map((entry, index) => {
               return (
                 <tr key={index}>
                   <TCell>
                     <CBButton
                       size='16px'
-                      vertical={entry.getIn(['data', 'time']) && entry.getIn(['data', 'time']) < moment().format('HH:mm') ? true : false}
+                      vertical={entry.get('time') && entry.get('time') < moment().format('HH:mm') ? true : false}
                       color={ACCENT_COLOR}
                     />
                   </TCell>
                   <TCell
                     primary
-                    opacity={entry.getIn(['data', 'time']) && entry.getIn(['data', 'time']) < moment().format('HH:mm') ? 0.3 : 1.0}
-                    lineThrough={entry.getIn(['data', 'time']) && entry.getIn(['data', 'time']) < moment().format('HH:mm') ? true : false}
-                  >{entry.getIn(['data', 'time'])
-                    ? '[' + entry.getIn(['data', 'time']) + '] ' + entry.getIn(['data', 'summ'])
-                    : entry.getIn(['data', 'summ'])
+                    opacity={entry.get('time') && entry.get('time') < moment().format('HH:mm') ? 0.3 : 1.0}
+                    lineThrough={entry.get('time') && entry.get('time') < moment().format('HH:mm') ? true : false}
+                  >{entry.get('time')
+                    ? '[' + entry.get('time') + '] ' + entry.get('summ')
+                    : entry.get('summ')
                   }</TCell>
                   <TCell>
                     <OButton
                       size='16px'
                       color={ACCENT_COLOR}
-                      onClick={() => {editEntry(entry.getIn(['data', 'id']))}}
+                      onClick={() => {editEntry(entry.get('id'))}}
                     />
                   </TCell>
                 </tr>
               );
             })}
-            {upcomingEntries.map((entry, index) => {
+            {upcomingEvents.map((entry, index) => {
               return (
                 <tr key={index}>
                   <TCell>
@@ -101,15 +108,16 @@ const EntryList = ({
                     primary
                     opacity={0.3}
                     lineThrough={false}
-                  >{entry.getIn(['data', 'time'])
-                    ? '[' + entry.getIn(['data', 'start']) + ' ' + entry.getIn(['data', 'time']) + '] ' + entry.getIn(['data', 'summ'])
-                    : '[' + entry.getIn(['data', 'start']) + '] ' + entry.getIn(['data', 'summ'])
+                  >{entry.get('time')
+                    ? '[' + getWeekday(moment(entry.get('date')).isoWeekday()) + ' '
+                      + entry.get('date') + ' ' + entry.get('time') + '] ' + entry.get('summ')
+                    : '[' + getWeekday(moment(entry.get('date')).isoWeekday()) + ' '
+                      + entry.get('date') + '] ' + entry.get('summ')
                   }</TCell>
                   <TCell>
                     <OButton
                       size='16px'
                       color={ACCENT_COLOR_03}
-                      onClick={() => {editEntry(entry.getIn(['data', 'id']))}}
                     />
                   </TCell>
                 </tr>
@@ -119,24 +127,19 @@ const EntryList = ({
               <TCell>
                 <PlusButton
                   size='16px'
-                  color={ACCENT_COLOR}
-                  onClick={() => {fastAddEntry()}}
+                  color={TRANSPARENT}
                 />
               </TCell>
               <TCell primary padding='0px 10px'>
                 <Input
                   type='textarea'
-                  value={fastInputObj.getIn(['data', 'summ'])}
-                  onChange={(e) => {
-                    fastInputUpdater(e);
-                  }}
+                  onChange={e => fetHandler(e)}
                 />
               </TCell>
               <TCell>
                 <OButton
                   size='16px'
-                  color={ACCENT_COLOR}
-                  onClick={() => {editEntry('new')}}
+                  color={TRANSPARENT}
                 />
               </TCell>
             </tr>
@@ -147,4 +150,68 @@ const EntryList = ({
   </Section>
 );
 
-export default EntryList;
+/**
+ * Get events with date of today.
+ * @param {List.<Map>} tasks Tasks.
+ */
+const getToday = (entries) => {
+  if (entries.size > 0) {
+    return entries.filter(x => Recur.matches(x.get('data'), moment().subtract(DAY_CHANGE_HOUR, 'hours')));
+  } else {
+    return List();
+  }
+}
+
+/**
+ * Get upcoming events in the time between tomorrow and in 'UPCOMING_DAYS' days.
+ * @param {List.<Map>} tasks Tasks.
+ */
+const getUpcoming = (events) => {
+  if (events && events.size > 0) {
+    return events.filter(x => moment().add(UPCOMING_DAYS + 1, 'days').isAfter(x.get('date'))
+      && moment().isBefore(x.get('date')));
+  } else {
+    return List();
+  }
+}
+
+/**
+ * Regular mapping of state to props from redux.
+ * @param {Map} state State of application.
+ */
+const mapStateToProps = state => {
+  return {
+    currentEvents: getToday(state.get('events')),
+    upcomingEvents: getUpcoming(state.get('events')),
+    allEvents: state.get('events'),
+    filter: state.get('eventVisibilityFilter'),
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    editEntry: id => history.push('/event/' + id),
+    fetHandler: e => {
+      if (e.target.value.endsWith('\n')) {
+        dispatch(addEvent(
+          '',
+          _.uniqueId(),
+          e.target.value,
+          '',
+          moment().format('YYYY-MM-DD'),
+          ''
+        ));
+      } else {
+        taresize(e.target);
+      }
+    },
+    toggleFilter: () => dispatch(toggleEventVisibilityFilter())
+  }
+}
+
+const EventList = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(RawEventList);
+
+export default EventList;

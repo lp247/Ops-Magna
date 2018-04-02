@@ -4,17 +4,17 @@ import {Router} from 'react-router-dom';
 import {createStore} from 'redux';
 import {Provider} from 'react-redux';
 import {Map, fromJS} from 'immutable';
-import _ from 'lodash';
 import moment from 'moment';
+import _ from 'lodash';
 
 import registerServiceWorker from './registerServiceWorker';
 import ops from './redux/reducers';
 import './index.css';
 import App from './components/App';
 import history from './utils/history';
-import Recur from './utils/Recur';
-import { updateTaskKey, incrementWorkDate, removeTask, removeEvent } from './redux/actions';
+import { unsetShouldSave, incrementWorkDate, addTask, removeTask } from './redux/actions';
 import { DAY_CHANGE_HOUR } from './utils/constants';
+import Recur from './utils/Recur';
 
 const loadState = () => {
   try {
@@ -37,57 +37,71 @@ const saveState = (state) => {
   }
 };
 
+const saveStore = () => {
+  if (store.getState().get('shouldSave')) {
+    saveState(Map({
+      tasks: store.getState().get('tasks'),
+      taskTemplates: store.getState().get('taskTemplates'),
+      events: store.getState().get('events'),
+      eventTemplates: store.getState().get('eventTemplates'),
+      rules: store.getState().get('rules'),
+      workDate: store.getState().get('workDate')
+    }))
+  }
+  store.dispatch(unsetShouldSave());
+}
+
+const updateEntries = (store) => {
+  let wd = moment(store.getState().get('workDate'));
+  while (wd.isBefore(moment().subtract(DAY_CHANGE_HOUR, 'hours'), 'day')) {
+    let tasks = store.getState().get('tasks');
+    let events = store.getState().get('events');
+    let tt = store.getState().get('taskTemplates');
+    let et = store.getState().get('eventTemplates');
+    for (var a = 1; a < tasks.size; a++) {
+      if (tasks.getIn([a, 'done']) && moment().isAfter(tasks.getIn([a, 'date']), 'day')) {
+        store.dispatch(removeTask(tasks.getIn([a, 'id'])))
+      }
+    }
+    for (var b = 1; b < events.size; b++) {
+      if (moment().isAfter(events.getIn([b, 'date']), 'day')) {
+        store.dispatch(removeTask(events.getIn([b, 'id'])))
+      }
+    }
+    for (var i = 1; i < tt.size; i++) {
+      if (Recur.matches(tt.getIn([i, 'data']), wd)) {
+        store.dispatch(addTask(
+          tt.getIn([i, 'data', 'id']),
+          _.uniqueId(),
+          tt.getIn([i, 'data', 'summ']),
+          tt.getIn([i, 'data', 'desc']),
+          wd,
+          false
+        ));
+      }
+    }
+    for (var j = 1; j < et.size; j++) {
+      if (Recur.matches(et.getIn([j, 'data']), wd)) {
+        store.dispatch(addTask(
+          et.getIn([j, 'data', 'id']),
+          _.uniqueId(),
+          et.getIn([j, 'data', 'summ']),
+          et.getIn([j, 'data', 'desc']),
+          wd,
+          et.getIn([j, 'data', 'time'])
+        ));
+      }
+    }
+    store.dispatch(incrementWorkDate());
+  }
+}
+
 const persistedState = loadState();
 const store = createStore(ops, persistedState);
 
-// Bessere Alternative zu throttle benutzen (erst speichern, wenn neue Aufgabe angelegt)
-store.subscribe(_.throttle(() => {
-  saveState(Map({
-    tasks: store.getState().get('tasks'),
-    events: store.getState().get('events'),
-    rules: store.getState().get('rules'),
-    workDate: store.getState().get('workDate')
-  }));
-}, 1000));
+store.subscribe(saveStore);
 
-// Maintenance
-let wd = moment(store.getState().get('workDate'));
-while (wd.isBefore(moment().subtract(DAY_CHANGE_HOUR, 'hours'), 'day')) {
-  wd = wd.add(1, 'days');
-  let tasks = store.getState().get('tasks');
-  for (var i = 1; i < tasks.size; i++) {
-    if (Recur.matches(tasks.getIn([i, 'data'], wd))) {
-      store.dispatch(updateTaskKey(
-        tasks.getIn([i, 'data', 'id']),
-        'lastExec',
-        Map({date: wd.format('YYYY-MM-DD'), done: false})
-      ));
-    }
-  }
-  store.dispatch(incrementWorkDate());
-}
-
-let state = store.getState();
-let tasks = state.get('tasks');
-let events = state.get('events');
-for (let i = 1; i < tasks.size; i++) {
-  if (
-    tasks.getIn([i, 'data', 'lastExec', 'done']) && (
-      moment().isAfter(tasks.getIn([i, 'data', 'end']), 'day') ||
-      (moment().isAfter(tasks.getIn([i, 'data', 'start']), 'day') && tasks.getIn([i, 'data', 'single']))
-    )
-  ) {
-    store.dispatch(removeTask(tasks.getIn([i, 'data', 'id'])));
-  }
-}
-for (let j = 1; j < events.size; j++) {
-  if (
-    moment().isAfter(events.getIn([j, 'data', 'end']), 'day') ||
-    (moment().isAfter(events.getIn([j, 'data', 'start']), 'day') && events.getIn([j, 'data', 'single']))
-  ) {
-    store.dispatch(removeEvent(events.getIn([j, 'data', 'id'])));
-  }
-}
+updateEntries(store);
 
 ReactDOM.render(
   <Provider store={store}>
