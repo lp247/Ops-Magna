@@ -2,102 +2,72 @@ import React from 'react';
 import {connect} from 'react-redux';
 
 import {Table, TCell} from '../sc/table';
-import {CBButton, PlusButton, OButton} from '../sc/buttons';
-import {Input} from '../sc/inputs';
+import {CBButton, OButton} from '../sc/buttons';
 import {Section, Subsection} from '../sc/container';
 import {Header} from '../sc/texts';
-import {ACCENT_COLOR} from '../utils/constants';
-import {saveRule, updateRuleSummary} from '../redux/actions';
 import history from '../utils/history';
-import taresize from '../utils/taresize';
+import {addRule} from '../redux/rules.actions';
+import {updateFRT} from '../redux/fastRuleText.actions';
+import FastInput from './FastInput';
+
+const CoreList = ({rules, editRule}) => {
+  return rules.map((rule, index) => {
+    let summ = rule.getIn(['data', 'summ']);
+    let id = rule.get('id');
+    return (
+      <tr key={index}>
+        <TCell><CBButton size='16px' /></TCell>
+        <TCell primary>{summ}</TCell>
+        <TCell><OButton size='16px' onClick={() => {editRule(id)}} /></TCell>
+      </tr>
+    );
+  })
+}
 
 const RawRuleList = ({
-  entries,
-  fastInputObj,
-  editEntry,
-  fastInputUpdater,
-  fastAddEntry
+  rules,
+  frt,
+  editRule,
+  frtHandler
 }) => (
   <Section>
     <Header>Regeln</Header>
     <Subsection>
       <Table>
         <tbody>
-          {entries.map((entry, index) => {
-            return (
-              <tr key={index}>
-                <TCell>
-                  <CBButton
-                    size='16px'
-                    color={ACCENT_COLOR}
-                  />
-                </TCell>
-                <TCell
-                  primary
-                >{entry.getIn(['data', 'summ'])}</TCell>
-                <TCell>
-                  <OButton
-                    size='16px'
-                    color={ACCENT_COLOR}
-                    onClick={() => {editEntry(entry.get('id'))}}
-                  />
-                </TCell>
-              </tr>
-            );
-          })}
-          <tr>
-            <TCell>
-              <PlusButton
-                size='16px'
-                color={ACCENT_COLOR}
-                onClick={() => {fastAddEntry()}}
-              />
-            </TCell>
-            <TCell primary padding='0px 10px'>
-              <Input
-                type='textarea'
-                value={fastInputObj.getIn(['data', 'summ'])}
-                onChange={(e) => {
-                  fastInputUpdater(e);
-                }}
-              />
-            </TCell>
-            <TCell>
-              <OButton
-                size='16px'
-                color={ACCENT_COLOR}
-                onClick={() => {editEntry('new')}}
-              />
-            </TCell>
-          </tr>
+          <CoreList rules={rules} editRule={editRule} />
+          <FastInput value={frt} handler={frtHandler} />
         </tbody>
       </Table>
     </Subsection>
   </Section>
 );
 
+/**
+ * Regular mapping of state to props from redux.
+ * @param {Map} state State of application.
+ */
 const mapStateToProps = state => {
   return {
-    entries: state.get('rules').rest(),
-    fastInputObj: state.getIn(['rules', 0]),
+    rules: state.get('rules'),
+    frt: state.get('fastRuleText'),
   }
 }
 
+/**
+ * Regular mapping of dispatch function to props from redux.
+ * @param {func} dispatch Dispatch function.
+ */
 const mapDispatchToProps = dispatch => {
   return {
-    editEntry: id => {
-      history.push('/rule/' + id);
-    },
-    fastInputUpdater: e => {
+    editRule: id => history.push('/r/' + id),
+    frtHandler: e => {
       if (e.target.value.endsWith('\n')) {
-        dispatch(saveRule('new'));
+        let value = e.target.value.slice(0, -1);
+        dispatch(addRule(value, ''));
       } else {
-        dispatch(updateRuleSummary(e.target.value));
-        taresize(e.target);
+        dispatch(updateFRT(e.target.value));
       }
-    },
-    fastAddEntry: () => {
-      dispatch(saveRule('new'));
     }
   }
 }

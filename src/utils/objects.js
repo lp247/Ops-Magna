@@ -5,84 +5,96 @@ import {Map, List} from 'immutable';
 /**
  * @typedef {Object} TaskTemplateCore 
  */
-const taskTemplateCore = Map({
-  summ: '',
-  desc: '',
-  n: 1,
-  cnt: 0,
-  months: List(),
-  weeks: List(),
-  days: List(),
-  time: '',
-  start: '',
-  end: ''
-});
+const getTaskTemplateCore = (
+  summ = '',
+  desc = '',
+  n = 1,
+  cnt = 0,
+  months = List(),
+  weeks = List(),
+  days = List(),
+  time = '',
+  start = '',
+  end = '',
+) => Map({summ, desc, n, cnt, months, weeks, days, time, start, end});
 
-/**
- * @typedef {Object} EmptyTaskTemplate
- */
-export const emptyTaskTemplate = Map({
-  id: '',
-  template: taskTemplateCore,
-  data: taskTemplateCore
-});
+export const getTaskTemplate = (ID, summ, desc, n, cnt, m, w, d, time, start, end) => {
+  let core = getTaskTemplateCore(summ, desc, n, cnt, m, w, d, time, start, end);
+  return Map({
+    ID,
+    template: core,
+    data: core
+  });
+}
 
-export const newTaskTemplate = emptyTaskTemplate.set('id', 'new');
+const getTaskCore = (
+  summ = '',
+  desc = '',
+  date = '',
+  time = '',
+  done = false
+) => Map({summ, desc, date, time, done});
 
-export const task = Map({
-  template_id: '',
-  id: '',
-  summ: '',
-  desc: '',
-  date: '',
-  done: ''
-});
+export const getTask = (tID, ID, summ, desc, date, time, done) => {
+  let core = getTaskCore(summ, desc, date, time, done);
+  return Map({
+    templateID: tID,
+    id: ID,
+    template: core,
+    data: core
+  });
+}
 
 // EVENTS
 
-const eventTemplateCore = Map({
-  summ: '',
-  desc: '',
-  n: 1,
-  cnt: 0,
-  months: List(),
-  weeks: List(),
-  days: List(),
-  time: '',
-  start: '',
-  end: ''
-});
+const getEventTemplateCore = (
+  summ = '',
+  desc = '',
+  n = 1,
+  cnt = 0,
+  months = List(),
+  weeks = List(),
+  days = List(),
+  time = '',
+  start = '',
+  end = ''
+) => Map({summ, desc, n, cnt, months, weeks, days, time, start, end});
 
+export const getEventTemplate = (ID, summ, desc, n, cnt, m, w, d, time, start, end) => {
+  let core = getEventTemplateCore(summ, desc, n, cnt, m, w, d, time, start, end);
+  return Map({
+    id: ID,
+    template: core,
+    data: core
+  });
+}
 
-export const emptyEventTemplate = Map({
-  id: '',
-  template: eventTemplateCore,
-  data: eventTemplateCore
-});
+const getEventCore = (
+  summ = '',
+  desc = '',
+  date = '',
+  time = ''
+) => Map({summ, desc, date, time});
 
-export const newEventTemplate = emptyEventTemplate.set('id', 'new');
-
-export const event = Map({
-  template_id: '',
-  id: '',
-  summ: '',
-  desc: '',
-  date: '',
-  time: ''
-});
+export const getEvent = (tID, ID, summ, desc, date, time) => {
+  let core = getEventCore(summ, desc, date, time);
+  return Map({
+    templateID: tID,
+    id: ID,
+    template: core,
+    data: core
+  });
+}
 
 // RULES
 
-const ruleCore = Map({
-  summ: '',
-  desc: ''
-});
+const getRuleCore = (summ = '', desc = '') => Map({summ, desc});
 
-
-export const emptyRule = Map({
-  id: '',
-  template: ruleCore,
-  data: ruleCore
-});
-
-export const newRule = emptyRule.set('id', 'new');
+export const getRule = (ID, summ, desc) => {
+  let core = getRuleCore(summ, desc);
+  return Map({
+    id: ID,
+    template: core,
+    data: core
+  });
+}

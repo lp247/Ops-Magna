@@ -5,16 +5,18 @@ import {createStore} from 'redux';
 import {Provider} from 'react-redux';
 import {Map, fromJS} from 'immutable';
 import moment from 'moment';
-import _ from 'lodash';
 
 import registerServiceWorker from './registerServiceWorker';
-import ops from './redux/reducers';
+import ops from './redux/ops';
 import './index.css';
 import App from './components/App';
 import history from './utils/history';
-import { unsetShouldSave, incrementWorkDate, addTask, removeTask } from './redux/actions';
-import { DAY_CHANGE_HOUR } from './utils/constants';
+import {DAY_CHANGE_HOUR} from './utils/constants';
 import Recur from './utils/Recur';
+import {unsetShouldSave} from './redux/shouldSave.actions';
+import {removeTask, addTask} from './redux/tasks.actions';
+import {removeEvent, addEvent} from './redux/events.actions';
+import {incrementWorkDate} from './redux/workDate.actions';
 
 const loadState = () => {
   try {
@@ -47,8 +49,8 @@ const saveStore = () => {
       rules: store.getState().get('rules'),
       workDate: store.getState().get('workDate')
     }))
+    store.dispatch(unsetShouldSave());
   }
-  store.dispatch(unsetShouldSave());
 }
 
 const updateEntries = (store) => {
@@ -65,26 +67,24 @@ const updateEntries = (store) => {
     }
     for (var b = 1; b < events.size; b++) {
       if (moment().isAfter(events.getIn([b, 'date']), 'day')) {
-        store.dispatch(removeTask(events.getIn([b, 'id'])))
+        store.dispatch(removeEvent(events.getIn([b, 'id'])))
       }
     }
     for (var i = 1; i < tt.size; i++) {
       if (Recur.matches(tt.getIn([i, 'data']), wd)) {
         store.dispatch(addTask(
           tt.getIn([i, 'data', 'id']),
-          _.uniqueId(),
           tt.getIn([i, 'data', 'summ']),
           tt.getIn([i, 'data', 'desc']),
           wd,
-          false
+          tt.getIn([i, 'data', 'time'])
         ));
       }
     }
     for (var j = 1; j < et.size; j++) {
       if (Recur.matches(et.getIn([j, 'data']), wd)) {
-        store.dispatch(addTask(
+        store.dispatch(addEvent(
           et.getIn([j, 'data', 'id']),
-          _.uniqueId(),
           et.getIn([j, 'data', 'summ']),
           et.getIn([j, 'data', 'desc']),
           wd,
@@ -99,9 +99,9 @@ const updateEntries = (store) => {
 const persistedState = loadState();
 const store = createStore(ops, persistedState);
 
-store.subscribe(saveStore);
-
 updateEntries(store);
+
+store.subscribe(saveStore);
 
 ReactDOM.render(
   <Provider store={store}>

@@ -2,31 +2,65 @@ import React from 'react';
 import {connect} from 'react-redux';
 import moment from 'moment';
 import {List} from 'immutable';
-import _ from 'lodash';
 
 import {Table, TCell} from '../sc/table';
-import {CBButton, PlusButton, OButton, RhombusButton, XButton} from '../sc/buttons';
-import {Input} from '../sc/inputs';
+import {CBButton, OButton, RhombusButton, XButton} from '../sc/buttons';
 import {Section, Subsection} from '../sc/container';
 import {Header} from '../sc/texts';
-import {ACCENT_COLOR, ACCENT_COLOR_03, TRANSPARENT} from '../utils/constants';
-import {
-  toggleTask,
-  toggleTaskVisibilityFilter,
-  addTask
-} from '../redux/actions';
 import {DAY_CHANGE_HOUR} from '../utils/constants';
 import history from '../utils/history';
-import taresize from '../utils/taresize';
 import {maplistsort} from '../utils/sort';
+import {toggleTaskDone, addTask} from '../redux/tasks.actions';
+import {updateFTT} from '../redux/fastTaskText.actions';
+import {toggleTaskDisplay} from '../redux/showTaskTemplates.actions';
+import TemplateList from './TemplateList';
+import FastInput from './FastInput';
+
+const PrevUncompletedList = ({tasks, editTask, toggleTask}) => {
+  return tasks.map((task, index) => {
+    let summ = task.getIn(['data', 'summ']);
+    let id = task.get('id');
+    return (
+      <tr key={index}>
+        <TCell><XButton size='16px' onClick={() => toggleTask(id)} /></TCell>
+        <TCell primary opacity={0.3}>{summ}</TCell>
+        <TCell><OButton size='16px' onClick={() => {editTask(id, false)}} /></TCell>
+      </tr>
+    );
+  })
+}
+
+const CurrentList = ({tasks, editTask, toggleTask}) => {
+  return tasks.map((task, index) => {
+    let done = task.getIn(['data', 'done']);
+    let summ = task.getIn(['data', 'summ']);
+    let time = task.getIn(['data', 'time']);
+    let timestr = '[' + task.getIn(['data', 'time']) + ']';
+    let id = task.get('id');
+    let text = time ? timestr + ' ' + summ : summ;
+    return (
+      <tr key={index}>
+        <TCell><CBButton size='16px' vertical={done} onClick={() => toggleTask(id)} /></TCell>
+        <TCell
+          primary
+          opacity={1 - done * 0.7}
+          lineThrough={done}
+          onClick={() => toggleTask(id)}
+        >{text}</TCell>
+        <TCell><OButton size='16px' onClick={() => {editTask(id, false)}} /></TCell>
+      </tr>
+    );
+  })
+}
 
 const RawTaskList = ({
   currentTasks,
   prevUncompletedTasks,
-  allTasks,
-  filter,
-  toggleEntry,
-  editEntry,
+  taskTemplates,
+  showTemplates,
+  ftt,
+  toggleTask,
+  editTask,
   fttHandler,
   toggleFilter
 }) => (
@@ -36,117 +70,26 @@ const RawTaskList = ({
       float='right'
       margin='10px 6px 0 24px'
       weight='thick'
-      color={ACCENT_COLOR}
-      checked={filter === 'SHOW_ALL'}
+      checked={showTemplates}
       onClick={toggleFilter}
     />
     <Header>Aufgaben</Header>
     <Subsection>
       <Table>
-        {filter === 'SHOW_ALL'
-          ? <tbody>
-            {allTasks.map((entry, index) => {
-              return (
-                <tr key={index}>
-                <TCell>
-                  <CBButton
-                    size='16px'
-                    vertical={false}
-                    color={ACCENT_COLOR}
-                  />
-                </TCell>
-                <TCell
-                  primary
-                  lineThrough={false}
-                >{entry.get('summ')}</TCell>
-                <TCell>
-                  <OButton
-                    size='16px'
-                    color={ACCENT_COLOR}
-                    onClick={() => {editEntry(entry.get('id'))}}
-                  />
-                </TCell>
-              </tr>
-              );
-            })}
-          </tbody>
+        {showTemplates
+          ? <tbody><TemplateList templates={taskTemplates} edit={editTask} /></tbody>
           : <tbody>
-            {prevUncompletedTasks.map((entry, index) => {
-              return (
-                <tr key={index}>
-                  <TCell>
-                    <XButton
-                      size='16px'
-                      color={ACCENT_COLOR_03}
-                      onClick={toggleEntry ? () => toggleEntry(entry.get('id')) : null}
-                    />
-                  </TCell>
-                  <TCell
-                    primary
-                    opacity={0.3}
-                  >{entry.get('summ')}</TCell>
-                  <TCell>
-                    <OButton
-                      size='16px'
-                      color={ACCENT_COLOR_03}
-                      onClick={() => {editEntry(entry.get('id'))}}
-                    />
-                  </TCell>
-                </tr>
-              );
-            })}
-            {currentTasks.map((entry, index) => {
-              return (
-                <tr key={index}>
-                  <TCell>
-                    <CBButton
-                      size='16px'
-                      vertical={toggleEntry ? entry.get('done') : false}
-                      color={ACCENT_COLOR}
-                      onClick={toggleEntry ? () => toggleEntry(entry.get('id')) : null}
-                    />
-                  </TCell>
-                  <TCell
-                    primary
-                    opacity={toggleEntry ? entry.get('done') * 0.3 : 1.0}
-                    lineThrough={toggleEntry ? entry.get('done') : false}
-                    onClick={toggleEntry ? () => toggleEntry(entry.get('id')) : null}
-                  >{entry.get('time')
-                    ? '[' + entry.get('time') + '] ' + entry.get('summ')
-                    : entry.get('summ')
-                  }</TCell>
-                  <TCell>
-                    <OButton
-                      size='16px'
-                      color={ACCENT_COLOR}
-                      onClick={() => {editEntry(entry.get('id'))}}
-                    />
-                  </TCell>
-                </tr>
-              );
-            })}
-            <tr>
-              <TCell>
-                <PlusButton
-                  size='16px'
-                  color={TRANSPARENT}
-                />
-              </TCell>
-              <TCell primary padding='0px 10px'>
-                <Input
-                  type='textarea'
-                  onChange={(e) => {
-                    fttHandler(e);
-                  }}
-                />
-              </TCell>
-              <TCell>
-                <OButton
-                  size='16px'
-                  color={TRANSPARENT}
-                />
-              </TCell>
-            </tr>
+            <PrevUncompletedList
+              tasks={prevUncompletedTasks}
+              editTask={editTask}
+              toggleTask={toggleTask}
+            />
+            <CurrentList
+              tasks={currentTasks}
+              editTask={editTask}
+              toggleTask={toggleTask}
+            />
+            <FastInput value={ftt} handler={fttHandler} />
           </tbody>
         }
       </Table>
@@ -163,7 +106,7 @@ const getToday = (tasks) => {
     return tasks
       .filter(x => moment()
         .subtract(DAY_CHANGE_HOUR, 'hours')
-        .format('YYYY-MM-DD') === x.get('date'));
+        .format('YYYY-MM-DD') === x.getIn(['data', 'date']));
   } else {
     return List();
   }
@@ -175,8 +118,8 @@ const getToday = (tasks) => {
  */
 const getUncompleted = (tasks) => {
   if (tasks && tasks.size > 0) {
-    return tasks.filter(x => !x.get('done')
-      && moment().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.get('date'), 'day'));
+    return tasks.filter(x => !x.getIn(['data', 'done'])
+      && moment().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.getIn(['data', 'date']), 'day'));
   } else {
     return List();
   }
@@ -190,8 +133,9 @@ const mapStateToProps = state => {
   return {
     currentTasks: getToday(state.get('tasks')).sort(maplistsort(['time'])),
     prevUncompletedTasks: getUncompleted(state.get('tasks')),
-    allTasks: state.get('tasks'),
-    filter: state.get('taskVisibilityFilter')
+    taskTemplates: state.get('taskTemplates').sort(maplistsort(['summ'])),
+    showTemplates: state.get('showTaskTemplates'),
+    ftt: state.get('fastTaskText')
   }
 }
 
@@ -201,22 +145,24 @@ const mapStateToProps = state => {
  */
 const mapDispatchToProps = dispatch => {
   return {
-    toggleEntry: id => dispatch(toggleTask(id)),
-    editEntry: id => history.push('/task/' + id),
-    fttHandler: e => {
-      if (e.target.value.endsWith('\n')) {
-        dispatch(addTask(
-          '',
-          _.uniqueId(),
-          e.target.value.slice(0, -1),
-          '',
-          moment().format('YYYY-MM-DD')
-        ));
+    toggleTask: id => dispatch(toggleTaskDone(id)),
+    editTask: (id, isTemplateID) => {
+      if (isTemplateID) {
+        history.push('/tt/' + id);
       } else {
-        taresize(e.target);
+        history.push('/t/' + id);
       }
     },
-    toggleFilter: () => dispatch(toggleTaskVisibilityFilter())
+    fttHandler: e => {
+      if (e.target.value.endsWith('\n')) {
+        let value = e.target.value.slice(0, -1);
+        let today = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');
+        dispatch(addTask('', value, '', today, ''));
+      } else {
+        dispatch(updateFTT(e.target.value));
+      }
+    },
+    toggleFilter: () => dispatch(toggleTaskDisplay())
   }
 }
 

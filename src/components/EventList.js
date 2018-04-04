@@ -2,27 +2,68 @@ import React from 'react';
 import moment from 'moment';
 import {connect} from 'react-redux';
 import {List} from 'immutable';
-import _ from 'lodash';
 
 import {Table, TCell} from '../sc/table';
-import {CBButton, PlusButton, OButton, RhombusButton, StarButton} from '../sc/buttons';
-import {Input} from '../sc/inputs';
+import {CBButton, OButton, RhombusButton, StarButton} from '../sc/buttons';
 import {Section, Subsection} from '../sc/container';
 import {Header} from '../sc/texts';
-import {ACCENT_COLOR, ACCENT_COLOR_03, TRANSPARENT} from '../utils/constants';
 import getWeekday from '../utils/weekday';
-import {toggleEventVisibilityFilter, addEvent} from '../redux/actions';
-import Recur from '../utils/Recur';
 import {DAY_CHANGE_HOUR, UPCOMING_DAYS} from '../utils/constants';
 import history from '../utils/history';
-import taresize from '../utils/taresize';
+import {addEvent} from '../redux/events.actions';
+import {updateFET} from '../redux/fastEventText.actions';
+import {toggleEventDisplay} from '../redux/showEventTemplates.actions';
+import {maplistsort} from '../utils/sort';
+import FastInput from './FastInput';
+import TemplateList from './TemplateList';
+
+const CurrentList = ({events, editEvent}) => {
+  return events.map((event, index) => {
+    let date = event.getIn(['data', 'date']);
+    let time = event.getIn(['data', 'time']);
+    let timestr = '[' + time + ']';
+    let summ = event.getIn(['data', 'summ']);
+    let id = event.get('id');
+    let done = (time && time < moment().format('HH:mm'))
+      || date < moment().format('YYYY-MM-DD');
+    let text = time ? timestr + ' ' + summ : summ;
+    return (
+      <tr key={index}>
+        <TCell><CBButton size='16px' vertical={done} /></TCell>
+        <TCell primary opacity={1 - done * 0.7} lineThrough={done}>{text}</TCell>
+        <TCell><OButton size='16px' onClick={() => {editEvent(id, false)}} /></TCell>
+      </tr>
+    );
+  });
+}
+
+const UpcomingList = ({events, editEvent}) => {
+  return events.map((event, index) => {
+    let date = event.getIn(['data', 'date']);
+    let time = event.getIn(['data', 'time']);
+    let weekday = getWeekday(moment(event.getIn(['data', 'date'])).isoWeekday(), true);
+    let datetimestr = '[' + weekday + ' ' + date + ' ' + time + ']';
+    let datestr = '[' + weekday + ' ' + date + ']';
+    let summ = event.getIn(['data', 'summ']);
+    let id = event.get('id');
+    let text = time ? datetimestr + ' ' + summ : datestr + ' ' + summ;
+    return (
+      <tr key={index}>
+        <TCell><StarButton size='16px' /></TCell>
+        <TCell primary opacity={0.3} lineThrough={false}>{text}</TCell>
+        <TCell><OButton size='16px' onClick={() => {editEvent(id, false)}} /></TCell>
+      </tr>
+    );
+  });
+}
 
 const RawEventList = ({
   currentEvents,
   upcomingEvents,
-  allEvents,
-  filter,
-  editEntry,
+  eventTemplates,
+  showTemplates,
+  fet,
+  editEvent,
   fetHandler,
   toggleFilter
 }) => (
@@ -32,117 +73,18 @@ const RawEventList = ({
       float='right'
       margin='10px 6px 0 24px'
       weight='thick'
-      color={ACCENT_COLOR}
-      checked={filter === 'SHOW_ALL'}
+      checked={showTemplates}
       onClick={toggleFilter}
     />
     <Header>Termine</Header>
     <Subsection>
       <Table>
-        {filter === 'SHOW_ALL'
-          ? <tbody>
-            {allEvents.map((entry, index) => {
-              return (
-                <tr key={index}>
-                  <TCell>
-                    <CBButton
-                      size='16px'
-                      vertical={false}
-                      color={ACCENT_COLOR}
-                    />
-                  </TCell>
-                  <TCell
-                    primary
-                    lineThrough={false}
-                  >{entry.get('summ')}</TCell>
-                  <TCell>
-                    <OButton
-                      size='16px'
-                      color={ACCENT_COLOR}
-                      onClick={() => {editEntry(entry.get('id'))}}
-                    />
-                  </TCell>
-                </tr>
-              );
-            })}
-          </tbody>
+        {showTemplates
+          ? <tbody><TemplateList templates={eventTemplates} edit={editEvent} /></tbody>
           : <tbody>
-            {currentEvents.map((entry, index) => {
-              return (
-                <tr key={index}>
-                  <TCell>
-                    <CBButton
-                      size='16px'
-                      vertical={entry.get('time') && entry.get('time') < moment().format('HH:mm') ? true : false}
-                      color={ACCENT_COLOR}
-                    />
-                  </TCell>
-                  <TCell
-                    primary
-                    opacity={entry.get('time') && entry.get('time') < moment().format('HH:mm') ? 0.3 : 1.0}
-                    lineThrough={entry.get('time') && entry.get('time') < moment().format('HH:mm') ? true : false}
-                  >{entry.get('time')
-                    ? '[' + entry.get('time') + '] ' + entry.get('summ')
-                    : entry.get('summ')
-                  }</TCell>
-                  <TCell>
-                    <OButton
-                      size='16px'
-                      color={ACCENT_COLOR}
-                      onClick={() => {editEntry(entry.get('id'))}}
-                    />
-                  </TCell>
-                </tr>
-              );
-            })}
-            {upcomingEvents.map((entry, index) => {
-              return (
-                <tr key={index}>
-                  <TCell>
-                    <StarButton
-                      size='16px'
-                      color={ACCENT_COLOR_03}
-                    />
-                  </TCell>
-                  <TCell
-                    primary
-                    opacity={0.3}
-                    lineThrough={false}
-                  >{entry.get('time')
-                    ? '[' + getWeekday(moment(entry.get('date')).isoWeekday()) + ' '
-                      + entry.get('date') + ' ' + entry.get('time') + '] ' + entry.get('summ')
-                    : '[' + getWeekday(moment(entry.get('date')).isoWeekday()) + ' '
-                      + entry.get('date') + '] ' + entry.get('summ')
-                  }</TCell>
-                  <TCell>
-                    <OButton
-                      size='16px'
-                      color={ACCENT_COLOR_03}
-                    />
-                  </TCell>
-                </tr>
-              );
-            })}
-            <tr>
-              <TCell>
-                <PlusButton
-                  size='16px'
-                  color={TRANSPARENT}
-                />
-              </TCell>
-              <TCell primary padding='0px 10px'>
-                <Input
-                  type='textarea'
-                  onChange={e => fetHandler(e)}
-                />
-              </TCell>
-              <TCell>
-                <OButton
-                  size='16px'
-                  color={TRANSPARENT}
-                />
-              </TCell>
-            </tr>
+            <CurrentList events={currentEvents} editEvent={editEvent} />
+            <UpcomingList events={upcomingEvents} editEvent={editEvent} />
+            <FastInput value={fet} handler={fetHandler} />
           </tbody>
         }
       </Table>
@@ -156,7 +98,8 @@ const RawEventList = ({
  */
 const getToday = (entries) => {
   if (entries.size > 0) {
-    return entries.filter(x => Recur.matches(x.get('data'), moment().subtract(DAY_CHANGE_HOUR, 'hours')));
+    return entries.filter(x => x.getIn(['data', 'date'])
+      === moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD'));
   } else {
     return List();
   }
@@ -168,8 +111,8 @@ const getToday = (entries) => {
  */
 const getUpcoming = (events) => {
   if (events && events.size > 0) {
-    return events.filter(x => moment().add(UPCOMING_DAYS + 1, 'days').isAfter(x.get('date'))
-      && moment().isBefore(x.get('date')));
+    return events.filter(x => moment().add(UPCOMING_DAYS + 1, 'days').isAfter(x.getIn(['data', 'date']))
+      && moment().isBefore(x.getIn(['data', 'date'])));
   } else {
     return List();
   }
@@ -183,29 +126,31 @@ const mapStateToProps = state => {
   return {
     currentEvents: getToday(state.get('events')),
     upcomingEvents: getUpcoming(state.get('events')),
-    allEvents: state.get('events'),
-    filter: state.get('eventVisibilityFilter'),
+    eventTemplates: state.get('eventTemplates').sort(maplistsort(['summ'])),
+    showTemplates: state.get('showEventTemplates'),
+    fet: state.get('fastEventText')
   }
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    editEntry: id => history.push('/event/' + id),
-    fetHandler: e => {
-      if (e.target.value.endsWith('\n')) {
-        dispatch(addEvent(
-          '',
-          _.uniqueId(),
-          e.target.value,
-          '',
-          moment().format('YYYY-MM-DD'),
-          ''
-        ));
+    editEvent: (id, isTemplateID) => {
+      if (isTemplateID) {
+        history.push('/et/' + id);
       } else {
-        taresize(e.target);
+        history.push('/e/' + id);
       }
     },
-    toggleFilter: () => dispatch(toggleEventVisibilityFilter())
+    fetHandler: e => {
+      if (e.target.value.endsWith('\n')) {
+        let value = e.target.value.slice(0, -1);
+        let today = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');
+        dispatch(addEvent('', value, '', today, ''));
+      } else {
+        dispatch(updateFET(e.target.value));
+      }
+    },
+    toggleFilter: () => dispatch(toggleEventDisplay())
   }
 }
 

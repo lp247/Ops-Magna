@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import _ from 'lodash';
+import {ACCENT_COLOR} from '../utils/constants';
 
 const SVG = styled.svg`
   display: ${props => props.display || 'inline'};
@@ -12,30 +13,30 @@ const SVG = styled.svg`
 `;
 
 const SVGPath = styled.path`
-  stroke: ${props => props.color};
+  stroke: ${ACCENT_COLOR};
   stroke-width: ${props => {
     let sw;
     props.weight === 'thin' ? sw = 1 : (props.weight === 'thick' ? sw = 4 : sw = 2);
     if (props.clipped) sw = sw * 2;
     return sw;
   }}px;
-  fill: ${props => props.filled ? props.color : 'none'};
+  fill: ${props => props.filled ? ACCENT_COLOR : 'none'};
 `;
 
 const SVGRect = styled.rect`
-  stroke: ${props => props.color};
+  stroke: ${ACCENT_COLOR};
   stroke-width: ${props => props.weight === 'thin' ? '2' : props.weight === 'thick' ? '8' : '4'}px;
-  fill: ${props => props.filled ? props.color : 'none'};
+  fill: ${props => props.filled ? ACCENT_COLOR : 'none'};
 `;
 
 const SVGCircle = styled.circle`
-  stroke: ${props => props.color};
+  stroke: ${ACCENT_COLOR};
   stroke-width: ${props => props.weight === 'thin' ? '2' : props.weight === 'thick' ? '8' : '4'}px;
-  fill: ${props => props.filled ? props.color : 'none'};
+  fill: ${props => props.filled ? ACCENT_COLOR : 'none'};
 `;
 
 export const PlusButton = props => {
-  let {weight, color, ...rest} = props;
+  let {weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -52,7 +53,6 @@ export const PlusButton = props => {
       <SVGPath
         d="M50 0 L50 100 M0 50 L100 50"
         vectorEffect='non-scaling-stroke'
-        color={color}
         weight={weight}
       />
     </SVG>
@@ -60,7 +60,7 @@ export const PlusButton = props => {
 }
 
 export const XButton = props => {
-  let {weight, color, ...rest} = props;
+  let {weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -77,7 +77,6 @@ export const XButton = props => {
       <SVGPath
         d="M0 0 L100 100 M0 100 L100 0"
         vectorEffect='non-scaling-stroke'
-        color={color}
         weight={weight}
       />
     </SVG>
@@ -85,7 +84,7 @@ export const XButton = props => {
 }
 
 export const StarButton = props => {
-  let {weight, color, ...rest} = props;
+  let {weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -102,7 +101,6 @@ export const StarButton = props => {
       <SVGPath
         d="M15 15 L85 85 M15 85 L85 15 M50 0 L50 100 M0 50 L100 50"
         vectorEffect='non-scaling-stroke'
-        color={color}
         weight={weight}
       />
     </SVG>
@@ -111,7 +109,7 @@ export const StarButton = props => {
 
 export const OButton = props => {
   let id = _.uniqueId('circleclip_');
-  let {checked, weight, color, ...rest} = props;
+  let {checked, weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -136,7 +134,6 @@ export const OButton = props => {
         cy='50%'
         r='50%'
         vectorEffect='non-scaling-stroke'
-        color={color}
         weight={weight}
         filled={checked}
         clipPath={'url(#' + id + ')'}
@@ -146,7 +143,7 @@ export const OButton = props => {
 }
 
 export const RhombusButton = props => {
-  let {checked, weight, color, ...rest} = props;
+  let {checked, weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -161,7 +158,6 @@ export const RhombusButton = props => {
       <SVGPath
         d='M50 0 L100 50 L50 100 L0 50 Z'
         vectorEffect='non-scaling-stroke'
-        color={color}
         weight={weight}
         filled={checked}
         clipPath='url(#rhombusclip)'
@@ -172,7 +168,7 @@ export const RhombusButton = props => {
 }
 
 export const CBButton = props => {
-  let {vertical, weight, color, ...rest} = props;
+  let {vertical, weight, ...rest} = props;
   return (
     <SVG
       viewBox="0 0 100 100"
@@ -183,16 +179,22 @@ export const CBButton = props => {
         ? <SVGPath
           d="M50 0 L50 100"
           vectorEffect='non-scaling-stroke'
-          color={color}
           weight={weight}
         />
         : <SVGPath
           d="M0 50 L100 50"
           vectorEffect='non-scaling-stroke'
-          color={color}
           weight={weight}
         />
       }
     </SVG>
   );
+}
+
+export const Placeholder = props => {
+  return <SVG
+    viewBox="0 0 100 100"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  ></SVG>
 }
