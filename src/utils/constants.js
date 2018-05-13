@@ -1,5 +1,6 @@
 export const FONT_COLOR = 'rgb(184, 184, 184)';
 export const BACKGROUND_COLOR = 'rgb(33, 34, 37)';
+export const INPUT_BACKGROUND_COLOR = 'rgb(43, 44, 47)';
 // export const accentcolor = 'rgb(111, 178, 156)';
 // export const accentcolor = '#6BB2B0';
 // export const ACCENT_OCEAN = '#279EB2';
@@ -14,5 +15,5 @@ export const ACCENT_COLOR_OPACITY_05 = ACCENT_COLOR.replace('1.0', '0.5');
 export const ACCENT_COLOR_OPACITY_03 = ACCENT_COLOR.replace('1.0', '0.3');
 export const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 
-export const DAY_CHANGE_HOUR = 5;
-export const UPCOMING_DAYS = 7;
+export const DAY_CHANGE_HOUR = 4;
+export const EVENT_FORECAST_DAYS = 7;

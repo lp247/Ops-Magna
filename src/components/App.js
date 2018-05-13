@@ -1,15 +1,16 @@
 import React from 'react';
 import {Route} from 'react-router-dom';
 
-import {Page, ContentWrapper} from '../sc/container';
-import TaskList from './TaskList.js';
-import EventList from './EventList.js';
-import RuleList from './RuleList.js';
-import TaskForm from './TaskForm.js';
-import EventForm from './EventForm.js';
-import RuleForm from './RuleForm.js';
-import TaskTemplateForm from './TaskTemplateForm.js';
-import EventTemplateForm from './EventTemplateForm.js';
+import Page from './container/Page';
+import ContentWrapper from './container/ContentWrapper';
+import TaskList from './lists/TaskList';
+import EventList from './lists/EventList';
+import RuleList from './lists/RuleList';
+import TaskForm from './forms/TaskForm';
+import EventForm from './forms/EventForm';
+import RuleForm from './forms/RuleForm';
+import TaskTemplateForm from './forms/TaskTemplateForm';
+import EventTemplateForm from './forms/EventTemplateForm';
 
 const App = () => (
   <Page>
