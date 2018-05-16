@@ -8,7 +8,7 @@ const TextButton = styled.a`
   margin: ${props => props.margin ? props.margin : '0'};
   width: ${props => props.width || 'auto'};
   text-align: center;
-  font-size: ${props => props.small ? '16px' : 'inherit'};
+  font-size: ${props => props.small ? '1.2rem' : 'inherit'};
   background-color: ${ACCENT_COLOR};
   color: black;
 `;

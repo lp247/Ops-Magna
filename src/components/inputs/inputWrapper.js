@@ -5,7 +5,6 @@ import {FONT_COLOR} from '../../utils/constants';
 
 const Inputlabel = styled.label`
   display: block;
-  font-size: 16px;
   color: ${FONT_COLOR};
 `;
 

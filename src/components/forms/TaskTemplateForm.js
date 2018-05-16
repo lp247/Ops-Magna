@@ -32,10 +32,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     updateSummary: value => dispatch(updateTaskTemplateSummary(id, value)),
     updateDescription: value => dispatch(updateTaskTemplateDescription(id, value)),
-    updateN: value => {
-      dispatch(updateTaskTemplateN(id, value));
-      dispatch(resetTaskTemplateCounter(id));
-    },
+    updateN: value => dispatch(updateTaskTemplateN(id, value)),
     toggleMonth: value => dispatch(toggleTaskTemplateMonth(id, value)),
     toggleWeek: value => dispatch(toggleTaskTemplateWeek(id, value)),
     toggleDay: value => dispatch(toggleTaskTemplateDay(id, value)),

@@ -4,7 +4,7 @@ import {Router} from 'react-router-dom';
 import {createStore} from 'redux';
 import {Provider} from 'react-redux';
 
-import registerServiceWorker from './registerServiceWorker';
+// import registerServiceWorker from './registerServiceWorker';
 import ops from './redux/ops';
 import './index.css';
 import App from './components/App';
@@ -30,4 +30,4 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('root')
 );
-registerServiceWorker();
+// registerServiceWorker();

@@ -10,6 +10,7 @@ const TCell = styled.td`
   text-decoration: ${props => props.lineThrough ? 'line-through' : 'none'};
   user-select: none;
   color: ${FONT_COLOR};
+  /* font-size: 1.4em; */
   /* border: 1px solid white; */
 `;
 

@@ -202,10 +202,10 @@ describe('Saving task templates', () => {
 	let tt_soft_child_1_modified = getTask('100', '3', 'c', 'd', '2018-04-04', '22:00', false);
 	let tt_soft_new = getTaskTemplate('new').set('tmp', Map({summ: 'c', desc: 'd', n: 10, months: List([3, 4]), weeks: List(), days: List([4, 6, 8]), time: '22:00', start: '2010-01-01', end: '2019-01-01'}));
 	let tt_ctt_modified = getTaskTemplate('2', 'a', 'b', 10, 5, List([3, 4]), List(), List([4]), '12:00', '2010-01-01', '2019-01-01').setIn(['tmp', 'summ'], 'c').setIn(['tmp', 'desc'], 'd').setIn(['tmp', 'time'], '22:00').setIn(['tmp', 'days'], List([4, 6, 8, 10])).setIn(['tmp', 'months'], List([3, 4, 5]));
-	let tt_ctt_saved = getTaskTemplate('2', 'c', 'd', 10, 5, List([3, 4, 5]), List(), List([4, 6, 8, 10]), '22:00', '2010-01-01', '2019-01-01');
+	let tt_ctt_saved = getTaskTemplate('2', 'c', 'd', 10, 6, List([3, 4, 5]), List(), List([4, 6, 8, 10]), '22:00', '2010-01-01', '2019-01-01');
 	let tt_ctt_child_1 = getTask('99', '2', 'a', 'b', '2018-04-04', '12:00', false);
 	let tt_ctt_new_child_today = getTask('100', '2', 'c', 'd', '2018-05-10', '22:00', false);
-	let tt_ctt_new = getTaskTemplate('new').set('tmp', Map({summ: 'c', desc: 'd', n: 10, months: List([3, 4, 5]), weeks: List(), days: List([4, 6, 8, 10]), time: '22:00', start: '2010-01-01', end: '2019-01-01'})).set('cnt', 5);
+	let tt_ctt_new = getTaskTemplate('new').set('tmp', Map({summ: 'c', desc: 'd', n: 10, months: List([3, 4, 5]), weeks: List(), days: List([4, 6, 8, 10]), time: '22:00', start: '2010-01-01', end: '2019-01-01'}));
 	it('saves modifications of data, does not create a child today without match', () => {
 		let initial = S([new_t_clean, tt_soft_child_1], [new_tt_clean, tt_soft_modified]);
 		let final = S([new_t_clean, tt_soft_child_1_modified], [new_tt_clean, tt_soft_saved]);
@@ -218,7 +218,7 @@ describe('Saving task templates', () => {
 	});
 	it('inserts a new task template on saving "new", creates a child today on match', () => {
 		let initial = S([], [tt_ctt_new]);
-		let final = S([tt_ctt_new_child_today.set('tid', '101').set('id', '102')], [new_tt_clean, tt_ctt_saved.set('id', '101')]);
+		let final = S([tt_ctt_new_child_today.set('tid', '101').set('id', '102')], [new_tt_clean, tt_ctt_saved.set('id', '101').set('cnt', 1)]);
 		expect(tasks(initial, saveTaskTemplate('new', moment('2018-05-10'), mockfn))).toEqual(final);
 	});
 	it('inserts a new task template on saving "new", does not create a child today without match', () => {
@@ -644,7 +644,7 @@ describe('Updating last update of tasks', () => {
 		let final = S([new_t_clean], [new_tt_clean, tt_good], '2018-05-10');
 		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
 	});
-	it('adds latest template childs, if counter of template is not full', () => {
+	it('adds latest template child, if counter of template is not full', () => {
 		let initial = S([new_t_clean], [new_tt_clean, tt_overflow], '2018-05-01');
 		let final = S([new_t_clean, tt_child_3], [new_tt_clean, tt_overflow.set('cnt', 5)], '2018-05-10');
 		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);

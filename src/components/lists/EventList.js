@@ -141,7 +141,6 @@ const getUpcoming = (events) => {
  * @param {Map} state State of application.
  */
 const mapStateToProps = state => {
-  console.log(state.toJS());
   return {
     currentEvents: getToday(state.getIn(['events', 'items']).rest()),
     upcomingEvents: getUpcoming(state.getIn(['events', 'items']).rest()),

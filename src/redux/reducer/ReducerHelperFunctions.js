@@ -5,7 +5,25 @@ import checkRecurDateMatch from '../../utils/checkRecurDateMatch';
 import {DAY_CHANGE_HOUR, EVENT_FORECAST_DAYS} from '../../utils/constants';
 import {getTaskTemplate, getTask, getEvent, getRule, getEventTemplate} from '../../utils/objects';
 
-const idToIndexMapper = (mappedFunc, state, root, id, ...rest) => {
+// =================================================================================================
+//      MAPPING FUNCTION
+// =================================================================================================
+
+// const IDIndexMap = (mappedFunc, state, root, id, ...rest) => {
+//   let index;
+//   if (id === 'new') {
+//     index = 0;
+//   } else {
+//     index = state.get(root).findIndex(x => x.get('id') === id);
+//   }
+//   if (index > -1) {
+//     return mappedFunc(state, root, index, ...rest);
+//   } else {
+//     return state;
+//   }
+// }
+
+const IDIndexMap = (root) => (mappedFunc, state, id, ...rest) => {
   let index;
   if (id === 'new') {
     index = 0;
@@ -13,11 +31,19 @@ const idToIndexMapper = (mappedFunc, state, root, id, ...rest) => {
     index = state.get(root).findIndex(x => x.get('id') === id);
   }
   if (index > -1) {
-    return mappedFunc(state, root, index, ...rest);
+    return mappedFunc(state, index, ...rest);
   } else {
     return state;
   }
 }
+
+const IDIndexItemMap = IDIndexMap('items');
+
+const IDIndexTemplateMap = IDIndexMap('templates');
+
+// =================================================================================================
+//      TOGGLING PERIODS
+// =================================================================================================
 
 /**
  * Return a function, which toggles a period list of a task template or event template.
@@ -27,7 +53,7 @@ const idToIndexMapper = (mappedFunc, state, root, id, ...rest) => {
  * @param {List|number} value Toggle value (can be List for full List toggling).
  */
 function togglePeriodAtIndex(period) {
-  return function(state, root, index, value) {
+  return function(state, index, value) {
     let clearDays = false;
     let clearWeeks = false;
     let mod = state;
@@ -78,7 +104,7 @@ function togglePeriodAtIndex(period) {
           fulllist = List(Range(0, 12));
           break;
         }
-        default: throw 'Invalid option!';
+        default: throw new Error('Invalid option!');
       }
 
       // Toggle full lists.
@@ -119,74 +145,159 @@ function togglePeriodAtIndex(period) {
 
   }
 }
+
 export const toggleDays = (state, id, value) => {
-  return idToIndexMapper(togglePeriodAtIndex('days'), state, 'templates', id, value);
-}
-export const toggleWeeks = (state, id, value) => {
-  return idToIndexMapper(togglePeriodAtIndex('weeks'), state, 'templates', id, value);
-}
-export const toggleMonths = (state, id, value) => {
-  return idToIndexMapper(togglePeriodAtIndex('months'), state, 'templates', id, value);
+  return IDIndexTemplateMap(togglePeriodAtIndex('days'), state, id, value);
 }
 
-// UPDATING VALUES
-const updateValueAtIndex = (state, root, index, field, value) => {
+export const toggleWeeks = (state, id, value) => {
+  return IDIndexTemplateMap(togglePeriodAtIndex('weeks'), state, id, value);
+}
+
+export const toggleMonths = (state, id, value) => {
+  return IDIndexTemplateMap(togglePeriodAtIndex('months'), state, id, value);
+}
+
+// =================================================================================================
+//      UPDATING VALUES
+// =================================================================================================
+
+const updateValueAtIndex = (root) => (state, index, field, value) => {
   return state.setIn([root, index, 'tmp', field], value);
 }
-const updateValue = (field, isTemplate) => (state, id, value) => {
-  let root = isTemplate ? 'templates' : 'items';
-  return idToIndexMapper(updateValueAtIndex, state, root, id, field, value);
-}
-export const updateItemSummary = updateValue('summ', false);
-export const updateTemplateSummary = updateValue('summ', true);
-export const updateItemDescription = updateValue('desc', false);
-export const updateTemplateDescription = updateValue('desc', true);
-export const updateItemDate = updateValue('date', false);
-export const updateTemplateStart = updateValue('start', true);
-export const updateTemplateEnd = updateValue('end', true);
-export const updateTemplateN = updateValue('n', true);
-export const updateItemTime = updateValue('time', false);
-export const updateTemplateTime = updateValue('time', true);
 
-// RESETTING COUNTER
-const resetCounterAtIndex = (state, root, index) => {
-  return state.setIn([root, index, 'cnt'], 0);
+// const updateValue = (field, isTemplate) => (state, id, value) => {
+//   let root = isTemplate ? 'templates' : 'items';
+//   return IDIndexMap(updateValueAtIndex, state, root, id, field, value);
+// }
+// export const updateItemSummary = updateValue('summ', false);
+// export const updateTemplateSummary = updateValue('summ', true);
+// export const updateItemDescription = updateValue('desc', false);
+// export const updateTemplateDescription = updateValue('desc', true);
+// export const updateItemDate = updateValue('date', false);
+// export const updateTemplateStart = updateValue('start', true);
+// export const updateTemplateEnd = updateValue('end', true);
+// export const updateTemplateN = updateValue('n', true);
+// export const updateItemTime = updateValue('time', false);
+// export const updateTemplateTime = updateValue('time', true);
+export const updateItemSummary = (state, id, value) => {
+  return IDIndexItemMap(updateValueAtIndex('items'), state, id, 'summ', value);
 }
+
+export const updateTemplateSummary = (state, id, value) => {
+  return IDIndexTemplateMap(updateValueAtIndex('templates'), state, id, 'summ', value);
+}
+
+export const updateItemDescription = (state, id, value) => {
+  return IDIndexItemMap(updateValueAtIndex('items'), state, id, 'desc', value);
+}
+
+export const updateTemplateDescription = (state, id, value) => {
+  return IDIndexTemplateMap(updateValueAtIndex('templates'), state, id, 'desc', value);
+}
+
+export const updateItemDate = (state, id, value) => {
+  return IDIndexItemMap(updateValueAtIndex('items'), state, id, 'date', value);
+}
+
+export const updateTemplateStart = (state, id, value) => {
+  return IDIndexTemplateMap(updateValueAtIndex('templates'), state, id, 'start', value);
+}
+
+export const updateTemplateEnd = (state, id, value) => {
+  return IDIndexTemplateMap(updateValueAtIndex('templates'), state, id, 'end', value);
+}
+
+export const updateTemplateN = (state, id, value) => {
+  return IDIndexTemplateMap(updateValueAtIndex('templates'), state, id, 'n', value);
+}
+
+export const updateItemTime = (state, id, value) => {
+  return IDIndexItemMap(updateValueAtIndex('items'), state, id, 'time', value);
+}
+
+export const updateTemplateTime = (state, id, value) => {
+  return IDIndexTemplateMap(updateValueAtIndex('templates'), state, id, 'time', value);
+}
+
+// =================================================================================================
+//      RESETTING COUNTER
+// =================================================================================================
+
+const resetCounterAtIndex = (state, index) => {
+  return state.setIn(['templates', index, 'cnt'], 0);
+}
+
 export const resetCounter = (state, id) => {
-  return idToIndexMapper(resetCounterAtIndex, state, 'templates', id);
+  return IDIndexTemplateMap(resetCounterAtIndex, state, id);
 }
 
-// INCREMENTING COUNTERS
-const incrementCounterAtIndex = (state, root, index) => {
-  return state.setIn([root, index, 'cnt'], state.getIn([root, index, 'cnt']) + 1);
+// =================================================================================================
+//      INCREMENTING COUNTER
+// =================================================================================================
+
+const incrementCounterAtIndex = (state, index) => {
+  return state.setIn(['templates', index, 'cnt'], state.getIn(['templates', index, 'cnt']) + 1);
 }
+
 export const incrementCounter = (state, id) => {
-  return idToIndexMapper(incrementCounterAtIndex, state, 'templates', id);
+  return IDIndexTemplateMap(incrementCounterAtIndex, state, id);
 }
 
-// TOGGLING TASKS
-const toggleDoneAtIndex = (state, root, index) => {
+// =================================================================================================
+//      TOGGLING TASK
+// =================================================================================================
+
+const toggleDoneAtIndex = (state, index) => {
   return state.setIn(
     ['items', index, 'tmp', 'done'],
     !state.getIn(['items', index, 'tmp', 'done'])
   );
 }
-export const toggleDone = (state, id) => idToIndexMapper(toggleDoneAtIndex, state, 'items', id);
 
-// DISCARDING
-const discardEntityAtIndex = (state, root, index) => {
+export const toggleDone = (state, id) => IDIndexItemMap(toggleDoneAtIndex, state, id);
+
+// =================================================================================================
+//      DISCARDING
+// =================================================================================================
+
+const discardEntityAtIndex = (root) => (state, index) => {
   return state.setIn([root, index, 'tmp'], state.getIn([root, index, 'data']));
 }
-const discardEntity = (isTemplate) => (state, id) => {
-  return idToIndexMapper(discardEntityAtIndex, state, isTemplate ? 'templates' : 'items', id);
-}
-export const discardItem = discardEntity(false);
-export const discardTemplate = discardEntity(true);
 
-// REMOVING
-const removeTemplateAtIndex = (state, root, index) => {
+// const discardEntity = (isTemplate) => (state, id) => {
+//   return IDIndexMap(discardEntityAtIndex, state, isTemplate ? 'templates' : 'items', id);
+// }
+
+export const discardItem = (state, id) => {
+  return IDIndexItemMap(discardEntityAtIndex('items'), state, id);
+}
+
+export const discardTemplate = (state, id) => {
+  return IDIndexTemplateMap(discardEntityAtIndex('templates'), state, id);
+}
+
+// =================================================================================================
+//      REMOVING ITEMS
+// =================================================================================================
+
+const removeItemAtIndex = (state, index) => {
   if (index === 0) {
-    return discardEntityAtIndex(state, 'templates', index);
+    return discardEntityAtIndex('items')(state, index);
+  } else {
+    return state.deleteIn(['items', index]);
+  }
+}
+
+export const removeItem = (state, id) => IDIndexItemMap(removeItemAtIndex, state, id);
+
+// =================================================================================================
+//      REMOVING TEMPLATES
+// =================================================================================================
+
+const removeTemplateAtIndex = (state, index) => {
+  if (index === 0) {
+    return discardEntityAtIndex('templates')(state, index);
   } else {
     let parentID = state.getIn(['templates', index, 'id']);
     return state
@@ -196,18 +307,14 @@ const removeTemplateAtIndex = (state, root, index) => {
       .deleteIn(['templates', index]);
   }
 }
-const removeItemAtIndex = (state, root, index) => {
-  if (index === 0) {
-    return discardEntityAtIndex(state, 'items', index);
-  } else {
-    return state.deleteIn(['items', index]);
-  }
-}
-export const removeItem = (state, id) => idToIndexMapper(removeItemAtIndex, state, 'items', id);
-export const removeTemplate = (state, id) => idToIndexMapper(removeTemplateAtIndex, state, 'templates', id);
 
-// SAVING ITEMS
-const saveItemChangesAtIndex = (state, root, index, newEntity, idGenerator, newtid) => {
+export const removeTemplate = (state, id) => IDIndexTemplateMap(removeTemplateAtIndex, state, id);
+
+// =================================================================================================
+//      SAVING ITEMS
+// =================================================================================================
+
+const saveItemChangesAtIndex = (state, index, newEntity, idGenerator, newtid) => {
   if (index === 0) {
     return state.updateIn(['items'], list => {
       let newObj = list.get(0);
@@ -220,22 +327,57 @@ const saveItemChangesAtIndex = (state, root, index, newEntity, idGenerator, newt
     return state.setIn(['items', index, 'data'], state.getIn(['items', index, 'tmp']));
   }
 }
+
 export const saveTaskChanges = (state, id, idGenerator, newtid = '') => {
   let newObj = getTask('new');
-  return idToIndexMapper(saveItemChangesAtIndex, state, 'items', id, newObj, idGenerator, newtid);
-}
-export const saveEventChanges = (state, id, idGenerator, newtid = '') => {
-  let newObj = getEvent('new');
-  return idToIndexMapper(saveItemChangesAtIndex, state, 'items', id, newObj, idGenerator, newtid);
-}
-export const saveRuleChanges = (state, id, idGenerator) => {
-  let newObj = getRule('new');
-  return idToIndexMapper(saveItemChangesAtIndex, state, 'items', id, newObj, idGenerator, undefined);
+  return IDIndexItemMap(saveItemChangesAtIndex, state, id, newObj, idGenerator, newtid);
 }
 
-// SAVING TEMPLATES
-const saveTaskTemplateChangesAtIndex = (state, root, index, newEntity, today, idGenerator) => {
+export const saveEventChanges = (state, id, idGenerator, newtid = '') => {
+  let newObj = getEvent('new');
+  return IDIndexItemMap(saveItemChangesAtIndex, state, id, newObj, idGenerator, newtid);
+}
+
+export const saveRuleChanges = (state, id, idGenerator) => {
+  let newObj = getRule('new');
+  return IDIndexItemMap(saveItemChangesAtIndex, state, id, newObj, idGenerator, undefined);
+}
+
+// =================================================================================================
+//      TEMPLATE SAVING HELPER FUNCTIONS
+// =================================================================================================
+
+const pushNew = (state, newElementID, emptyNew) => {
+  return state.updateIn(['templates'], list => {
+    let newObj = list.get(0);
+    newObj = newObj.set('id', newElementID);
+    newObj = newObj.set('data', newObj.get('tmp'));
+    return list.push(newObj).set(0, emptyNew);
+  });
+}
+
+const setItemSoftDataAtIndex = (state, index, summ, desc, time) => {
+  return state
+    .setIn(['items', index, 'tmp', 'summ'], summ)
+    .setIn(['items', index, 'tmp', 'desc'], desc)
+    .setIn(['items', index, 'tmp', 'time'], time)
+    .setIn(['items', index, 'data', 'summ'], summ)
+    .setIn(['items', index, 'data', 'desc'], desc)
+    .setIn(['items', index, 'data', 'time'], time);
+}
+
+const rawTemplateSaveAtIndex = (state, index) => {
+  return state.setIn(['templates', index, 'data'], state.getIn(['templates', index, 'tmp']));
+}
+
+// =================================================================================================
+//      SAVING TASK TEMPLATES
+// =================================================================================================
+
+const saveTaskTemplateChangesAtIndex = (state, index, today, idGenerator) => {
   let mod = state;
+  let trueIndex = index;
+  let cnt = mod.getIn(['templates', index, 'cnt']);
   let parentID;
 
   // Save important data before manipulation.
@@ -254,12 +396,8 @@ const saveTaskTemplateChangesAtIndex = (state, root, index, newEntity, today, id
   // If the template is new, no childs have to be considered.
   if (index === 0) {
     parentID = idGenerator();
-    mod = mod.updateIn(['templates'], list => {
-      let newObj = list.get(0);
-      newObj = newObj.set('id', parentID);
-      newObj = newObj.set('data', newObj.get('tmp'));
-      return list.push(newObj).set(0, newEntity);
-    });
+    mod = pushNew(mod, parentID, getTaskTemplate('new'));
+    trueIndex = -1;
 
   // Changing existing templates requires changing existing childs.
   } else {
@@ -277,20 +415,16 @@ const saveTaskTemplateChangesAtIndex = (state, root, index, newEntity, today, id
       let oldDate = mod.getIn(['items', childIndex, 'data', 'date']);
       let oldMatch = checkRecurDateMatch(newM, newW, newD, newSD, newEnd, oldDate, 1, 0);
       if (oldMatch && !newToday) {
-        mod = mod
-          .setIn(['items', childIndex, 'tmp', 'summ'], mod.getIn(['templates', index, 'tmp', 'summ']))
-          .setIn(['items', childIndex, 'tmp', 'desc'], mod.getIn(['templates', index, 'tmp', 'desc']))
-          .setIn(['items', childIndex, 'tmp', 'time'], mod.getIn(['templates', index, 'tmp', 'time']))
-          .setIn(['items', childIndex, 'data', 'summ'], mod.getIn(['templates', index, 'tmp', 'summ']))
-          .setIn(['items', childIndex, 'data', 'desc'], mod.getIn(['templates', index, 'tmp', 'desc']))
-          .setIn(['items', childIndex, 'data', 'time'], mod.getIn(['templates', index, 'tmp', 'time']));
+        mod = setItemSoftDataAtIndex(mod, childIndex, summ, desc, time);
       } else {
+        let oldToday = mod.getIn(['items', childIndex, 'data', 'date']) === today.format('YYYY-MM-DD');
         mod = mod.deleteIn(['items', childIndex]);
+        if (oldToday) cnt -= 1;
       }
     }
 
     // Save template.
-    mod = mod.setIn(['templates', index, 'data'], state.getIn(['templates', index, 'tmp']));
+    mod = rawTemplateSaveAtIndex(mod, index);
   
   }
 
@@ -300,17 +434,28 @@ const saveTaskTemplateChangesAtIndex = (state, root, index, newEntity, today, id
       let id = idGenerator();
       return list.push(getTask(id, parentID, summ, desc, today.format('YYYY-MM-DD'), time, false));
     });
+    cnt += 1;
   }
+
+  // Update counter.
+  mod = mod.setIn(['templates', trueIndex, 'cnt'], cnt);
 
   return mod;
 }
+
 export const saveTaskTemplateChanges = (state, id, today, idGenerator) => {
-  let newObj = getTaskTemplate('new');
-  return idToIndexMapper(saveTaskTemplateChangesAtIndex, state, 'templates', id, newObj, today, idGenerator);
+  return IDIndexTemplateMap(saveTaskTemplateChangesAtIndex, state, id, today, idGenerator);
 }
 
-const saveEventTemplateChangesAtIndex = (state, root, index, newEntity, today, idGenerator) => {
+// =================================================================================================
+//      SAVING EVENT TEMPLATES
+// =================================================================================================
+
+const saveEventTemplateChangesAtIndex = (state, index, today, idGenerator) => {
   let mod = state;
+  let trueIndex = index;
+  let cnt = mod.getIn(['templates', index, 'cnt']);
+  let n = mod.getIn(['templates', index, 'tmp', 'n']);
   let parentID;
 
   // Save important data before manipulation.
@@ -326,12 +471,8 @@ const saveEventTemplateChangesAtIndex = (state, root, index, newEntity, today, i
   // If the template is new, no childs have to be considered.
   if (index === 0) {
     parentID = idGenerator();
-    mod = mod.updateIn(['templates'], list => {
-      let newObj = list.get(0);
-      newObj = newObj.set('id', parentID);
-      newObj = newObj.set('data', newObj.get('tmp'));
-      return list.push(newObj).set(0, newEntity);
-    });
+    mod = pushNew(mod, parentID, getEventTemplate('new'));
+    trueIndex = mod.getIn(['templates']).size - 1;
 
   // Changing existing templates requires changing existing childs.
   } else {
@@ -339,11 +480,17 @@ const saveEventTemplateChangesAtIndex = (state, root, index, newEntity, today, i
     // Get id of parent template.
     parentID = mod.getIn(['templates', index, 'id']);
 
+    // Get number of childs.
+    let numChilds = mod.getIn(['items']).filter(x => x.get('tid') === parentID).size;
+
     // Filter out childs. New ones will be inserted afterwards.
     mod = mod.updateIn(['items'], list => list.filterNot(x => x.get('tid') === parentID));
 
+    // Decrement counter by number of removed childs.
+    cnt -= numChilds;
+
     // Save template.
-    mod = mod.setIn(['templates', index, 'data'], state.getIn(['templates', index, 'tmp']));
+    mod = rawTemplateSaveAtIndex(mod, index);
   
   }
 
@@ -356,17 +503,25 @@ const saveEventTemplateChangesAtIndex = (state, root, index, newEntity, today, i
         let id = idGenerator();
         return list.push(getEvent(id, parentID, summ, desc, checkDate.format('YYYY-MM-DD'), time));
       });
+      cnt += 1;
     }
+    if (cnt >= n) break;
   }
+
+  // Update counter.
+  mod = mod.setIn(['templates', trueIndex, 'cnt'], cnt);
 
   return mod;
 }
+
 export const saveEventTemplateChanges = (state, id, today, idGenerator) => {
-  let newObj = getEventTemplate('new');
-  return idToIndexMapper(saveEventTemplateChangesAtIndex, state, 'templates', id, newObj, today, idGenerator);
+  return IDIndexTemplateMap(saveEventTemplateChangesAtIndex, state, id, today, idGenerator);
 }
 
-// UPDATING TASKS AND EVENTS
+// =================================================================================================
+//      UPDATING TASKS
+// =================================================================================================
+
 export const updateTasks = (state, today, idGen) => {
   let mod = state;
 
@@ -435,6 +590,10 @@ export const updateTasks = (state, today, idGen) => {
   return mod;
 
 }
+
+// =================================================================================================
+//      UPDATING EVENTS
+// =================================================================================================
 
 export const updateEvents = (state, today, idGen) => {
   let mod = state;

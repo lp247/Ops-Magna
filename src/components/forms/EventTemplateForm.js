@@ -32,10 +32,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     updateSummary: value => dispatch(updateEventTemplateSummary(id, value)),
     updateDescription: value => dispatch(updateEventTemplateDescription(id, value)),
-    updateN: value => {
-      dispatch(updateEventTemplateN(id, value));
-      dispatch(resetEventTemplateCounter(id));
-    },
+    updateN: value => dispatch(updateEventTemplateN(id, value)),
     toggleMonth: value => dispatch(toggleEventTemplateMonth(id, value)),
     toggleWeek: value => dispatch(toggleEventTemplateWeek(id, value)),
     toggleDay: value => dispatch(toggleEventTemplateDay(id, value)),

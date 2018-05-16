@@ -9,7 +9,7 @@ const Selector = styled.p`
   width: ${props => props.width || 'auto'};
   height: ${props => props.square ? props.width : 'auto'};
   text-align: center;
-  font-size: ${props => props.small ? '16px' : 'inherit'};
+  font-size: ${props => props.small ? '1.2rem' : 'inherit'};
   line-height: ${props => props.square ? props.width : 'normal'};
   border: 2px solid ${props => props.selected && !props.invisible ? ACCENT_COLOR : TRANSPARENT};
   color: ${props => props.invisible ? TRANSPARENT : ACCENT_COLOR};

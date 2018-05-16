@@ -44,15 +44,17 @@ const StyledGhost = styled.div`
 class DynamicTextarea extends Component {
   constructor(props) {
 		super(props);
-    this.state = {inputRows: 1, ghostWidth: 0};
+    this.state = {inputRows: 1, ghostWidth: 0, ghostLineHeight: 0};
     this.input = null;
     this.ghost = null;
     this.adjustInputRows = this.adjustInputRows.bind(this);
     this.adjustGhostWidth = this.adjustGhostWidth.bind(this);
+    this.calcLineHeight = this.calcLineHeight.bind(this);
 	}
 	
 	componentDidMount() {
     this.adjustGhostWidth();
+    this.calcLineHeight();
     this.adjustInputRows();
   }
   
@@ -65,8 +67,12 @@ class DynamicTextarea extends Component {
   }
   
   adjustInputRows() {
-    let ghostRows = Math.max(Math.floor(this.ghost.clientHeight / 25), 1);
+    let ghostRows = Math.max(Math.floor(this.ghost.clientHeight / this.state.ghostLineHeight), 1);
     if (ghostRows !== this.state.inputRows) this.setState({inputRows: ghostRows});
+  }
+
+  calcLineHeight() {
+    this.setState({ghostLineHeight: this.ghost.clientHeight});
   }
 
   render() {
@@ -77,7 +83,7 @@ class DynamicTextarea extends Component {
         key={1}
         innerRef={ref => this.input = ref}
         rows={inputRows}
-        autoFocus={true}
+        autoFocus={false}
         value={value}
         {...rest}
       />,
@@ -86,7 +92,7 @@ class DynamicTextarea extends Component {
         innerRef={ref => this.ghost = ref}
         aria-hidden="true"
         width={ghostWidth}
-      >{value}</StyledGhost>
+      >{value || 'I'}</StyledGhost>
     ];
   }
 }

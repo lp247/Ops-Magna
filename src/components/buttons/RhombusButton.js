@@ -6,7 +6,6 @@ import svgWrapper from './svgWrapper';
 
 const RhombusIcon = ({large, filled}) => {
   let cpid = _.uniqueId('rhombusclip_');
-  console.log(filled);
   return (
     <g>
       <defs key={1}>

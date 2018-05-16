@@ -18,7 +18,7 @@ const FormButtonGroup = ({showDelete, save, discard, del}) => (
         ? null
         : <TextButton
           padding={8}
-          onClick={() => {if(window.confirm('Möchten Sie den Eintrag wirklich löschen?')) del();}}
+          onClick={del}
         >Löschen</TextButton>
       }
     </FlexContainer>
