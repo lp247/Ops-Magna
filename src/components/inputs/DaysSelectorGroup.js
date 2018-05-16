@@ -8,7 +8,7 @@ import Selector from '../buttons/Selector';
 import DateInput from '../inputs/DateInput';
 import {DAY_CHANGE_HOUR} from '../../utils/constants';
 
-const DaysSelector = ({entity, toggleDay}) => (
+const DaysSelectorGroup = ({entity, toggleDay}) => (
   <Subsection>
     {entity.getIn(['tmp', 'weeks']).size > 0
       ? <FlexContainer jc='space-between'>
@@ -88,4 +88,4 @@ const DaysSelector = ({entity, toggleDay}) => (
   </Subsection>
 );
 
-export default DaysSelector;
+export default DaysSelectorGroup;

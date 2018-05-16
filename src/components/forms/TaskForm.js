@@ -19,11 +19,13 @@ import DoneSelector from '../inputs/DoneSelector';
 import SummInput from '../inputs/SummInput';
 import DescInput from '../inputs/DescInput';
 import FormButtonGroup from '../buttons/FormButtonGroup';
+import {NewTaskHeader, EditTaskHeader} from '../../utils/translations';
 
 const RawTaskForm = ({
   task,
   header,
   showDelete,
+  lang,
   updateSummary,
   updateDescription,
   updateDate,
@@ -35,20 +37,22 @@ const RawTaskForm = ({
 }) => (
   <Section>
     <Header>{header}</Header>
-    <DateTimeSelectorGroup entity={task} updateDate={updateDate} updateTime={updateTime} />
+    <DateTimeSelectorGroup entity={task} updateDate={updateDate} updateTime={updateTime} lang={lang} />
     <DoneSelector entity={task} updateDone={updateDone} />
-    <SummInput entity={task} updateSummary={updateSummary} />
-    <DescInput entity={task} updateDescription={updateDescription} />
-    <FormButtonGroup showDelete={showDelete} save={save} discard={discard} del={del} />
+    <SummInput entity={task} updateSummary={updateSummary} lang={lang} />
+    <DescInput entity={task} updateDescription={updateDescription} lang={lang} />
+    <FormButtonGroup showDelete={showDelete} save={save} discard={discard} del={del} lang={lang} />
   </Section>
 );
 
 const mapStateToProps = (state, ownProps) => {
   let {id} = ownProps.match.params;
+  let lang = state.get('lang');
   return {
     task: state.getIn(['tasks', 'items']).find(x => x.get('id') === id),
-    header: id === 'new' ? 'Neue einmalige Aufgabe' : 'Einmalige Aufgabe bearbeiten',
-    showDelete: id === 'new'
+    header: id === 'new' ? NewTaskHeader[lang] : EditTaskHeader[lang],
+    showDelete: id === 'new',
+    lang
   }
 }
 

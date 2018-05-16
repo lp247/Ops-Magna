@@ -14,11 +14,13 @@ import {
 import SummInput from '../inputs/SummInput';
 import DescInput from '../inputs/DescInput';
 import FormButtonGroup from '../buttons/FormButtonGroup';
+import { NewRuleHeader, EditRuleHeader } from '../../utils/translations';
 
 const RawRuleForm = ({
   rule,
   header,
   showDelete,
+  lang,
   updateSummary,
   updateDescription,
   save,
@@ -27,18 +29,20 @@ const RawRuleForm = ({
 }) => (
   <Section>
     <Header>{header}</Header>
-    <SummInput entity={rule} updateSummary={updateSummary} />
-    <DescInput entity={rule} updateDescription={updateDescription} />
-    <FormButtonGroup showDelete={showDelete} save={save} discard={discard} del={del} />
+    <SummInput entity={rule} updateSummary={updateSummary} lang={lang}/>
+    <DescInput entity={rule} updateDescription={updateDescription} lang={lang} />
+    <FormButtonGroup showDelete={showDelete} save={save} discard={discard} del={del} lang={lang} />
   </Section>
 );
 
 const mapStateToProps = (state, ownProps) => {
   let {id} = ownProps.match.params;
+  let lang = state.get('lang');
   return {
     rule: state.getIn(['rules', 'items']).find(x => x.get('id') === id),
-    header: id === 'new' ? 'Neue Regel' : 'Regel bearbeiten',
-    showDelete: id === 'new'
+    header: id === 'new' ? NewRuleHeader[lang] : EditRuleHeader[lang],
+    showDelete: id === 'new',
+    lang
   }
 }
 

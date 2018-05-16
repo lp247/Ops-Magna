@@ -4,8 +4,22 @@ import {List} from 'immutable';
 import Subsection from '../container/Subsection';
 import FlexContainer from '../container/FlexContainer';
 import Selector from '../buttons/Selector';
+import {
+  JanuaryShort,
+  FebruaryShort,
+  MarchShort,
+  AprilShort,
+  MayShort,
+  JuneShort,
+  JulyShort,
+  AugustShort,
+  SeptemberShort,
+  OctoberShort,
+  NovemberShort,
+  DecemberShort
+} from '../../utils/translations';
 
-const MonthsSelector = ({entity, toggleMonth, toggleWeek, toggleDay}) => (
+const MonthsSelectorGroup = ({entity, toggleMonth, toggleWeek, toggleDay, lang}) => (
   <Subsection>
     <FlexContainer jc='space-between' wrp>
       <Selector
@@ -15,7 +29,20 @@ const MonthsSelector = ({entity, toggleMonth, toggleWeek, toggleDay}) => (
         selected={entity.getIn(['tmp', 'months']).size === 12}
         onClick={() => toggleMonth('all')}
       >Λ</Selector>
-      {List(['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']).map((val, index) => {
+      {List([
+        JanuaryShort[lang],
+        FebruaryShort[lang],
+        MarchShort[lang],
+        AprilShort[lang],
+        MayShort[lang],
+        JuneShort[lang],
+        JulyShort[lang],
+        AugustShort[lang],
+        SeptemberShort[lang],
+        OctoberShort[lang],
+        NovemberShort[lang],
+        DecemberShort[lang]
+      ]).map((val, index) => {
         return (
           <Selector
             key={index}
@@ -31,4 +58,4 @@ const MonthsSelector = ({entity, toggleMonth, toggleWeek, toggleDay}) => (
   </Subsection>
 );
 
-export default MonthsSelector;
+export default MonthsSelectorGroup;

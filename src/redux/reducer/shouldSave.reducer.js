@@ -16,6 +16,7 @@ import {
   SAVE_RULE
 } from '../actions/rules.actions';
 import {UNSET_SHOULD_SAVE} from '../actions/shouldSave.actions';
+import {TOGGLE_LANGUAGE} from '../actions/lang.actions';
 
 function shouldSave(state = false, action) {
   switch (action.type) {
@@ -30,6 +31,7 @@ function shouldSave(state = false, action) {
     case SAVE_TASK:
     case SAVE_TASK_TEMPLATE:
     case TOGGLE_TASK_DONE:
+    case TOGGLE_LANGUAGE:
       return true;
     case UNSET_SHOULD_SAVE:
     default:

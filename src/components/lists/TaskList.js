@@ -21,6 +21,7 @@ import TemplateList from './TemplateList';
 import FastInput from './FastInput';
 import MoonButton from '../buttons/MoonButton';
 import SunButton from '../buttons/SunButton';
+import {TaskListHeader} from '../../utils/translations';
 
 const PrevUncompletedList = ({tasks, editTask, toggleTask}) => {
   return tasks.map((task, index) => {
@@ -68,6 +69,7 @@ const RawTaskList = ({
   taskTemplates,
   showTemplates,
   ftt,
+  lang,
   toggleTask,
   editTask,
   fttHandler,
@@ -95,7 +97,7 @@ const RawTaskList = ({
       margin='10px 6px 0 24px'
       onClick={openNewTaskTemplateForm}
     />
-    <Header>Aufgaben</Header>
+    <Header>{TaskListHeader[lang]}</Header>
     <Subsection>
       {showTemplates
         ? <Table><TemplateList templates={taskTemplates} edit={editTask} /></Table>
@@ -155,7 +157,8 @@ const mapStateToProps = state => {
     prevUncompletedTasks: getUncompleted(state.getIn(['tasks', 'items']).rest()),
     taskTemplates: state.getIn(['tasks', 'templates']).rest().sort(maplistsort(['summ'])),
     showTemplates: state.get('showTaskTemplates'),
-    ftt: state.getIn(['tasks', 'items', 0, 'tmp', 'summ'])
+    ftt: state.getIn(['tasks', 'items', 0, 'tmp', 'summ']),
+    lang: state.get('lang')
   }
 }
 

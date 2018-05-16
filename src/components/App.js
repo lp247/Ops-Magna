@@ -11,14 +11,16 @@ import EventForm from './forms/EventForm';
 import RuleForm from './forms/RuleForm';
 import TaskTemplateForm from './forms/TaskTemplateForm';
 import EventTemplateForm from './forms/EventTemplateForm';
+import TitleBar from './TitleBar';
 
 const App = () => (
   <Page>
     <ContentWrapper>
       <Route exact path='/' render={() => [
-        <RuleList key={1} />,
-        <TaskList key={2} />,
-        <EventList key={3} />,
+        <TitleBar key={1} />,
+        <RuleList key={2} />,
+        <TaskList key={3} />,
+        <EventList key={4} />
       ]} />
       <Route path='/t/:id' component={TaskForm} />
       <Route path='/e/:id' component={EventForm} />

@@ -5,7 +5,7 @@ import Subsection from '../container/Subsection';
 import FlexContainer from '../container/FlexContainer';
 import Selector from '../buttons/Selector';
 
-const WeeksSelector = ({entity, toggleWeek, toggleDay}) => (
+const WeeksSelectorGroup = ({entity, toggleWeek, toggleDay}) => (
   <Subsection>
     {entity.getIn(['tmp', 'months']).size > 0
       ? <FlexContainer jc='space-between' wrp>
@@ -54,4 +54,4 @@ const WeeksSelector = ({entity, toggleWeek, toggleDay}) => (
   </Subsection>
 );
 
-export default WeeksSelector;
+export default WeeksSelectorGroup;

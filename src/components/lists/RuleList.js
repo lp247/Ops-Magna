@@ -13,6 +13,7 @@ import {updateRuleSummary, saveRule} from '../../redux/actions/rules.actions';
 import FastInput from './FastInput';
 import Placeholder from '../buttons/Placeholder';
 import MoonButton from '../buttons/MoonButton';
+import {RuleListHeader} from '../../utils/translations';
 
 const CoreList = ({rules, editRule}) => {
   return rules.map((rule, index) => {
@@ -31,6 +32,7 @@ const CoreList = ({rules, editRule}) => {
 const RawRuleList = ({
   rules,
   frt,
+  lang,
   editRule,
   frtHandler,
   openNewRuleForm
@@ -47,7 +49,7 @@ const RawRuleList = ({
       margin='10px 6px 0 24px'
       onClick={openNewRuleForm}
     />
-    <Header>Regeln</Header>
+    <Header>{RuleListHeader[lang]}</Header>
     <Subsection>
       <Table>
         <CoreList rules={rules} editRule={editRule} />
@@ -64,7 +66,8 @@ const RawRuleList = ({
 const mapStateToProps = state => {
   return {
     rules: state.getIn(['rules', 'items']).rest(),
-    frt: state.getIn(['rules', 'items', 0, 'tmp', 'summ'])
+    frt: state.getIn(['rules', 'items', 0, 'tmp', 'summ']),
+    lang: state.get('lang')
   }
 }
 

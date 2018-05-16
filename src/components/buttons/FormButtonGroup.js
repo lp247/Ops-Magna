@@ -3,23 +3,24 @@ import React from 'react';
 import Subsection from '../container/Subsection';
 import FlexContainer from '../container/FlexContainer';
 import TextButton from './TextButton';
+import {SaveButtonText, AbortButtonText, DeleteButtonText} from '../../utils/translations';
 
-const FormButtonGroup = ({showDelete, save, discard, del}) => (
+const FormButtonGroup = ({showDelete, save, discard, del, lang}) => (
   <Subsection>
     <FlexContainer jc='space-evenly'>
       <TextButton
         onClick={save}
-      >Speichern</TextButton>
+      >{SaveButtonText[lang]}</TextButton>
       <TextButton
         padding={8}
         onClick={discard}
-      >Abbrechen</TextButton>
+      >{AbortButtonText[lang]}</TextButton>
       {showDelete
         ? null
         : <TextButton
           padding={8}
           onClick={del}
-        >Löschen</TextButton>
+        >{DeleteButtonText[lang]}</TextButton>
       }
     </FlexContainer>
   </Subsection>

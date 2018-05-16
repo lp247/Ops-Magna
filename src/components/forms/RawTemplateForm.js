@@ -15,6 +15,7 @@ const RawTemplateForm = ({
   entity,
   header,
   showDelete,
+  lang,
   updateSummary,
   updateDescription,
   updateN,
@@ -35,29 +36,31 @@ const RawTemplateForm = ({
       toggleMonth={toggleMonth}
       toggleWeek={toggleWeek}
       toggleDay={toggleDay}
-    />,
+      lang={lang}
+    />
     <WeeksSelectorGroup
       entity={entity}
       toggleWeek={toggleWeek}
       toggleDay={toggleDay}
-    />,
+    />
     <DaysSelectorGroup
       entity={entity}
       toggleDay={toggleDay}
-    />,
+    />
     <StartEndTimeSelectorGroup
       entity={entity}
       updateStart={updateStart}
       updateEnd={updateEnd}
       updateTime={updateTime}
+      lang={lang}
     />
     <NSelectorGroup
       entity={entity}
       updateN={updateN}
     />
-    <SummInput entity={entity} updateSummary={updateSummary} />
-    <DescInput entity={entity} updateDescription={updateDescription} />
-    <FormButtonGroup showDelete={showDelete} save={save} discard={discard} del={del} />
+    <SummInput entity={entity} updateSummary={updateSummary} lang={lang} />
+    <DescInput entity={entity} updateDescription={updateDescription} lang={lang} />
+    <FormButtonGroup showDelete={showDelete} save={save} discard={discard} del={del} lang={lang} />
   </Section>
 );
 

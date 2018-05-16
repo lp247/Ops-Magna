@@ -4,13 +4,14 @@ import Subsection from '../container/Subsection';
 import FlexContainer from '../container/FlexContainer';
 import NumberInput from '../inputs/NumberInput';
 import BasicSpan from '../texts/BasicSpan';
+import {OfText, RecurrencesText} from '../../utils/translations';
 
-const StartEndTimeSelectorGroup = ({entity, updateN}) => (
+const NSelectorGroup = ({entity, updateN, lang}) => (
   <Subsection>
     <FlexContainer jc='space-around'>
-			<BasicSpan>Wiederholungen:</BasicSpan>
+			<BasicSpan>{RecurrencesText[lang]}</BasicSpan>
 			<BasicSpan>{entity.getIn(['tmp', 'cnt'])}</BasicSpan>
-			<BasicSpan>von</BasicSpan>
+			<BasicSpan>{OfText[lang]}</BasicSpan>
       <NumberInput
         width='10%'
         value={entity.getIn(['tmp', 'n'])}
@@ -20,4 +21,4 @@ const StartEndTimeSelectorGroup = ({entity, updateN}) => (
   </Subsection>
 );
 
-export default StartEndTimeSelectorGroup;
+export default NSelectorGroup;

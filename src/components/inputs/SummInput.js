@@ -2,13 +2,14 @@ import React from 'react';
 
 import Subsection from '../container/Subsection';
 import TextInput from '../inputs/TextInput';
+import {SummaryLabel} from '../../utils/translations';
 
-const SummInput = ({entity, updateSummary}) => (
+const SummInput = ({entity, updateSummary, lang}) => (
   <Subsection>
     <TextInput
       value={entity.getIn(['tmp', 'summ'])}
       onChange={e => updateSummary(e.target.value)}
-    >Kurzbeschreibung</TextInput>
+    >{SummaryLabel[lang]}</TextInput>
   </Subsection>
 );
 

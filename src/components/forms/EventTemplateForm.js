@@ -13,17 +13,19 @@ import {
   updateEventTemplateEnd,
   saveEventTemplate,
   discardEventTemplate,
-  removeEventTemplate,
-  resetEventTemplateCounter
+  removeEventTemplate
 } from '../../redux/actions/events.actions';
 import RawTemplateForm from './RawTemplateForm';
+import {NewEventTemplateHeader, EditEventTemplateHeader} from '../../utils/translations';
 
 const mapStateToProps = (state, ownProps) => {
   let {id} = ownProps.match.params;
+  let lang = state.get('lang');
   return {
     entity: state.getIn(['events', 'templates']).find(x => x.get('id') === id),
-    header: id === 'new' ? 'Neuer wiederholender Termin' : 'Wiederholenden Termin bearbeiten',
-    showDelete: id === 'new'
+    header: id === 'new' ? NewEventTemplateHeader[lang] : EditEventTemplateHeader[lang],
+    showDelete: id === 'new',
+    lang
   }
 }
 

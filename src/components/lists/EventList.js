@@ -22,6 +22,7 @@ import FastInput from './FastInput';
 import TemplateList from './TemplateList';
 import MoonButton from '../buttons/MoonButton';
 import SunButton from '../buttons/SunButton';
+import {EventListHeader} from '../../utils/translations';
 
 const CurrentList = ({events, editEvent}) => {
   return events.map((event, index) => {
@@ -43,11 +44,11 @@ const CurrentList = ({events, editEvent}) => {
   });
 }
 
-const UpcomingList = ({events, editEvent}) => {
+const UpcomingList = ({events, editEvent, lang}) => {
   return events.map((event, index) => {
     let date = event.getIn(['data', 'date']);
     let time = event.getIn(['data', 'time']);
-    let weekday = getWeekday(moment(event.getIn(['data', 'date'])).isoWeekday(), true);
+    let weekday = getWeekday(moment(event.getIn(['data', 'date'])).isoWeekday(), true, lang);
     let datetimestr = '[' + weekday + ' ' + date + ' ' + time + ']';
     let datestr = '[' + weekday + ' ' + date + ']';
     let summ = event.getIn(['data', 'summ']);
@@ -70,6 +71,7 @@ const RawEventList = ({
   eventTemplates,
   showTemplates,
   fet,
+  lang,
   editEvent,
   fetHandler,
   toggleFilter,
@@ -96,13 +98,13 @@ const RawEventList = ({
       margin='10px 6px 0 24px'
       onClick={openNewEventTemplateForm}
     />
-    <Header>Termine</Header>
+    <Header>{EventListHeader[lang]}</Header>
     <Subsection>
       {showTemplates
         ? <Table><TemplateList templates={eventTemplates} edit={editEvent} /></Table>
         : <Table>
           <CurrentList key={1} events={currentEvents} editEvent={editEvent} />
-          <UpcomingList key={2} events={upcomingEvents} editEvent={editEvent} />
+          <UpcomingList key={2} events={upcomingEvents} editEvent={editEvent} lang={lang} />
           <FastInput key={3} value={fet} handler={fetHandler} />
         </Table>
       }
@@ -141,12 +143,14 @@ const getUpcoming = (events) => {
  * @param {Map} state State of application.
  */
 const mapStateToProps = state => {
+  console.log(state.get('lang'));
   return {
     currentEvents: getToday(state.getIn(['events', 'items']).rest()),
     upcomingEvents: getUpcoming(state.getIn(['events', 'items']).rest()),
     eventTemplates: state.getIn(['events', 'templates']).rest().sort(maplistsort(['summ'])),
     showTemplates: state.get('showEventTemplates'),
-    fet: state.getIn(['events', 'items', 0, 'tmp', 'summ'])
+    fet: state.getIn(['events', 'items', 0, 'tmp', 'summ']),
+    lang: state.get('lang')
   }
 }
 

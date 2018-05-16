@@ -13,17 +13,19 @@ import {
   updateTaskTemplateEnd,
   saveTaskTemplate,
   discardTaskTemplate,
-  removeTaskTemplate,
-  resetTaskTemplateCounter
+  removeTaskTemplate
 } from '../../redux/actions/tasks.actions';
 import RawTemplateForm from './RawTemplateForm';
+import {NewTaskTemplateHeader, EditTaskTemplateHeader} from '../../utils/translations';
 
 const mapStateToProps = (state, ownProps) => {
   let {id} = ownProps.match.params;
+  let lang = state.get('lang');
   return {
     entity: state.getIn(['tasks', 'templates']).find(x => x.get('id') === id),
-    header: id === 'new' ? 'Neue wiederholende Aufgabe' : 'Wiederholende Aufgabe bearbeiten',
-    showDelete: id === 'new'
+    header: id === 'new' ? NewTaskTemplateHeader[lang] : EditTaskTemplateHeader[lang],
+    showDelete: id === 'new',
+    lang
   }
 }
 
