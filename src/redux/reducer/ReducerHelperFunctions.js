@@ -72,7 +72,7 @@ function togglePeriodAtIndex(period) {
       clearWeeks = true;
     }
   
-    // Full list toggle, if value is -1.
+    // Full list toggle, if value is 'all'.
     if (value === 'all') {
 
       // Calculate full lists.
@@ -120,7 +120,7 @@ function togglePeriodAtIndex(period) {
       if (valueIndex > -1) {
         mod = mod.deleteIn(['templates', index, 'tmp', period, valueIndex]);
       } else {
-        mod = mod.updateIn(['templates', index, 'tmp', period], list => list.push(value));
+        mod = mod.updateIn(['templates', index, 'tmp', period], list => list.push(value).sort());
       }
   
     }
@@ -523,72 +523,81 @@ export const saveEventTemplateChanges = (state, id, today, idGenerator) => {
 // =================================================================================================
 
 export const updateTasks = (state, today, idGen) => {
-  let mod = state;
+  let lastUpdate = state.get('lastUpdate');
+  if (moment(today).isAfter(lastUpdate, 'day')) {
+    let mod = state;
 
-  // Clear all completed tasks of past days.
-  mod = mod.updateIn(['items'], list => list.filterNot(x => {
-    return today.clone().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.getIn(['data', 'date']), 'day')
-      && x.getIn(['data', 'done']);
-  }));
+    // Clear all completed tasks of past days.
+    mod = mod.updateIn(['items'], list => list.filterNot(x => {
+      return today.clone().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.getIn(['data', 'date']), 'day')
+        && x.getIn(['data', 'done']);
+    }));
 
-  // Clear all old or full task templates without any childs.
-  mod = mod.updateIn(['templates'], list => list.filter(x => {
-    let hasChilds = mod.get('items').findIndex(y => y.get('tid') === x.get('id')) > -1;
-    let notOld = moment(mod.get('lastUpdate')).subtract(DAY_CHANGE_HOUR, 'hours').isBefore(x.getIn(['data', 'end']));
-    let notFull = x.get('cnt') < x.getIn(['data', 'n']);
-    return hasChilds || (notOld && notFull) || x.get('id') === 'new';
-  }));
+    // Clear all old or full task templates without any childs. Task templates are defined old, when
+    // the last update of tasks is before the end. The last update is used and not today, because
+    // there might be other childs to be generated before removing the template.
+    mod = mod.updateIn(['templates'], list => list.filter(x => {
+      let hasChilds = mod.get('items').findIndex(y => y.get('tid') === x.get('id')) > -1;
+      let notOld = moment(mod.get('lastUpdate'))
+        .isBefore(x.getIn(['data', 'end']))
+        || !x.getIn(['data', 'end']);
+      let notFull = x.get('cnt') < x.getIn(['data', 'n']);
+      return hasChilds || (notOld && notFull) || x.get('id') === 'new';
+    }));
 
-  // Loop through all task templates.
-  let taskTemplates = mod.get('templates');
-  for (let i = 1; i < taskTemplates.size; i++) {
-    
-    // Calculate the relevant date and extract relevant information out of the current event
-    // template.
-    let tid = taskTemplates.getIn([i, 'id']);
-    let months = taskTemplates.getIn([i, 'data', 'months']);
-    let weeks = taskTemplates.getIn([i, 'data', 'weeks']);
-    let days = taskTemplates.getIn([i, 'data', 'days']);
-    let sd = taskTemplates.getIn([i, 'data', 'start']);
-    let ed = taskTemplates.getIn([i, 'data', 'end']);
-    let n = taskTemplates.getIn([i, 'data', 'n']);
-    let cnt = taskTemplates.getIn([i, 'cnt']);
-    let summ = taskTemplates.getIn([i, 'data', 'summ']);
-    let desc = taskTemplates.getIn([i, 'data', 'desc']);
-    let time = taskTemplates.getIn([i, 'data', 'time']);
+    // Loop through all task templates.
+    let taskTemplates = mod.get('templates');
+    for (let i = 1; i < taskTemplates.size; i++) {
+      
+      // Calculate the relevant date and extract relevant information out of the current event
+      // template.
+      let tid = taskTemplates.getIn([i, 'id']);
+      let months = taskTemplates.getIn([i, 'data', 'months']);
+      let weeks = taskTemplates.getIn([i, 'data', 'weeks']);
+      let days = taskTemplates.getIn([i, 'data', 'days']);
+      let sd = taskTemplates.getIn([i, 'data', 'start']);
+      let ed = taskTemplates.getIn([i, 'data', 'end']);
+      let n = taskTemplates.getIn([i, 'data', 'n']);
+      let cnt = taskTemplates.getIn([i, 'cnt']);
+      let summ = taskTemplates.getIn([i, 'data', 'summ']);
+      let desc = taskTemplates.getIn([i, 'data', 'desc']);
+      let time = taskTemplates.getIn([i, 'data', 'time']);
 
-    // Loop through all relevant days.
-    let checkDate = moment(mod.get('lastUpdate'));
-    while (checkDate.isBefore(today, 'day')) {
-        
-      // Move one day ahead.
-      checkDate.add(1, 'days');
+      // Loop through all relevant days.
+      let checkDate = moment(mod.get('lastUpdate'));
+      while (checkDate.isBefore(today, 'day')) {
+          
+        // Move one day ahead.
+        checkDate.add(1, 'days');
 
-      // Check, whether the given information matches the given date and if it does,
-      // insert a child of the current template into the list of items. If a child of the same
-      // template already exists on a previous date, it will be removed.
-      let dateCheck = checkRecurDateMatch(months, weeks, days, sd, ed, checkDate, n, cnt);
-      if (dateCheck) {
-        mod = mod.updateIn(['items'], list => list.filterNot(x => x.get('tid') === tid));
-        mod = mod.updateIn(['items'], list => list.push(
-          getTask(idGen(), tid, summ, desc, checkDate.format('YYYY-MM-DD'), time, false)
-        ));
-        cnt = cnt + 1;
+        // Check, whether the given information matches the given date and if it does,
+        // insert a child of the current template into the list of items. If a child of the same
+        // template already exists on a previous date, it will be removed.
+        let dateCheck = checkRecurDateMatch(months, weeks, days, sd, ed, checkDate, n, cnt);
+        if (dateCheck) {
+          mod = mod.updateIn(['items'], list => list.filterNot(x => x.get('tid') === tid));
+          mod = mod.updateIn(['items'], list => list.push(
+            getTask(idGen(), tid, summ, desc, checkDate.format('YYYY-MM-DD'), time, false)
+          ));
+          cnt = cnt + 1;
+        }
+
       }
+
+      // Update counter.
+      mod = mod.setIn(['templates', i, 'cnt'], cnt);
 
     }
 
-    // Update counter.
-    mod = mod.setIn(['templates', i, 'cnt'], cnt);
+    // Update last update.
+    mod = mod.set('lastUpdate', today.format('YYYY-MM-DD'));
 
+    // Return modified state.
+    return mod;
+
+  } else {
+    return state;
   }
-
-  // Update last update.
-  mod = mod.set('lastUpdate', today.format('YYYY-MM-DD'));
-
-  // Return modified state.
-  return mod;
-
 }
 
 // =================================================================================================
@@ -596,73 +605,78 @@ export const updateTasks = (state, today, idGen) => {
 // =================================================================================================
 
 export const updateEvents = (state, today, idGen) => {
-  let mod = state;
-
-  // Clear all old or full event templates without any childs.
-  mod = mod.updateIn(['templates'], list => list.filter(x => {
-    let hasChilds = mod.get('items').findIndex(y => y.get('tid') === x.get('id')) > -1;
-    let notOld = today.clone().subtract(DAY_CHANGE_HOUR, 'hours').isBefore(x.getIn(['data', 'end']));
-    let notFull = x.get('cnt') < x.getIn(['data', 'n']);
-    return hasChilds || (notOld && notFull) || x.get('id') === 'new';
-  }));
-
-  // Clear all previous event childs. All relevant events will be regenerated.
-  // mod = mod.updateIn(['items'], list => list.filterNot(x => !!x.get('tid')));
-
-  // Loop through all event templates.
-  let eventTemplates = mod.get('templates');
-  for (let i = 1; i < eventTemplates.size; i++) {
-    
-    // Calculate the relevant date and extract relevant information out of the current event
-    // template.
-    let tid = eventTemplates.getIn([i, 'id']);
-    let months = eventTemplates.getIn([i, 'data', 'months']);
-    let weeks = eventTemplates.getIn([i, 'data', 'weeks']);
-    let days = eventTemplates.getIn([i, 'data', 'days']);
-    let sd = eventTemplates.getIn([i, 'data', 'start']);
-    let ed = eventTemplates.getIn([i, 'data', 'end']);
-    let n = eventTemplates.getIn([i, 'data', 'n']);
-    let cnt = eventTemplates.getIn([i, 'cnt']);
-    let summ = eventTemplates.getIn([i, 'data', 'summ']);
-    let desc = eventTemplates.getIn([i, 'data', 'desc']);
-    let time = eventTemplates.getIn([i, 'data', 'time']);
-
-    // Loop through all relevant days.
-    let checkDate = moment(mod.get('lastUpdate'));
-    while (checkDate.isBefore(today.clone().add(EVENT_FORECAST_DAYS, 'days'), 'day')) {
-
-      // Move one day ahead.
-      checkDate.add(1, 'days');
-
-    // Loop through all days of the event forecast.
-    // for (let j = 0; j <= EVENT_FORECAST_DAYS; j++) {
-
-      // Check, whether the given information matches the given date and if it does,
-      // insert a child of the current template into the list of items.
-      let dateCheck = checkRecurDateMatch(months, weeks, days, sd, ed, checkDate, n, cnt);
-      if (dateCheck) {
-        mod = mod.updateIn(['items'], list => {
-          return list.push(getEvent(idGen(), tid, summ, desc, checkDate.format('YYYY-MM-DD'), time))
-        });
-        cnt = cnt + 1;
-      }
-
-    }
-
-    // Update counter.
-    mod = mod.setIn(['templates', i, 'cnt'], cnt);
+  let lastUpdate = state.get('lastUpdate');
+  if (moment(today).isAfter(lastUpdate, 'day')) {
+    let mod = state;
   
+    // Clear all old or full event templates without any childs.
+    mod = mod.updateIn(['templates'], list => list.filter(x => {
+      let hasChilds = mod.get('items').findIndex(y => y.get('tid') === x.get('id')) > -1;
+      let notOld = today.clone().isBefore(x.getIn(['data', 'end']))  || !x.getIn(['data', 'end']);
+      let notFull = x.get('cnt') < x.getIn(['data', 'n']);
+      return hasChilds || (notOld && notFull) || x.get('id') === 'new';
+    }));
+  
+    // Clear all previous event childs. All relevant events will be regenerated.
+    // mod = mod.updateIn(['items'], list => list.filterNot(x => !!x.get('tid')));
+  
+    // Loop through all event templates.
+    let eventTemplates = mod.get('templates');
+    for (let i = 1; i < eventTemplates.size; i++) {
+      
+      // Calculate the relevant date and extract relevant information out of the current event
+      // template.
+      let tid = eventTemplates.getIn([i, 'id']);
+      let months = eventTemplates.getIn([i, 'data', 'months']);
+      let weeks = eventTemplates.getIn([i, 'data', 'weeks']);
+      let days = eventTemplates.getIn([i, 'data', 'days']);
+      let sd = eventTemplates.getIn([i, 'data', 'start']);
+      let ed = eventTemplates.getIn([i, 'data', 'end']);
+      let n = eventTemplates.getIn([i, 'data', 'n']);
+      let cnt = eventTemplates.getIn([i, 'cnt']);
+      let summ = eventTemplates.getIn([i, 'data', 'summ']);
+      let desc = eventTemplates.getIn([i, 'data', 'desc']);
+      let time = eventTemplates.getIn([i, 'data', 'time']);
+  
+      // Loop through all relevant days.
+      let checkDate = moment(mod.get('lastUpdate'));
+      while (checkDate.isBefore(today.clone().add(EVENT_FORECAST_DAYS, 'days'), 'day')) {
+  
+        // Move one day ahead.
+        checkDate.add(1, 'days');
+  
+      // Loop through all days of the event forecast.
+      // for (let j = 0; j <= EVENT_FORECAST_DAYS; j++) {
+  
+        // Check, whether the given information matches the given date and if it does,
+        // insert a child of the current template into the list of items.
+        let dateCheck = checkRecurDateMatch(months, weeks, days, sd, ed, checkDate, n, cnt);
+        if (dateCheck) {
+          mod = mod.updateIn(['items'], list => {
+            return list.push(getEvent(idGen(), tid, summ, desc, checkDate.format('YYYY-MM-DD'), time))
+          });
+          cnt = cnt + 1;
+        }
+  
+      }
+  
+      // Update counter.
+      mod = mod.setIn(['templates', i, 'cnt'], cnt);
+    
+    }
+  
+    // Clear all events of past days.
+    mod = mod.updateIn(['items'], list => list.filterNot(x => {
+      return today.clone().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.getIn(['data', 'date']), 'day');
+    }));
+  
+    // Update last update.
+    mod = mod.set('lastUpdate', today.add(EVENT_FORECAST_DAYS, 'days').format('YYYY-MM-DD'));
+  
+    // Return modified state.
+    return mod;
+
+  } else {
+    return state;
   }
-
-  // Clear all events of past days.
-  mod = mod.updateIn(['items'], list => list.filterNot(x => {
-    return today.clone().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.getIn(['data', 'date']), 'day');
-  }));
-
-  // Update last update.
-  mod = mod.set('lastUpdate', today.add(EVENT_FORECAST_DAYS, 'days').format('YYYY-MM-DD'));
-
-  // Return modified state.
-  return mod;
-
 }

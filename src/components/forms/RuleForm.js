@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component} from 'react';
 import {connect} from 'react-redux';
 
 import Section from '../container/Section';
@@ -14,26 +14,60 @@ import {
 import SummInput from '../inputs/SummInput';
 import DescInput from '../inputs/DescInput';
 import FormButtonGroup from '../buttons/FormButtonGroup';
-import { NewRuleHeader, EditRuleHeader } from '../../utils/translations';
+import {NewRuleHeader, EditRuleHeader, modalDeleteText} from '../../utils/translations';
+import {ModalYesNo} from '../modals/Modals';
 
-const RawRuleForm = ({
-  rule,
-  header,
-  showDelete,
-  lang,
-  updateSummary,
-  updateDescription,
-  save,
-  discard,
-  del
-}) => (
-  <Section>
-    <Header>{header}</Header>
-    <SummInput entity={rule} updateSummary={updateSummary} lang={lang}/>
-    <DescInput entity={rule} updateDescription={updateDescription} lang={lang} />
-    <FormButtonGroup showDelete={showDelete} save={save} discard={discard} del={del} lang={lang} />
-  </Section>
-);
+class RawRuleForm extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showDeleteModal: false
+    };
+    this.closeModal = this.closeModal.bind(this);
+    this.showModal = this.showModal.bind(this);
+  }
+
+  // Discard data, when route changes. No effect, if saved before.
+  componentWillUnmount() {
+    this.props.discard();
+  }
+
+  showModal() {
+    this.setState({showDeleteModal: true});
+  }
+
+  closeModal() {
+    this.setState({showDeleteModal: false});
+  }
+
+  render() {
+    let {
+      rule,
+      header,
+      showDelete,
+      lang,
+      updateSummary,
+      updateDescription,
+      saveExit,
+      discardExit,
+      delExit
+    } = this.props;
+    return (
+      <Section>
+        <ModalYesNo
+          show={this.state.showDeleteModal}
+          yesAction={delExit}
+          noAction={this.closeModal}
+          lang={lang}
+        >{modalDeleteText[lang]}</ModalYesNo>
+        <Header>{header}</Header>
+        <SummInput entity={rule} updateSummary={updateSummary} lang={lang}/>
+        <DescInput entity={rule} updateDescription={updateDescription} lang={lang} />
+        <FormButtonGroup showDelete={showDelete} save={saveExit} discard={discardExit} del={this.showModal} lang={lang} />
+      </Section>
+    );
+  }
+}
 
 const mapStateToProps = (state, ownProps) => {
   let {id} = ownProps.match.params;
@@ -51,15 +85,16 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     updateSummary: value => dispatch(updateRuleSummary(id, value)),
     updateDescription: value => dispatch(updateRuleDescription(id, value)),
-    save: () => {
+    saveExit: () => {
       dispatch(saveRule(id));
       history.push('/');
     },
-    discard: () => {
+    discardExit: () => {
       dispatch(discardRule(id));
       history.push('/');
     },
-    del: () => {
+    discard: () => dispatch(discardRule(id)),
+    delExit: () => {
       dispatch(removeRule(id));
       history.push('/');
     }

@@ -13,6 +13,11 @@ import TaskTemplateForm from './forms/TaskTemplateForm';
 import EventTemplateForm from './forms/EventTemplateForm';
 import TitleBar from './TitleBar';
 
+const onTaskFormLeave = (prevState) => {
+  console.log('Leave');
+  // console.log(prevState.params.id);
+}
+
 const App = () => (
   <Page>
     <ContentWrapper>
@@ -22,11 +27,11 @@ const App = () => (
         <TaskList key={3} />,
         <EventList key={4} />
       ]} />
-      <Route path='/t/:id' component={TaskForm} />
-      <Route path='/e/:id' component={EventForm} />
-      <Route path='/r/:id' component={RuleForm} />
-      <Route path='/tt/:id' component={TaskTemplateForm} />
-      <Route path='/et/:id' component={EventTemplateForm} />
+      <Route path='/t/:id' component={TaskForm} onLeave={onTaskFormLeave} />
+      <Route path='/e/:id' component={EventForm} onLeave={onTaskFormLeave} />
+      <Route path='/r/:id' component={RuleForm} onLeave={onTaskFormLeave} />
+      <Route path='/tt/:id' component={TaskTemplateForm} onLeave={onTaskFormLeave} />
+      <Route path='/et/:id' component={EventTemplateForm} onLeave={onTaskFormLeave} />
     </ContentWrapper>
   </Page>
 );

@@ -1,8 +1,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
+import {List} from 'immutable';
 
-import Table from '../table/Table';
-import TCell from '../table/TCell';
 import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
 import Section from '../container/Section';
@@ -14,19 +13,19 @@ import FastInput from './FastInput';
 import Placeholder from '../buttons/Placeholder';
 import MoonButton from '../buttons/MoonButton';
 import {RuleListHeader} from '../../utils/translations';
+import GridContainer from '../container/GridContainer';
+import BasicSpan from '../texts/BasicSpan';
 
 const CoreList = ({rules, editRule}) => {
-  return rules.map((rule, index) => {
+  return rules.reduce((accu, rule, index) => {
     let summ = rule.getIn(['data', 'summ']);
     let id = rule.get('id');
-    return (
-      <tr key={index}>
-        <TCell><CBButton /></TCell>
-        <TCell primary>{summ}</TCell>
-        <TCell><OButton onClick={() => {editRule(id)}} /></TCell>
-      </tr>
+    return accu.push(
+      <CBButton key={(index * 3 + 1).toString()} />,
+      <BasicSpan key={(index * 3 + 2).toString()} listtext>{summ}</BasicSpan>,
+      <OButton key={(index * 3 + 3).toString()} onClick={() => {editRule(id)}} />
     );
-  })
+  }, List());
 }
 
 const RawRuleList = ({
@@ -34,7 +33,8 @@ const RawRuleList = ({
   frt,
   lang,
   editRule,
-  frtHandler,
+  frtInputHandler,
+  frtAddHandler,
   openNewRuleForm
 }) => (
   <Section>
@@ -51,10 +51,10 @@ const RawRuleList = ({
     />
     <Header>{RuleListHeader[lang]}</Header>
     <Subsection>
-      <Table>
+      <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
         <CoreList rules={rules} editRule={editRule} />
-        <FastInput value={frt} handler={frtHandler} />
-      </Table>
+        <FastInput value={frt} inputHandler={frtInputHandler} addHandler={frtAddHandler} />
+      </GridContainer>
     </Subsection>
   </Section>
 );
@@ -78,7 +78,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     editRule: id => history.push('/r/' + id),
-    frtHandler: e => {
+    frtInputHandler: e => {
       if (e.target.value !== '\n') {
         if (e.target.value.endsWith('\n')) {
           dispatch(saveRule('new'));
@@ -87,6 +87,7 @@ const mapDispatchToProps = dispatch => {
         }
       }
     },
+    frtAddHandler: () => dispatch(saveRule('new')),
     openNewRuleForm: () => history.push('/r/new')
   }
 }

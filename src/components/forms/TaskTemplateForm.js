@@ -41,15 +41,16 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     updateTime: value => dispatch(updateTaskTemplateTime(id, value)),
     updateStart: value => dispatch(updateTaskTemplateStart(id, value)),
     updateEnd: value => dispatch(updateTaskTemplateEnd(id, value)),
-    save: () => {
+    saveExit: () => {
       dispatch(saveTaskTemplate(id));
       history.push('/');
     },
-    discard: () => {
+    discardExit: () => {
       dispatch(discardTaskTemplate(id));
       history.push('/');
     },
-    del: () => {
+    discard: () => discardTaskTemplate(id),
+    delExit: () => {
       dispatch(removeTaskTemplate(id));
       history.push('/');
     }

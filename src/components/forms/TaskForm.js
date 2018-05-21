@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component} from 'react';
 import {connect} from 'react-redux';
 
 import Section from '../container/Section';
@@ -19,31 +19,65 @@ import DoneSelector from '../inputs/DoneSelector';
 import SummInput from '../inputs/SummInput';
 import DescInput from '../inputs/DescInput';
 import FormButtonGroup from '../buttons/FormButtonGroup';
-import {NewTaskHeader, EditTaskHeader} from '../../utils/translations';
+import {NewTaskHeader, EditTaskHeader, modalDeleteText} from '../../utils/translations';
+import {ModalYesNo} from '../modals/Modals';
 
-const RawTaskForm = ({
-  task,
-  header,
-  showDelete,
-  lang,
-  updateSummary,
-  updateDescription,
-  updateDate,
-  updateTime,
-  updateDone,
-  save,
-  discard,
-  del
-}) => (
-  <Section>
-    <Header>{header}</Header>
-    <DateTimeSelectorGroup entity={task} updateDate={updateDate} updateTime={updateTime} lang={lang} />
-    <DoneSelector entity={task} updateDone={updateDone} />
-    <SummInput entity={task} updateSummary={updateSummary} lang={lang} />
-    <DescInput entity={task} updateDescription={updateDescription} lang={lang} />
-    <FormButtonGroup showDelete={showDelete} save={save} discard={discard} del={del} lang={lang} />
-  </Section>
-);
+class RawTaskForm extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showDeleteModal: false
+    };
+    this.showModal = this.showModal.bind(this);
+    this.closeModal = this.closeModal.bind(this);
+  }
+
+  // Discard data, when route changes. No effect, if saved before.
+  componentWillUnmount() {
+    this.props.discard();
+  }
+
+  showModal() {
+    this.setState({showDeleteModal: true});
+  }
+
+  closeModal() {
+    this.setState({showDeleteModal: false});
+  }
+
+  render() {
+    let {
+      task,
+      header,
+      showDelete,
+      lang,
+      updateSummary,
+      updateDescription,
+      updateDate,
+      updateTime,
+      updateDone,
+      saveExit,
+      discardExit,
+      delExit
+    } = this.props;
+    return (
+      <Section>
+        <ModalYesNo
+          show={this.state.showDeleteModal}
+          yesAction={delExit}
+          noAction={this.closeModal}
+          lang={lang}
+        >{modalDeleteText[lang]}</ModalYesNo>
+        <Header>{header}</Header>
+        <DateTimeSelectorGroup entity={task} updateDate={updateDate} updateTime={updateTime} lang={lang} />
+        <DoneSelector entity={task} updateDone={updateDone} />
+        <SummInput entity={task} updateSummary={updateSummary} lang={lang} />
+        <DescInput entity={task} updateDescription={updateDescription} lang={lang} />
+        <FormButtonGroup showDelete={showDelete} save={saveExit} discard={discardExit} del={this.showModal} lang={lang} />
+      </Section>
+    );
+  }
+}
 
 const mapStateToProps = (state, ownProps) => {
   let {id} = ownProps.match.params;
@@ -64,15 +98,16 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     updateDate: value => dispatch(updateTaskDate(id, value)),
     updateTime: value => dispatch(updateTaskTime(id, value)),
     updateDone: () => dispatch(toggleTaskDone(id)),
-    save: () => {
+    saveExit: () => {
       dispatch(saveTask(id));
       history.push('/');
     },
-    discard: () => {
+    discardExit: () => {
       dispatch(discardTask(id));
       history.push('/');
     },
-    del: () => {
+    discard: () => discardTask(id),
+    delExit: () => {
       dispatch(removeTask(id));
       history.push('/');
     }

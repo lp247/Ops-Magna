@@ -3,8 +3,6 @@ import {connect} from 'react-redux';
 import moment from 'moment';
 import {List} from 'immutable';
 
-import Table from '../table/Table';
-import TCell from '../table/TCell';
 import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
 import RhombusButton from '../buttons/RhombusButton';
@@ -22,25 +20,24 @@ import FastInput from './FastInput';
 import MoonButton from '../buttons/MoonButton';
 import SunButton from '../buttons/SunButton';
 import {TaskListHeader} from '../../utils/translations';
+import BasicSpan from '../texts/BasicSpan';
+import GridContainer from '../container/GridContainer';
 
 const PrevUncompletedList = ({tasks, editTask, toggleTask}) => {
-  return tasks.map((task, index) => {
+  return tasks.reduce((accu, task, index) => {
     let summ = task.getIn(['data', 'summ']);
-    let id = task.get('tid') || task.get('id');
-    let hastid = !!task.get('tid');
-    return (
-      <tr key={index}>
-        <TCell><XButton onClick={() => toggleTask(id)} /></TCell>
-        <TCell primary opacity={0.3}>{summ}</TCell>
-        <TCell><OButton onClick={() => {editTask(id, hastid)}} />
-        </TCell>
-      </tr>
+    let id = task.get('id');
+    let tid = task.get('tid');
+    return accu.push(
+      <XButton key={(index * 3 + 1).toString()} onClick={() => toggleTask(id)} />,
+      <BasicSpan key={(index * 3 + 2).toString()} opacity={0.3} listtext>{summ}</BasicSpan>,
+      <OButton key={(index * 3 + 3).toString()} onClick={() => {editTask(tid || id, !!tid)}} />
     );
-  })
+  }, List());
 }
 
 const CurrentList = ({tasks, editTask, toggleTask}) => {
-  return tasks.map((task, index) => {
+  return tasks.reduce((accu, task, index) => {
     let done = task.getIn(['data', 'done']);
     let summ = task.getIn(['data', 'summ']);
     let time = task.getIn(['data', 'time']);
@@ -48,19 +45,25 @@ const CurrentList = ({tasks, editTask, toggleTask}) => {
     let id = task.get('id');
     let tid = task.get('tid');
     let text = time ? timestr + ' ' + summ : summ;
-    return (
-      <tr key={index}>
-        <TCell><CBButton vertical={done} onClick={() => toggleTask(id)} /></TCell>
-        <TCell
-          primary
-          opacity={1 - done * 0.7}
-          lineThrough={done}
-          onClick={() => toggleTask(id)}
-        >{text}</TCell>
-        <TCell><OButton onClick={() => {editTask(tid || id, !!tid)}} /></TCell>
-      </tr>
+    return accu.push(
+      <CBButton
+        key={(index * 3 + 1).toString()}
+        vertical={done}
+        onClick={() => toggleTask(id)}
+      />,
+      <BasicSpan
+        key={(index * 3 + 2).toString()} 
+        opacity={1 - done * 0.7}
+        lineThrough={done}
+        listtext
+        onClick={() => toggleTask(id)}
+      >{text}</BasicSpan>,
+      <OButton
+        key={(index * 3 + 3).toString()}
+        onClick={() => {editTask(tid || id, !!tid)}}
+      />
     );
-  })
+  }, List());
 }
 
 const RawTaskList = ({
@@ -72,7 +75,8 @@ const RawTaskList = ({
   lang,
   toggleTask,
   editTask,
-  fttHandler,
+  fttInputHandler,
+  fttAddHandler,
   toggleFilter,
   openNewTaskForm,
   openNewTaskTemplateForm
@@ -100,8 +104,10 @@ const RawTaskList = ({
     <Header>{TaskListHeader[lang]}</Header>
     <Subsection>
       {showTemplates
-        ? <Table><TemplateList templates={taskTemplates} edit={editTask} /></Table>
-        : <Table>
+        ? <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
+          <TemplateList templates={taskTemplates} edit={editTask} />
+        </GridContainer>
+        : <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
           <PrevUncompletedList
             tasks={prevUncompletedTasks}
             editTask={editTask}
@@ -112,8 +118,8 @@ const RawTaskList = ({
             editTask={editTask}
             toggleTask={toggleTask}
           />
-          <FastInput value={ftt} handler={fttHandler} />
-        </Table>
+          <FastInput value={ftt} inputHandler={fttInputHandler} addHandler={fttAddHandler} />
+        </GridContainer>
       }
     </Subsection>
   </Section>
@@ -153,9 +159,9 @@ const getUncompleted = (tasks) => {
  */
 const mapStateToProps = state => {
   return {
-    currentTasks: getToday(state.getIn(['tasks', 'items']).rest()).sort(maplistsort(['time'])),
+    currentTasks: getToday(state.getIn(['tasks', 'items']).rest()).sort(maplistsort(['data', 'time'])),
     prevUncompletedTasks: getUncompleted(state.getIn(['tasks', 'items']).rest()),
-    taskTemplates: state.getIn(['tasks', 'templates']).rest().sort(maplistsort(['summ'])),
+    taskTemplates: state.getIn(['tasks', 'templates']).rest().sort(maplistsort(['data', 'summ'])),
     showTemplates: state.get('showTaskTemplates'),
     ftt: state.getIn(['tasks', 'items', 0, 'tmp', 'summ']),
     lang: state.get('lang')
@@ -179,7 +185,7 @@ const mapDispatchToProps = dispatch => {
         history.push('/t/' + id);
       }
     },
-    fttHandler: e => {
+    fttInputHandler: e => {
       if (e.target.value !== '\n') {
         if (e.target.value.endsWith('\n')) {
           let today = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');
@@ -189,6 +195,11 @@ const mapDispatchToProps = dispatch => {
           dispatch(updateTaskSummary('new', e.target.value));
         }
       }
+    },
+    fttAddHandler: () => {
+      let today = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');
+      dispatch(updateTaskDate('new', today));
+      dispatch(saveTask('new'));
     },
     toggleFilter: () => dispatch(toggleTaskDisplay()),
     openNewTaskForm: () => history.push('/t/new'),

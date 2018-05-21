@@ -3,8 +3,6 @@ import moment from 'moment';
 import {connect} from 'react-redux';
 import {List} from 'immutable';
 
-import Table from '../table/Table';
-import TCell from '../table/TCell';
 import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
 import RhombusButton from '../buttons/RhombusButton';
@@ -23,46 +21,44 @@ import TemplateList from './TemplateList';
 import MoonButton from '../buttons/MoonButton';
 import SunButton from '../buttons/SunButton';
 import {EventListHeader} from '../../utils/translations';
+import BasicSpan from '../texts/BasicSpan';
+import GridContainer from '../container/GridContainer';
 
 const CurrentList = ({events, editEvent}) => {
-  return events.map((event, index) => {
+  return events.reduce((accu, event, index) => {
     let date = event.getIn(['data', 'date']);
     let time = event.getIn(['data', 'time']);
     let timestr = '[' + time + ']';
     let summ = event.getIn(['data', 'summ']);
-    let id = event.get('tid') || event.get('id');
-    let hastid = !!event.get('tid');
+    let id = event.get('id');
+    let tid = event.get('tid');
     let done = (time && time < moment().format('HH:mm')) || date < moment().format('YYYY-MM-DD');
     let text = time ? timestr + ' ' + summ : summ;
-    return (
-      <tr key={index}>
-        <TCell><CBButton vertical={done} /></TCell>
-        <TCell primary opacity={1 - done * 0.7} lineThrough={done}>{text}</TCell>
-        <TCell><OButton onClick={() => {editEvent(id, hastid)}} /></TCell>
-      </tr>
+    return accu.push(
+      <CBButton key={(index * 3 + 1).toString()} vertical={done} />,
+      <BasicSpan key={(index * 3 + 2).toString()} opacity={1 - done * 0.7} lineThrough={done} listtext>{text}</BasicSpan>,
+      <OButton key={(index * 3 + 3).toString()} onClick={() => {editEvent(tid || id, !!tid)}} />
     );
-  });
+  }, List());
 }
 
 const UpcomingList = ({events, editEvent, lang}) => {
-  return events.map((event, index) => {
+  return events.reduce((accu, event, index) => {
     let date = event.getIn(['data', 'date']);
     let time = event.getIn(['data', 'time']);
     let weekday = getWeekday(moment(event.getIn(['data', 'date'])).isoWeekday(), true, lang);
     let datetimestr = '[' + weekday + ' ' + date + ' ' + time + ']';
     let datestr = '[' + weekday + ' ' + date + ']';
     let summ = event.getIn(['data', 'summ']);
-    let id = event.get('tid') || event.get('id');
-    let hastid = !!event.get('tid');
+    let id = event.get('id');
+    let tid = event.get('tid');
     let text = time ? datetimestr + ' ' + summ : datestr + ' ' + summ;
-    return (
-      <tr key={index}>
-        <TCell><StarButton /></TCell>
-        <TCell primary opacity={0.3} lineThrough={false}>{text}</TCell>
-        <TCell><OButton onClick={() => {editEvent(id, hastid)}} /></TCell>
-      </tr>
+    return accu.push(
+      <StarButton key={(index * 3 + 1).toString()} />,
+      <BasicSpan key={(index * 3 + 2).toString()} opacity={0.3} lineThrough={false} listtext>{text}</BasicSpan>,
+      <OButton key={(index * 3 + 3).toString()} onClick={() => {editEvent(tid || id, !!tid)}} />
     );
-  });
+  }, List());
 }
 
 const RawEventList = ({
@@ -73,7 +69,8 @@ const RawEventList = ({
   fet,
   lang,
   editEvent,
-  fetHandler,
+  fetInputHandler,
+  fetAddHandler,
   toggleFilter,
   openNewEventForm,
   openNewEventTemplateForm
@@ -101,12 +98,14 @@ const RawEventList = ({
     <Header>{EventListHeader[lang]}</Header>
     <Subsection>
       {showTemplates
-        ? <Table><TemplateList templates={eventTemplates} edit={editEvent} /></Table>
-        : <Table>
+        ? <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
+          <TemplateList templates={eventTemplates} edit={editEvent} />
+        </GridContainer>
+        : <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
           <CurrentList key={1} events={currentEvents} editEvent={editEvent} />
           <UpcomingList key={2} events={upcomingEvents} editEvent={editEvent} lang={lang} />
-          <FastInput key={3} value={fet} handler={fetHandler} />
-        </Table>
+          <FastInput key={3} value={fet} inputHandler={fetInputHandler} addHandler={fetAddHandler} />
+        </GridContainer>
       }
     </Subsection>
   </Section>
@@ -143,11 +142,10 @@ const getUpcoming = (events) => {
  * @param {Map} state State of application.
  */
 const mapStateToProps = state => {
-  console.log(state.get('lang'));
   return {
     currentEvents: getToday(state.getIn(['events', 'items']).rest()),
     upcomingEvents: getUpcoming(state.getIn(['events', 'items']).rest()),
-    eventTemplates: state.getIn(['events', 'templates']).rest().sort(maplistsort(['summ'])),
+    eventTemplates: state.getIn(['events', 'templates']).rest().sort(maplistsort(['data', 'summ'])),
     showTemplates: state.get('showEventTemplates'),
     fet: state.getIn(['events', 'items', 0, 'tmp', 'summ']),
     lang: state.get('lang')
@@ -163,7 +161,7 @@ const mapDispatchToProps = dispatch => {
         history.push('/e/' + id);
       }
     },
-    fetHandler: e => {
+    fetInputHandler: e => {
       if (e.target.value !== '\n') {
         if (e.target.value.endsWith('\n')) {
           let today = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');
@@ -173,6 +171,11 @@ const mapDispatchToProps = dispatch => {
           dispatch(updateEventSummary('new', e.target.value));
         }
       }
+    },
+    fetAddHandler: () => {
+      let today = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');
+      dispatch(updateEventDate('new', today));
+      dispatch(saveEvent('new'));
     },
     toggleFilter: () => dispatch(toggleEventDisplay()),
     openNewEventForm: () => history.push('/e/new'),

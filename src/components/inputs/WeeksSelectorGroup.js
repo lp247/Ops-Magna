@@ -2,16 +2,14 @@ import React from 'react';
 import {List, Range} from 'immutable';
 
 import Subsection from '../container/Subsection';
-import FlexContainer from '../container/FlexContainer';
 import Selector from '../buttons/Selector';
+import GridContainer from '../container/GridContainer';
 
 const WeeksSelectorGroup = ({entity, toggleWeek, toggleDay}) => (
   <Subsection>
     {entity.getIn(['tmp', 'months']).size > 0
-      ? <FlexContainer jc='space-between' wrp>
+      ? <GridContainer gtc={'repeat(8, 1fr)'} grg={'8px'}>
         <Selector
-          width='46px'
-          margin='12px 0px 0px 0px'
           square
           selected={entity.getIn(['tmp', 'weeks']).size === 5}
           onClick={() => toggleWeek('all')}
@@ -20,19 +18,15 @@ const WeeksSelectorGroup = ({entity, toggleWeek, toggleDay}) => (
           return (
             <Selector
               key={index}
-              width='46px'
-              margin='12px 0px 0px 0px'
               square
               selected={entity.getIn(['tmp', 'weeks']).includes(val)}
               onClick={() => toggleWeek(val)}
             >{val}.</Selector>
           );
         })}
-      </FlexContainer>
-      : <FlexContainer jc='space-between' wrp>
+      </GridContainer>
+      : <GridContainer gtc={'repeat(8, 1fr)'} grg={'8px'}>
         <Selector
-          width='46px'
-          margin='3px 0px 0px 0px'
           square
           selected={entity.getIn(['tmp', 'weeks']).size === 53}
           onClick={() => toggleWeek('all')}
@@ -41,15 +35,13 @@ const WeeksSelectorGroup = ({entity, toggleWeek, toggleDay}) => (
           return (
             <Selector
               key={index}
-              width='46px'
-              margin='3px 0px 0px 0px'
               square
               selected={entity.getIn(['tmp', 'weeks']).includes(val)}
               onClick={() => toggleWeek(val)}
             >w{val}</Selector>
           );
         })}
-      </FlexContainer>
+      </GridContainer>
     }
   </Subsection>
 );

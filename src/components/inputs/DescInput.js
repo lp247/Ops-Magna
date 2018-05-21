@@ -9,7 +9,7 @@ const DescInput = ({entity, updateDescription, lang}) => (
     <TextInput
       value={entity.getIn(['tmp', 'desc'])}
       onChange={e => updateDescription(e.target.value)}
-      >{DescriptionLabel[lang]}</TextInput>
+    >{DescriptionLabel[lang]}</TextInput>
   </Subsection>
 );
 

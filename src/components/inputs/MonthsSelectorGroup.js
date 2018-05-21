@@ -2,7 +2,6 @@ import React from 'react';
 import {List} from 'immutable';
 
 import Subsection from '../container/Subsection';
-import FlexContainer from '../container/FlexContainer';
 import Selector from '../buttons/Selector';
 import {
   JanuaryShort,
@@ -18,13 +17,12 @@ import {
   NovemberShort,
   DecemberShort
 } from '../../utils/translations';
+import GridContainer from '../container/GridContainer';
 
 const MonthsSelectorGroup = ({entity, toggleMonth, toggleWeek, toggleDay, lang}) => (
   <Subsection>
-    <FlexContainer jc='space-between' wrp>
+    <GridContainer gtc={'repeat(8, 1fr)'} grg={'8px'}>
       <Selector
-        width='60px'
-        margin='8px 0px 0px 0px'
         square
         selected={entity.getIn(['tmp', 'months']).size === 12}
         onClick={() => toggleMonth('all')}
@@ -46,15 +44,13 @@ const MonthsSelectorGroup = ({entity, toggleMonth, toggleWeek, toggleDay, lang})
         return (
           <Selector
             key={index}
-            width='60px'
-            margin='8px 0px 0px 0px'
             square
             selected={entity.getIn(['tmp', 'months']).includes(index)}
             onClick={() => toggleMonth(index)}
           >{val}</Selector>
         );
       })}
-    </FlexContainer>
+    </GridContainer>
   </Subsection>
 );
 

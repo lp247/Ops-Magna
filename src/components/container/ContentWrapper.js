@@ -13,6 +13,7 @@ const ContentWrapper = styled.div`
   }
   box-sizing: border-box;
   padding: 48px 12px;
+  /* border: 1px solid white; */
 `;
 
 export default ContentWrapper;

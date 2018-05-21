@@ -16,8 +16,8 @@ const StyledTextArea = styled.textarea.attrs({
 	width: 100%;
 	background-color: ${TRANSPARENT};
 	border: 1px solid ${ACCENT_COLOR};
-  border-width: 1px;
-  border-style: solid;
+  /* border-width: 1px;
+  border-style: solid; */
   border-top-color: ${props => props.bottomBorderOnly ? TRANSPARENT : ACCENT_COLOR};
   border-left-color: ${props => props.bottomBorderOnly ? TRANSPARENT : ACCENT_COLOR};
   border-right-color: ${props => props.bottomBorderOnly ? TRANSPARENT : ACCENT_COLOR};
@@ -92,7 +92,7 @@ class DynamicTextarea extends Component {
         innerRef={ref => this.ghost = ref}
         aria-hidden="true"
         width={ghostWidth}
-      >{value || 'I'}</StyledGhost>
+      >{value || 'A'}</StyledGhost>
     ];
   }
 }

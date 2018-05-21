@@ -257,3 +257,33 @@ export const SundayShort = {
 	en: 'Su',
 	de: 'So'
 };
+
+export const alreadyText = {
+	en: 'already',
+	de: 'bisher'
+};
+
+export const yesText = {
+	en: 'Yes',
+	de: 'Ja'
+};
+
+export const noText = {
+	en: 'No',
+	de: 'Nein'
+};
+
+export const abortText = {
+	en: 'Abort',
+	de: 'Abbrechen'
+};
+
+export const okText = {
+	en: 'OK',
+	de: 'OK'
+};
+
+export const modalDeleteText = {
+	en: 'Do you really want to delete this entry?',
+	de: 'Möchten Sie den Eintrag wirklich löschen?'
+};

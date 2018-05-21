@@ -2,15 +2,38 @@ import styled from 'styled-components';
 
 import {ACCENT_COLOR, TRANSPARENT} from '../../utils/constants';
 
+const getLength = (defaultcss) => (isSquare, size) => {
+  if (isSquare) {
+    switch (size) {
+      case 'big': return '56px';
+      case 'small': return '40px';
+      default: return '48px';
+    }
+  } else {
+    return defaultcss;
+  }
+}
+
+const getWidthHeight = getLength('auto');
+const getLineHeight = getLength('normal');
+
+const getFontSize = (size) => {
+  switch (size) {
+    case 'big': return '1.4rem';
+    case 'small': return '1.0rem';
+    default: return 'inherit';
+  }
+}
+
 const Selector = styled.p`
   cursor: ${props => props.invisible ? 'auto' : 'pointer'};
-  padding: ${props => !props.width ? (props.small ? '4px' : '8px') : '0px'};
-  margin: ${props => props.margin ? props.margin : '0'};
-  width: ${props => props.width || 'auto'};
-  height: ${props => props.square ? props.width : 'auto'};
+  padding: 0;
+  margin: ${props => props.margin || '0'};
+  width: ${props => getWidthHeight(props.square, props.size)};
+  height: ${props => getWidthHeight(props.square, props.size)};
   text-align: center;
-  font-size: ${props => props.small ? '1.2rem' : 'inherit'};
-  line-height: ${props => props.square ? props.width : 'normal'};
+  font-size: ${props => getFontSize(props.size)};
+  line-height: ${props => getLineHeight(props.square, props.size)};
   border: 2px solid ${props => props.selected && !props.invisible ? ACCENT_COLOR : TRANSPARENT};
   color: ${props => props.invisible ? TRANSPARENT : ACCENT_COLOR};
 `;
