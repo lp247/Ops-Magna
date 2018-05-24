@@ -12,26 +12,26 @@ import {
   SAVE_EVENT_TEMPLATE,
 } from '../actions/events.actions';
 import {
-  REMOVE_RULE,
-  SAVE_RULE
-} from '../actions/rules.actions';
+  REMOVE_REMINDER,
+  SAVE_REMINDER
+} from '../actions/reminders.actions';
 import {UNSET_SHOULD_SAVE} from '../actions/shouldSave.actions';
-import {TOGGLE_LANGUAGE} from '../actions/lang.actions';
+import {SELECT_LANGUAGE} from '../actions/lang.actions';
 
 function shouldSave(state = false, action) {
   switch (action.type) {
     case REMOVE_EVENT:
 		case REMOVE_EVENT_TEMPLATE:
-    case REMOVE_RULE:
+    case REMOVE_REMINDER:
     case REMOVE_TASK:
     case REMOVE_TASK_TEMPLATE:
     case SAVE_EVENT:
     case SAVE_EVENT_TEMPLATE:
-    case SAVE_RULE:
+    case SAVE_REMINDER:
     case SAVE_TASK:
     case SAVE_TASK_TEMPLATE:
     case TOGGLE_TASK_DONE:
-    case TOGGLE_LANGUAGE:
+    case SELECT_LANGUAGE:
       return true;
     case UNSET_SHOULD_SAVE:
     default:

@@ -5,7 +5,10 @@ import Placeholder from '../buttons/Placeholder';
 
 const FastInput = ({value, inputHandler, addHandler}) => {
   return [
-    <PlusButton key="1" onClick={addHandler} />,
+    <PlusButton
+      key="1"
+      onClick={value.trim() !== '' ? addHandler : null}
+    />,
     <TextInput
       key="2"
       value={value}

@@ -1,5 +1,5 @@
-export const TOGGLE_LANGUAGE = 'TOGGLE_LANGUAGE';
+export const SELECT_LANGUAGE = 'SELECT_LANGUAGE';
 
-export function toggleLanguage() {
-  return {type: TOGGLE_LANGUAGE};
+export function selectLanguage(lang) {
+  return {type: SELECT_LANGUAGE, lang};
 }

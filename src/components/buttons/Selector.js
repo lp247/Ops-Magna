@@ -5,9 +5,12 @@ import {ACCENT_COLOR, TRANSPARENT} from '../../utils/constants';
 const getLength = (defaultcss) => (isSquare, size) => {
   if (isSquare) {
     switch (size) {
-      case 'big': return '56px';
-      case 'small': return '40px';
-      default: return '48px';
+      // case 'big': return '56px';
+      // case 'small': return '40px';
+      // default: return '48px';
+      case 'big': return '2.8rem';
+      case 'small': return '2.0rem';
+      default: return '2.5rem';
     }
   } else {
     return defaultcss;
@@ -21,7 +24,7 @@ const getFontSize = (size) => {
   switch (size) {
     case 'big': return '1.4rem';
     case 'small': return '1.0rem';
-    default: return 'inherit';
+    default: return '1.25rem';
   }
 }
 

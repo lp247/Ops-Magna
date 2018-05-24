@@ -10,6 +10,7 @@ export const INPUT_BACKGROUND_COLOR = 'rgb(43, 44, 47)';
 export const ACCENT_GREY = '#939393';
 // export const ACCENT_COLOR = 'rgba(39, 158, 178, 1.0)';
 export const ACCENT_COLOR = 'rgba(201, 167, 50, 1.0)';
+export const ACCENT_COLOR_DARKER = '#937a24';
 export const ACCENT_COLOR_OPACITY_07 = ACCENT_COLOR.replace('1.0', '0.7');
 export const ACCENT_COLOR_OPACITY_05 = ACCENT_COLOR.replace('1.0', '0.5');
 export const ACCENT_COLOR_OPACITY_03 = ACCENT_COLOR.replace('1.0', '0.3');

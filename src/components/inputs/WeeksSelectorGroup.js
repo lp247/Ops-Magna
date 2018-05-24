@@ -8,7 +8,7 @@ import GridContainer from '../container/GridContainer';
 const WeeksSelectorGroup = ({entity, toggleWeek, toggleDay}) => (
   <Subsection>
     {entity.getIn(['tmp', 'months']).size > 0
-      ? <GridContainer gtc={'repeat(8, 1fr)'} grg={'8px'}>
+      ? <GridContainer gtc={'repeat(7, auto)'} grg={'8px'}>
         <Selector
           square
           selected={entity.getIn(['tmp', 'weeks']).size === 5}
@@ -24,8 +24,9 @@ const WeeksSelectorGroup = ({entity, toggleWeek, toggleDay}) => (
             >{val}.</Selector>
           );
         })}
+        <Selector square invisible />
       </GridContainer>
-      : <GridContainer gtc={'repeat(8, 1fr)'} grg={'8px'}>
+      : <GridContainer gtc={'repeat(7, auto)'} grg={'8px'}>
         <Selector
           square
           selected={entity.getIn(['tmp', 'weeks']).size === 53}

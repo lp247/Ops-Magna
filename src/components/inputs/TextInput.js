@@ -16,8 +16,6 @@ const StyledTextArea = styled.textarea.attrs({
 	width: 100%;
 	background-color: ${TRANSPARENT};
 	border: 1px solid ${ACCENT_COLOR};
-  /* border-width: 1px;
-  border-style: solid; */
   border-top-color: ${props => props.bottomBorderOnly ? TRANSPARENT : ACCENT_COLOR};
   border-left-color: ${props => props.bottomBorderOnly ? TRANSPARENT : ACCENT_COLOR};
   border-right-color: ${props => props.bottomBorderOnly ? TRANSPARENT : ACCENT_COLOR};
@@ -50,7 +48,17 @@ class DynamicTextarea extends Component {
     this.adjustInputRows = this.adjustInputRows.bind(this);
     this.adjustGhostWidth = this.adjustGhostWidth.bind(this);
     this.calcLineHeight = this.calcLineHeight.bind(this);
-	}
+  }
+  
+  componentWillMount() {
+    window.addEventListener('resize', this.adjustGhostWidth);
+    window.addEventListener('orientationchange', this.adjustGhostWidth);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.adjustGhostWidth);
+    window.removeEventListener('orientationchange', this.adjustGhostWidth);
+  }
 	
 	componentDidMount() {
     this.adjustGhostWidth();
@@ -63,7 +71,9 @@ class DynamicTextarea extends Component {
   }
 
   adjustGhostWidth() {
-    this.setState({ghostWidth: this.input.clientWidth});
+    if (this.state.ghostWidth !== this.input.clientWidth) {
+      this.setState({ghostWidth: this.input.clientWidth});
+    }
   }
   
   adjustInputRows() {

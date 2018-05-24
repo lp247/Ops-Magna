@@ -16,14 +16,14 @@ import {
   removeTaskTemplate
 } from '../../redux/actions/tasks.actions';
 import RawTemplateForm from './RawTemplateForm';
-import {NewTaskTemplateHeader, EditTaskTemplateHeader} from '../../utils/translations';
+import {NewTaskTemplateHeaderText, EditTaskTemplateHeaderText} from '../../utils/translations';
 
 const mapStateToProps = (state, ownProps) => {
   let {id} = ownProps.match.params;
   let lang = state.get('lang');
   return {
     entity: state.getIn(['tasks', 'templates']).find(x => x.get('id') === id),
-    header: id === 'new' ? NewTaskTemplateHeader[lang] : EditTaskTemplateHeader[lang],
+    header: id === 'new' ? NewTaskTemplateHeaderText[lang] : EditTaskTemplateHeaderText[lang],
     showDelete: id === 'new',
     lang
   }
@@ -49,7 +49,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
       dispatch(discardTaskTemplate(id));
       history.push('/');
     },
-    discard: () => discardTaskTemplate(id),
+    discard: () => dispatch(discardTaskTemplate(id)),
     delExit: () => {
       dispatch(removeTaskTemplate(id));
       history.push('/');

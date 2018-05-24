@@ -3,25 +3,11 @@ import moment from 'moment';
 
 import checkRecurDateMatch from '../../utils/checkRecurDateMatch';
 import {DAY_CHANGE_HOUR, EVENT_FORECAST_DAYS} from '../../utils/constants';
-import {getTaskTemplate, getTask, getEvent, getRule, getEventTemplate} from '../../utils/objects';
+import {getTaskTemplate, getTask, getEvent, getReminder, getEventTemplate} from '../../utils/objects';
 
 // =================================================================================================
 //      MAPPING FUNCTION
 // =================================================================================================
-
-// const IDIndexMap = (mappedFunc, state, root, id, ...rest) => {
-//   let index;
-//   if (id === 'new') {
-//     index = 0;
-//   } else {
-//     index = state.get(root).findIndex(x => x.get('id') === id);
-//   }
-//   if (index > -1) {
-//     return mappedFunc(state, root, index, ...rest);
-//   } else {
-//     return state;
-//   }
-// }
 
 const IDIndexMap = (root) => (mappedFunc, state, id, ...rest) => {
   let index;
@@ -166,20 +152,6 @@ const updateValueAtIndex = (root) => (state, index, field, value) => {
   return state.setIn([root, index, 'tmp', field], value);
 }
 
-// const updateValue = (field, isTemplate) => (state, id, value) => {
-//   let root = isTemplate ? 'templates' : 'items';
-//   return IDIndexMap(updateValueAtIndex, state, root, id, field, value);
-// }
-// export const updateItemSummary = updateValue('summ', false);
-// export const updateTemplateSummary = updateValue('summ', true);
-// export const updateItemDescription = updateValue('desc', false);
-// export const updateTemplateDescription = updateValue('desc', true);
-// export const updateItemDate = updateValue('date', false);
-// export const updateTemplateStart = updateValue('start', true);
-// export const updateTemplateEnd = updateValue('end', true);
-// export const updateTemplateN = updateValue('n', true);
-// export const updateItemTime = updateValue('time', false);
-// export const updateTemplateTime = updateValue('time', true);
 export const updateItemSummary = (state, id, value) => {
   return IDIndexItemMap(updateValueAtIndex('items'), state, id, 'summ', value);
 }
@@ -265,10 +237,6 @@ const discardEntityAtIndex = (root) => (state, index) => {
   return state.setIn([root, index, 'tmp'], state.getIn([root, index, 'data']));
 }
 
-// const discardEntity = (isTemplate) => (state, id) => {
-//   return IDIndexMap(discardEntityAtIndex, state, isTemplate ? 'templates' : 'items', id);
-// }
-
 export const discardItem = (state, id) => {
   return IDIndexItemMap(discardEntityAtIndex('items'), state, id);
 }
@@ -338,8 +306,8 @@ export const saveEventChanges = (state, id, idGenerator, newtid = '') => {
   return IDIndexItemMap(saveItemChangesAtIndex, state, id, newObj, idGenerator, newtid);
 }
 
-export const saveRuleChanges = (state, id, idGenerator) => {
-  let newObj = getRule('new');
+export const saveReminderChanges = (state, id, idGenerator) => {
+  let newObj = getReminder('new');
   return IDIndexItemMap(saveItemChangesAtIndex, state, id, newObj, idGenerator, undefined);
 }
 
@@ -538,11 +506,10 @@ export const updateTasks = (state, today, idGen) => {
     // there might be other childs to be generated before removing the template.
     mod = mod.updateIn(['templates'], list => list.filter(x => {
       let hasChilds = mod.get('items').findIndex(y => y.get('tid') === x.get('id')) > -1;
-      let notOld = moment(mod.get('lastUpdate'))
-        .isBefore(x.getIn(['data', 'end']))
-        || !x.getIn(['data', 'end']);
-      let notFull = x.get('cnt') < x.getIn(['data', 'n']);
-      return hasChilds || (notOld && notFull) || x.get('id') === 'new';
+      let isOld = moment(mod.get('lastUpdate'))
+        .isAfter(x.getIn(['data', 'end'])) && !!x.getIn(['data', 'end']);
+      let isFull = x.get('cnt') >= x.getIn(['data', 'n']) && !(x.getIn(['data', 'n']) === -1);
+      return hasChilds || (!isOld && !isFull) || x.get('id') === 'new';
     }));
 
     // Loop through all task templates.
@@ -608,18 +575,18 @@ export const updateEvents = (state, today, idGen) => {
   let lastUpdate = state.get('lastUpdate');
   if (moment(today).isAfter(lastUpdate, 'day')) {
     let mod = state;
-  
+
     // Clear all old or full event templates without any childs.
     mod = mod.updateIn(['templates'], list => list.filter(x => {
       let hasChilds = mod.get('items').findIndex(y => y.get('tid') === x.get('id')) > -1;
-      let notOld = today.clone().isBefore(x.getIn(['data', 'end']))  || !x.getIn(['data', 'end']);
-      let notFull = x.get('cnt') < x.getIn(['data', 'n']);
-      return hasChilds || (notOld && notFull) || x.get('id') === 'new';
+      let isOld = today.clone().isAfter(x.getIn(['data', 'end'])) && !!x.getIn(['data', 'end']);
+      let isFull = x.get('cnt') >= x.getIn(['data', 'n']) && !(x.getIn(['data', 'n']) === -1);
+      return hasChilds || (!isOld && !isFull) || x.get('id') === 'new';
     }));
-  
+
     // Clear all previous event childs. All relevant events will be regenerated.
     // mod = mod.updateIn(['items'], list => list.filterNot(x => !!x.get('tid')));
-  
+
     // Loop through all event templates.
     let eventTemplates = mod.get('templates');
     for (let i = 1; i < eventTemplates.size; i++) {
@@ -637,17 +604,17 @@ export const updateEvents = (state, today, idGen) => {
       let summ = eventTemplates.getIn([i, 'data', 'summ']);
       let desc = eventTemplates.getIn([i, 'data', 'desc']);
       let time = eventTemplates.getIn([i, 'data', 'time']);
-  
+
       // Loop through all relevant days.
       let checkDate = moment(mod.get('lastUpdate'));
       while (checkDate.isBefore(today.clone().add(EVENT_FORECAST_DAYS, 'days'), 'day')) {
-  
+
         // Move one day ahead.
         checkDate.add(1, 'days');
-  
+
       // Loop through all days of the event forecast.
       // for (let j = 0; j <= EVENT_FORECAST_DAYS; j++) {
-  
+
         // Check, whether the given information matches the given date and if it does,
         // insert a child of the current template into the list of items.
         let dateCheck = checkRecurDateMatch(months, weeks, days, sd, ed, checkDate, n, cnt);

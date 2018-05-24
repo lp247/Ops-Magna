@@ -8,7 +8,7 @@ const BasicSpan = styled.span`
   align-self: center;
   justify-self: left;
   padding: ${props => props.listtext ? '1px' : '0'};
-  text-decoration: ${props => props.lineThrough ? 'line-though' : 'unset'};
+  text-decoration: ${props => props.lineThrough ? 'line-through' : 'unset'};
 `;
 
 export default BasicSpan;

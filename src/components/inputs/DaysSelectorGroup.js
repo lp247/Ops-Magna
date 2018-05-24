@@ -11,7 +11,7 @@ import GridContainer from '../container/GridContainer';
 const DaysSelectorGroup = ({entity, toggleDay}) => (
   <Subsection>
     {entity.getIn(['tmp', 'weeks']).size > 0
-      ? <GridContainer gtc={'repeat(8, 1fr)'} grg={'8px'}>
+      ? <GridContainer gtc={'repeat(7, auto)'} grg={'8px'}>
         <Selector
           square
           small
@@ -30,7 +30,7 @@ const DaysSelectorGroup = ({entity, toggleDay}) => (
         })}
       </GridContainer>
       : entity.getIn(['tmp', 'months']).size > 0
-        ? <GridContainer gtc={'repeat(8, 1fr)'} grg={'8px'}>
+        ? <GridContainer gtc={'repeat(7, auto)'} grg={'8px'}>
           <Selector
             square
             selected={entity.getIn(['tmp', 'days']).size === 31}
@@ -47,7 +47,7 @@ const DaysSelectorGroup = ({entity, toggleDay}) => (
             );
           })}
         </GridContainer>
-        : [<GridContainer key='1' gtc={'repeat(8, 1fr)'} grg={'8px'}>
+        : [<GridContainer key='1' gtc={'repeat(7, auto)'} grg={'8px'}>
           <DateInput
             width='35%'
             value={''}
@@ -60,7 +60,7 @@ const DaysSelectorGroup = ({entity, toggleDay}) => (
             onClick={() => toggleDay('all')}
           >Λ</Selector>
         </GridContainer>,
-        <GridContainer key='2' gtc={'repeat(8, 1fr)'} grg={'8px'}>
+        <GridContainer key='2' gtc={'repeat(7, auto)'} grg={'8px'}>
           {entity.getIn(['tmp', 'days']).map((val, index) => {
             return (
               <Selector

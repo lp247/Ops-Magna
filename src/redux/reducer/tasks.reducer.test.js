@@ -46,6 +46,19 @@ const range = (start, end) => {
   return Array(end - start).fill().map((_, idx) => start + idx);
 }
 
+const TD = (summ, desc, date, time, done) => Map({summ, desc, date, time, done});
+const T = (id, tid, ed) => Map({id, tid, tmp: ed, data: ed});
+const T_ = (id, tid, ed1, ed2) => Map({id, tid,	tmp: ed1, data: ed2});
+const TTD = (summ, desc, n, months, weeks, days, time, start, end) => Map({summ, desc, n, months, weeks, days, time, start, end});
+const TT = (id, cnt, etd) => Map({id, cnt, tmp: etd, data: etd});
+const TT_ = (id, cnt, etd1, etd2) => Map({id, cnt, tmp: etd1, data: etd2});
+const S = (items, templates, lastUpdate = '2018-01-01') => Map({lastUpdate, items: List(items || []), templates: List(templates || [])});
+
+let NCT = getTask('new');
+let NCTT = getTaskTemplate('new');
+
+
+
 const tProto = Map({
 	summ: 'A task',
 	desc: 'A task with a description',
@@ -70,7 +83,7 @@ const ttProto = Map({
 const ttGen = (id, cnt, opts1, opts2) => Map({id, cnt, tmp: ttProto.merge(Map(opts1 || {})), data: ttProto.merge(Map(opts2 || opts1 || {}))});
 const clean_newtt = ttGen('new', 0, {summ: '', desc: '', n: 0, months: List(), weeks: List(), days: List(), time: '', start: '', end: ''});
 
-const S = (items, templates, lastUpdate = '2018-01-01') => Map({lastUpdate, items: List(items || []), templates: List(templates || [])});
+// const S = (items, templates, lastUpdate = '2018-01-01') => Map({lastUpdate, items: List(items || []), templates: List(templates || [])});
 
 describe('Discarding tasks', () => {
 	let changedtask = tGen('abc', '', {summ: 'summary', desc: 'description', date: 'today', time: '12:23', done: false}, {summ: 'kdkdk', desc: 'hgh', date: '2014-12-23', time: '13:43', done: true});
@@ -251,7 +264,7 @@ describe('Toggling task template days', () => {
 	let new_tt_clean = getTaskTemplate('new');
 	let random_tt = getTaskTemplate('2', 'a', 'b', 2, 5, List([4, 6, 8]), List([1, 2, 3]), List([5, 6, 7]), '12:00', '2010-01-01', '2110-01-01');
 	let random_tt_single_removed = random_tt.setIn(['tmp', 'days'], List([5, 6]));
-	let random_tt_single_added = random_tt.setIn(['tmp', 'days'], List([5, 6, 7, 1]));
+	let random_tt_single_added = random_tt.setIn(['tmp', 'days'], List([1, 5, 6, 7]));
 	let random_tt_all_toggled = random_tt.setIn(['tmp', 'days'], List(range(1, 8)));
 	let tt_empty_mw = getTaskTemplate('3', 'a', 'b', 5, 10, List(), List(), List([1, 10, 100]), '12:00', '2010-01-01', '2012-01-01');
 	let tt_empty_mw_all_toggled = tt_empty_mw.setIn(['tmp', 'days'], List(range(1, 367)));
@@ -630,8 +643,10 @@ describe('Updating last update of tasks', () => {
 		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
 	});
 	it('removes full task templates, which have no childs', () => {
-		let initial = S([new_t_clean], [new_tt_clean, full_tt], '2018-05-01');
-		let final = S([new_t_clean], [new_tt_clean], '2018-05-10');
+		let tt_data = TTD('full', 'full task (template)', 8, List(), List(), List(), '12:00', '2018-01-01', '2019-01-01');
+		let tt = TT('17', 8, tt_data);
+		let initial = S([NCT], [NCTT, tt], '2018-05-01');
+		let final = S([NCT], [NCTT], '2018-05-10');
 		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
 	});
 	it('keeps full task templates, which still have undone childs', () => {
@@ -643,6 +658,20 @@ describe('Updating last update of tasks', () => {
 		let initial = S([new_t_clean], [new_tt_clean, tt_good], '2018-05-01');
 		let final = S([new_t_clean], [new_tt_clean, tt_good], '2018-05-10');
 		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
+	});
+	it('keeps task templates, which have no set start and end dates and have no childs', () => {
+		let tt_data = TTD('a', 'b', 4, List([3]), List([2]), List([4]), '12:00', '', '');
+		let tt = TT('3', 2, tt_data);
+		let initial = S([NCT], [NCTT, tt], '2018-05-01');
+		let final = S([NCT], [NCTT, tt], '2018-05-10');
+		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 02:00'), () => '42'))).toEqual(final);
+	});
+	it('keeps task templates, which have n of infinity and have no childs', () => {
+		let tt_data = TTD('a', 'b', -1, List([3]), List([2]), List([4]), '12:00', '2018-01-01', '2019-01-01');
+		let tt = TT('3', 2, tt_data);
+		let initial = S([NCT], [NCTT, tt], '2018-05-01');
+		let final = S([NCT], [NCTT, tt], '2018-05-10');
+		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 02:00'), () => '42'))).toEqual(final);
 	});
 	it('adds latest template child, if counter of template is not full', () => {
 		let initial = S([new_t_clean], [new_tt_clean, tt_overflow], '2018-05-01');

@@ -16,13 +16,13 @@ const NSelectorGroup = ({entity, updateN, lang}) => {
         <NumberInput
           width='80%'
           value={number}
-          onChange={e => updateN(e.target.value)}
+          onChange={e => updateN(parseInt(e.target.value, 10))}
         >{label}</NumberInput>
         <Selector
           square
           margin="14px 0 0 20px"
-          selected={number === Number.POSITIVE_INFINITY}
-          onClick={() => updateN(Number.POSITIVE_INFINITY)}
+          selected={number === -1}
+          onClick={() => updateN(-1)}
         >∞</Selector>
       </FlexContainer>
     </Subsection>

@@ -21,7 +21,7 @@ import GridContainer from '../container/GridContainer';
 
 const MonthsSelectorGroup = ({entity, toggleMonth, toggleWeek, toggleDay, lang}) => (
   <Subsection>
-    <GridContainer gtc={'repeat(8, 1fr)'} grg={'8px'}>
+    <GridContainer gtc={'repeat(7, auto)'} grg={'8px'}>
       <Selector
         square
         selected={entity.getIn(['tmp', 'months']).size === 12}

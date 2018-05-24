@@ -17,30 +17,71 @@ import SummInput from '../inputs/SummInput';
 import DescInput from '../inputs/DescInput';
 import FormButtonGroup from '../buttons/FormButtonGroup';
 import DateTimeSelectorGroup from '../inputs/DateTimeSelectorGroup';
-import {NewEventHeader, EditEventHeader, modalDeleteText} from '../../utils/translations';
-import {ModalYesNo} from '../modals/Modals';
+import {ModalYesNo, ModalOK} from '../modals/Modals';
+import { modalDeleteText, modalEmptyDate, modalEmptySumm, NewEventHeaderText, EditEventHeaderText } from '../../utils/translations';
 
 class RawEventForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showDeleteModal: false
+      showDeleteModal: false,
+      showEmptyDateModal: false,
+      showEmptySummModal: false
     };
-    this.showModal = this.showModal.bind(this);
-    this.closeModal = this.closeModal.bind(this);
+    this.openDeleteModal = this.openDeleteModal.bind(this);
+    this.closeDeleteModal = this.closeDeleteModal.bind(this);
+    this.openEmptyDateModal = this.openEmptyDateModal.bind(this);
+    this.closeEmptyDateModal = this.closeEmptyDateModal.bind(this);
+    this.openEmptySummModal = this.openEmptySummModal.bind(this);
+    this.closeEmptySummModal = this.closeEmptySummModal.bind(this);
+    this.checkSaveExit = this.checkSaveExit.bind(this);
   }
 
-  // Discard data, when route changes. No effect, if saved before.
+  // Add an unload event listener to discard the data, if the content gets unloaded. This happens
+  // if the url is changed manually and the react lifecycle have no chance to discard the data.
+  componentWillMount() {
+    window.addEventListener('unload', this.props.discard);
+  }
+
+  // When the route changes via react navigation, the lifecycle methods do work. In this case, the
+  // previously added event listener has to be removed.
   componentWillUnmount() {
+    window.removeEventListener('unload', this.props.discard);
     this.props.discard();
   }
 
-  showModal() {
+  openDeleteModal() {
     this.setState({showDeleteModal: true});
   }
 
-  closeModal() {
+  closeDeleteModal() {
     this.setState({showDeleteModal: false});
+  }
+
+  openEmptyDateModal() {
+    this.setState({showEmptyDateModal: true});
+  }
+
+  closeEmptyDateModal() {
+    this.setState({showEmptyDateModal: false});
+  }
+
+  openEmptySummModal() {
+    this.setState({showEmptySummModal: true});
+  }
+
+  closeEmptySummModal() {
+    this.setState({showEmptySummModal: false});
+  }
+
+  checkSaveExit(date, summ) {
+    if (!date) {
+      this.openEmptyDateModal();
+    } else if (!summ) {
+      this.openEmptySummModal();
+    } else {
+      this.props.saveExit();
+    }
   }
 
   render() {
@@ -53,23 +94,41 @@ class RawEventForm extends Component {
       updateDescription,
       updateDate,
       updateTime,
-      saveExit,
+      // saveExit,
       discardExit,
       delExit
     } = this.props;
+    let date = event.getIn(['tmp', 'date']);
+    let summ = event.getIn(['tmp', 'summ']);
     return (
       <Section>
         <ModalYesNo
           show={this.state.showDeleteModal}
           yesAction={delExit}
-          noAction={this.closeModal}
+          noAction={this.closeDeleteModal}
           lang={lang}
         >{modalDeleteText[lang]}</ModalYesNo>
+        <ModalOK
+          show={this.state.showEmptyDateModal}
+          okAction={this.closeEmptyDateModal}
+          lang={lang}
+        >{modalEmptyDate[lang]}</ModalOK>
+        <ModalOK
+          show={this.state.showEmptySummModal}
+          okAction={this.closeEmptySummModal}
+          lang={lang}
+        >{modalEmptySumm[lang]}</ModalOK>
         <Header>{header}</Header>
         <DateTimeSelectorGroup entity={event} updateDate={updateDate} updateTime={updateTime} lang={lang} />
         <SummInput entity={event} updateSummary={updateSummary} lang={lang} />
         <DescInput entity={event} updateDescription={updateDescription} lang={lang} />
-        <FormButtonGroup showDelete={showDelete} save={saveExit} discard={discardExit} del={this.showModal} lang={lang} />
+        <FormButtonGroup
+          showDelete={showDelete}
+          save={() => this.checkSaveExit(date, summ)}
+          discard={discardExit}
+          del={this.openDeleteModal}
+          lang={lang}
+        />
       </Section>
     );
   }
@@ -80,7 +139,7 @@ const mapStateToProps = (state, ownProps) => {
   let lang = state.get('lang');
   return {
     event: state.getIn(['events', 'items']).find(x => x.get('id') === id),
-    header: id === 'new' ? NewEventHeader[lang] : EditEventHeader[lang],
+    header: id === 'new' ? NewEventHeaderText[lang] : EditEventHeaderText[lang],
     showDelete: id === 'new',
     lang
   }
@@ -101,7 +160,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
       dispatch(discardEvent(id));
       history.push('/');
     },
-    discard: () => discardEvent(id),
+    discard: () => dispatch(discardEvent(id)),
     delExit: () => {
       dispatch(removeEvent(id));
       history.push('/');

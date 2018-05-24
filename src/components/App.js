@@ -5,33 +5,28 @@ import Page from './container/Page';
 import ContentWrapper from './container/ContentWrapper';
 import TaskList from './lists/TaskList';
 import EventList from './lists/EventList';
-import RuleList from './lists/RuleList';
+import ReminderList from './lists/ReminderList';
 import TaskForm from './forms/TaskForm';
 import EventForm from './forms/EventForm';
-import RuleForm from './forms/RuleForm';
+import ReminderForm from './forms/ReminderForm';
 import TaskTemplateForm from './forms/TaskTemplateForm';
 import EventTemplateForm from './forms/EventTemplateForm';
-import TitleBar from './TitleBar';
-
-const onTaskFormLeave = (prevState) => {
-  console.log('Leave');
-  // console.log(prevState.params.id);
-}
+import TitleBar from './lists/TitleBar';
 
 const App = () => (
   <Page>
     <ContentWrapper>
       <Route exact path='/' render={() => [
         <TitleBar key={1} />,
-        <RuleList key={2} />,
+        <ReminderList key={2} />,
         <TaskList key={3} />,
         <EventList key={4} />
       ]} />
-      <Route path='/t/:id' component={TaskForm} onLeave={onTaskFormLeave} />
-      <Route path='/e/:id' component={EventForm} onLeave={onTaskFormLeave} />
-      <Route path='/r/:id' component={RuleForm} onLeave={onTaskFormLeave} />
-      <Route path='/tt/:id' component={TaskTemplateForm} onLeave={onTaskFormLeave} />
-      <Route path='/et/:id' component={EventTemplateForm} onLeave={onTaskFormLeave} />
+      <Route path='/t/:id' component={TaskForm} />
+      <Route path='/e/:id' component={EventForm} />
+      <Route path='/r/:id' component={ReminderForm} />
+      <Route path='/tt/:id' component={TaskTemplateForm} />
+      <Route path='/et/:id' component={EventTemplateForm} />
     </ContentWrapper>
   </Page>
 );

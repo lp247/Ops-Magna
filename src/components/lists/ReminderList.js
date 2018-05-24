@@ -6,53 +6,44 @@ import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
 import Section from '../container/Section';
 import Subsection from '../container/Subsection';
-import Header from '../texts/Header';
 import history from '../../utils/history';
-import {updateRuleSummary, saveRule} from '../../redux/actions/rules.actions';
+import {updateReminderSummary, saveReminder} from '../../redux/actions/reminders.actions';
 import FastInput from './FastInput';
-import Placeholder from '../buttons/Placeholder';
-import MoonButton from '../buttons/MoonButton';
-import {RuleListHeader} from '../../utils/translations';
 import GridContainer from '../container/GridContainer';
 import BasicSpan from '../texts/BasicSpan';
+import {NewReminderHeaderText, ReminderListHeaderText} from '../../utils/translations';
+import ReminderListHeader from './ReminderListHeader';
 
-const CoreList = ({rules, editRule}) => {
-  return rules.reduce((accu, rule, index) => {
-    let summ = rule.getIn(['data', 'summ']);
-    let id = rule.get('id');
+const CoreList = ({reminders, editReminder}) => {
+  return reminders.reduce((accu, reminder, index) => {
+    let summ = reminder.getIn(['data', 'summ']);
+    let id = reminder.get('id');
     return accu.push(
       <CBButton key={(index * 3 + 1).toString()} />,
       <BasicSpan key={(index * 3 + 2).toString()} listtext>{summ}</BasicSpan>,
-      <OButton key={(index * 3 + 3).toString()} onClick={() => {editRule(id)}} />
+      <OButton key={(index * 3 + 3).toString()} onClick={() => {editReminder(id)}} />
     );
   }, List());
 }
 
-const RawRuleList = ({
-  rules,
+const RawReminderList = ({
+  reminders,
   frt,
   lang,
-  editRule,
+  editReminder,
   frtInputHandler,
   frtAddHandler,
-  openNewRuleForm
+  openNewReminderForm
 }) => (
   <Section>
-    <Placeholder
-      large
-      float='right'
-      margin='10px 6px 0 24px'
+    <ReminderListHeader
+      header={ReminderListHeaderText[lang]}
+      openNewForm={openNewReminderForm}
+      formText={NewReminderHeaderText[lang]}
     />
-    <MoonButton
-      large
-      float='right'
-      margin='10px 6px 0 24px'
-      onClick={openNewRuleForm}
-    />
-    <Header>{RuleListHeader[lang]}</Header>
     <Subsection>
-      <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
-        <CoreList rules={rules} editRule={editRule} />
+      <GridContainer gtc='16px 1fr 32px' gcg='16px'>
+        <CoreList reminders={reminders} editReminder={editReminder} />
         <FastInput value={frt} inputHandler={frtInputHandler} addHandler={frtAddHandler} />
       </GridContainer>
     </Subsection>
@@ -65,8 +56,8 @@ const RawRuleList = ({
  */
 const mapStateToProps = state => {
   return {
-    rules: state.getIn(['rules', 'items']).rest(),
-    frt: state.getIn(['rules', 'items', 0, 'tmp', 'summ']),
+    reminders: state.getIn(['reminders', 'items']).rest(),
+    frt: state.getIn(['reminders', 'items', 0, 'tmp', 'summ']),
     lang: state.get('lang')
   }
 }
@@ -77,24 +68,24 @@ const mapStateToProps = state => {
  */
 const mapDispatchToProps = dispatch => {
   return {
-    editRule: id => history.push('/r/' + id),
+    editReminder: id => history.push('/r/' + id),
     frtInputHandler: e => {
       if (e.target.value !== '\n') {
         if (e.target.value.endsWith('\n')) {
-          dispatch(saveRule('new'));
+          dispatch(saveReminder('new'));
         } else {
-          dispatch(updateRuleSummary('new', e.target.value));
+          dispatch(updateReminderSummary('new', e.target.value));
         }
       }
     },
-    frtAddHandler: () => dispatch(saveRule('new')),
-    openNewRuleForm: () => history.push('/r/new')
+    frtAddHandler: () => dispatch(saveReminder('new')),
+    openNewReminderForm: () => history.push('/r/new')
   }
 }
 
-const RuleList = connect(
+const ReminderList = connect(
   mapStateToProps,
   mapDispatchToProps
-)(RawRuleList);
+)(RawReminderList);
 
-export default RuleList;
+export default ReminderList;

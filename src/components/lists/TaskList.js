@@ -5,11 +5,8 @@ import {List} from 'immutable';
 
 import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
-import RhombusButton from '../buttons/RhombusButton';
-import XButton from '../buttons/XButton';
 import Section from '../container/Section';
 import Subsection from '../container/Subsection';
-import Header from '../texts/Header';
 import {DAY_CHANGE_HOUR} from '../../utils/constants';
 import history from '../../utils/history';
 import {maplistsort} from '../../utils/sort';
@@ -17,21 +14,34 @@ import {toggleTaskDone, updateTaskSummary, updateTaskDate, saveTask} from '../..
 import {toggleTaskDisplay} from '../../redux/actions/showTaskTemplates.actions';
 import TemplateList from './TemplateList';
 import FastInput from './FastInput';
-import MoonButton from '../buttons/MoonButton';
-import SunButton from '../buttons/SunButton';
-import {TaskListHeader} from '../../utils/translations';
 import BasicSpan from '../texts/BasicSpan';
 import GridContainer from '../container/GridContainer';
+import {NewTaskHeaderText, NewTaskTemplateHeaderText, TaskListHeaderText} from '../../utils/translations';
+import TaskListHeader from './TaskListHeader';
 
 const PrevUncompletedList = ({tasks, editTask, toggleTask}) => {
   return tasks.reduce((accu, task, index) => {
+    let done = task.getIn(['data', 'done']);
     let summ = task.getIn(['data', 'summ']);
     let id = task.get('id');
     let tid = task.get('tid');
     return accu.push(
-      <XButton key={(index * 3 + 1).toString()} onClick={() => toggleTask(id)} />,
-      <BasicSpan key={(index * 3 + 2).toString()} opacity={0.3} listtext>{summ}</BasicSpan>,
-      <OButton key={(index * 3 + 3).toString()} onClick={() => {editTask(tid || id, !!tid)}} />
+      <CBButton
+        key={(index * 3 + 1).toString()}
+        vertical={done}
+        onClick={() => toggleTask(id)}
+      />,
+      <BasicSpan
+        key={(index * 3 + 2).toString()}
+        opacity={0.6 - done * 0.3}
+        lineThrough={done}
+        listtext
+        onClick={() => toggleTask(id)}
+      >{summ}</BasicSpan>,
+      <OButton
+        key={(index * 3 + 3).toString()}
+        onClick={() => {editTask(tid || id, !!tid)}}
+      />
     );
   }, List());
 }
@@ -82,32 +92,19 @@ const RawTaskList = ({
   openNewTaskTemplateForm
 }) => (
   <Section>
-    <RhombusButton
-      large
-      float='right'
-      margin='10px 6px 0 24px'
-      onClick={toggleFilter}
-      filled={showTemplates}
+    <TaskListHeader
+      header={TaskListHeaderText[lang]}
+      openNewForm={openNewTaskForm}
+      openNewTemplateForm={openNewTaskTemplateForm}
+      formText={NewTaskHeaderText[lang]}
+      templateFormText={NewTaskTemplateHeaderText[lang]}
     />
-    <MoonButton
-      large
-      float='right'
-      margin='10px 6px 0 24px'
-      onClick={openNewTaskForm}
-    />
-    <SunButton
-      large
-      float='right'
-      margin='10px 6px 0 24px'
-      onClick={openNewTaskTemplateForm}
-    />
-    <Header>{TaskListHeader[lang]}</Header>
     <Subsection>
       {showTemplates
-        ? <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
+        ? <GridContainer gtc='16px 1fr 32px' gcg='16px'>
           <TemplateList templates={taskTemplates} edit={editTask} />
         </GridContainer>
-        : <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
+        : <GridContainer gtc='16px 1fr 32px' gcg='16px'>
           <PrevUncompletedList
             tasks={prevUncompletedTasks}
             editTask={editTask}
@@ -146,8 +143,9 @@ const getToday = (tasks) => {
  */
 const getUncompleted = (tasks) => {
   if (tasks && tasks.size > 0) {
-    return tasks.filter(x => !x.getIn(['data', 'done'])
-      && moment().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.getIn(['data', 'date']), 'day'));
+    return tasks.filter(x => {
+      return moment().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.getIn(['data', 'date']), 'day');
+    });
   } else {
     return List();
   }

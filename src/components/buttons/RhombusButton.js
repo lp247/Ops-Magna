@@ -8,13 +8,12 @@ const RhombusIcon = ({large, filled}) => {
   let cpid = _.uniqueId('rhombusclip_');
   return (
     <g>
-      <defs key={1}>
+      <defs>
         <clipPath id={cpid}>
           <path d='M50 0 L100 50 L50 100 L0 50 Z' />
         </clipPath>
       </defs>
       <SVGPath
-        key={2}
         d='M50 0 L100 50 L50 100 L0 50 Z'
         large={large}
         filled={filled}

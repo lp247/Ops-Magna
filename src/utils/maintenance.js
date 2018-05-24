@@ -28,7 +28,7 @@ export const saveStore = (store) => {
   saveState(Map({
     tasks: store.getState().get('tasks'),
     events: store.getState().get('events'),
-    rules: store.getState().get('rules'),
+    reminders: store.getState().get('reminders'),
     lang: store.getState().get('lang')
   }));
 }

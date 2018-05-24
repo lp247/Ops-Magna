@@ -16,14 +16,14 @@ import {
   removeEventTemplate
 } from '../../redux/actions/events.actions';
 import RawTemplateForm from './RawTemplateForm';
-import {NewEventTemplateHeader, EditEventTemplateHeader} from '../../utils/translations';
+import { NewEventTemplateHeaderText, EditEventTemplateHeaderText } from '../../utils/translations';
 
 const mapStateToProps = (state, ownProps) => {
   let {id} = ownProps.match.params;
   let lang = state.get('lang');
   return {
     entity: state.getIn(['events', 'templates']).find(x => x.get('id') === id),
-    header: id === 'new' ? NewEventTemplateHeader[lang] : EditEventTemplateHeader[lang],
+    header: id === 'new' ? NewEventTemplateHeaderText[lang] : EditEventTemplateHeaderText[lang],
     showDelete: id === 'new',
     lang
   }
@@ -49,7 +49,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
       dispatch(discardEventTemplate(id));
       history.push('/');
     },
-    discard: () => discardEventTemplate(id),
+    discard: () => dispatch(discardEventTemplate(id)),
     delExit: () => {
       dispatch(removeEventTemplate(id));
       history.push('/');

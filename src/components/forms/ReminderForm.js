@@ -1,27 +1,31 @@
 import React, {Component} from 'react';
+import {connect} from 'react-redux';
 
 import Section from '../container/Section';
 import Header from '../texts/Header';
-import MonthsSelectorGroup from '../inputs/MonthsSelectorGroup';
-import WeeksSelectorGroup from '../inputs/WeeksSelectorGroup';
-import DaysSelectorGroup from '../inputs/DaysSelectorGroup';
-import StartEndTimeSelectorGroup from '../inputs/StartEndTimeSelectorGroup';
+import history from '../../utils/history';
+import {
+	updateReminderSummary,
+	updateReminderDescription,
+	saveReminder,
+	discardReminder,
+	removeReminder
+} from '../../redux/actions/reminders.actions';
 import SummInput from '../inputs/SummInput';
 import DescInput from '../inputs/DescInput';
 import FormButtonGroup from '../buttons/FormButtonGroup';
-import NSelectorGroup from '../inputs/NSelectorGroup';
-import {modalDeleteText, modalEmptySumm} from '../../utils/translations';
 import {ModalYesNo, ModalOK} from '../modals/Modals';
+import { modalEmptySumm, modalDeleteText, NewReminderHeaderText, EditReminderHeaderText } from '../../utils/translations';
 
-class RawTemplateForm extends Component {
+class RawReminderForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
       showDeleteModal: false,
       showEmptySummModal: false
     };
-    this.openDeleteModal = this.openDeleteModal.bind(this);
     this.closeDeleteModal = this.closeDeleteModal.bind(this);
+    this.openDeleteModal = this.openDeleteModal.bind(this);
     this.openEmptySummModal = this.openEmptySummModal.bind(this);
     this.closeEmptySummModal = this.closeEmptySummModal.bind(this);
     this.checkSaveExit = this.checkSaveExit.bind(this);
@@ -66,24 +70,17 @@ class RawTemplateForm extends Component {
 
   render() {
     let {
-      entity,
+      reminder,
       header,
       showDelete,
       lang,
       updateSummary,
       updateDescription,
-      updateN,
-      toggleMonth,
-      toggleWeek,
-      toggleDay,
-      updateTime,
-      updateStart,
-      updateEnd,
       // saveExit,
       discardExit,
       delExit
     } = this.props;
-    let summ = entity.getIn(['tmp', 'summ']);
+    let summ = reminder.getIn(['tmp', 'summ']);
     return (
       <Section>
         <ModalYesNo
@@ -98,36 +95,8 @@ class RawTemplateForm extends Component {
           lang={lang}
         >{modalEmptySumm[lang]}</ModalOK>
         <Header>{header}</Header>
-        <MonthsSelectorGroup
-          entity={entity}
-          toggleMonth={toggleMonth}
-          toggleWeek={toggleWeek}
-          toggleDay={toggleDay}
-          lang={lang}
-        />
-        <WeeksSelectorGroup
-          entity={entity}
-          toggleWeek={toggleWeek}
-          toggleDay={toggleDay}
-        />
-        <DaysSelectorGroup
-          entity={entity}
-          toggleDay={toggleDay}
-        />
-        <StartEndTimeSelectorGroup
-          entity={entity}
-          updateStart={updateStart}
-          updateEnd={updateEnd}
-          updateTime={updateTime}
-          lang={lang}
-        />
-        <NSelectorGroup
-          entity={entity}
-          updateN={updateN}
-          lang={lang}
-        />
-        <SummInput entity={entity} updateSummary={updateSummary} lang={lang} />
-        <DescInput entity={entity} updateDescription={updateDescription} lang={lang} />
+        <SummInput entity={reminder} updateSummary={updateSummary} lang={lang}/>
+        <DescInput entity={reminder} updateDescription={updateDescription} lang={lang} />
         <FormButtonGroup
           showDelete={showDelete}
           save={() => this.checkSaveExit(summ)}
@@ -140,4 +109,41 @@ class RawTemplateForm extends Component {
   }
 }
 
-export default RawTemplateForm;
+const mapStateToProps = (state, ownProps) => {
+  let {id} = ownProps.match.params;
+  let lang = state.get('lang');
+  return {
+    reminder: state.getIn(['reminders', 'items']).find(x => x.get('id') === id),
+    header: id === 'new' ? NewReminderHeaderText[lang] : EditReminderHeaderText[lang],
+    showDelete: id === 'new',
+    lang
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  let {id} = ownProps.match.params;
+  return {
+    updateSummary: value => dispatch(updateReminderSummary(id, value)),
+    updateDescription: value => dispatch(updateReminderDescription(id, value)),
+    saveExit: () => {
+      dispatch(saveReminder(id));
+      history.push('/');
+    },
+    discardExit: () => {
+      dispatch(discardReminder(id));
+      history.push('/');
+    },
+    discard: () => dispatch(discardReminder(id)),
+    delExit: () => {
+      dispatch(removeReminder(id));
+      history.push('/');
+    }
+  };
+}
+
+const ReminderForm = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(RawReminderForm);
+
+export default ReminderForm;

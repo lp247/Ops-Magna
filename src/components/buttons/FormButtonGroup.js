@@ -7,18 +7,22 @@ import {SaveButtonText, AbortButtonText, DeleteButtonText} from '../../utils/tra
 
 const FormButtonGroup = ({showDelete, save, discard, del, lang}) => (
   <Subsection>
-    <FlexContainer jc='space-evenly'>
+    <FlexContainer jc='space-evenly' wrp>
       <TextButton
+        margin="0 4px 8px"
+        padding="8px"
         onClick={save}
       >{SaveButtonText[lang]}</TextButton>
       <TextButton
-        padding={8}
+        margin="0 4px 8px"
+        padding="8px"
         onClick={discard}
       >{AbortButtonText[lang]}</TextButton>
       {showDelete
         ? null
         : <TextButton
-          padding={8}
+          margin="0 4px 8px"
+          padding="8px"
           onClick={del}
         >{DeleteButtonText[lang]}</TextButton>
       }

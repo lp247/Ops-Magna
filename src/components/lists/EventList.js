@@ -5,11 +5,9 @@ import {List} from 'immutable';
 
 import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
-import RhombusButton from '../buttons/RhombusButton';
 import StarButton from '../buttons/StarButton';
 import Section from '../container/Section';
 import Subsection from '../container/Subsection';
-import Header from '../texts/Header';
 import getWeekday from '../../utils/weekday';
 import {DAY_CHANGE_HOUR, EVENT_FORECAST_DAYS} from '../../utils/constants';
 import history from '../../utils/history';
@@ -18,11 +16,10 @@ import {toggleEventDisplay} from '../../redux/actions/showEventTemplates.actions
 import {maplistsort} from '../../utils/sort';
 import FastInput from './FastInput';
 import TemplateList from './TemplateList';
-import MoonButton from '../buttons/MoonButton';
-import SunButton from '../buttons/SunButton';
-import {EventListHeader} from '../../utils/translations';
 import BasicSpan from '../texts/BasicSpan';
 import GridContainer from '../container/GridContainer';
+import EventListHeader from './EventListHeader';
+import { NewEventHeaderText, NewEventTemplateHeaderText, EventListHeaderText } from '../../utils/translations';
 
 const CurrentList = ({events, editEvent}) => {
   return events.reduce((accu, event, index) => {
@@ -55,7 +52,7 @@ const UpcomingList = ({events, editEvent, lang}) => {
     let text = time ? datetimestr + ' ' + summ : datestr + ' ' + summ;
     return accu.push(
       <StarButton key={(index * 3 + 1).toString()} />,
-      <BasicSpan key={(index * 3 + 2).toString()} opacity={0.3} lineThrough={false} listtext>{text}</BasicSpan>,
+      <BasicSpan key={(index * 3 + 2).toString()} opacity={0.6} lineThrough={false} listtext>{text}</BasicSpan>,
       <OButton key={(index * 3 + 3).toString()} onClick={() => {editEvent(tid || id, !!tid)}} />
     );
   }, List());
@@ -76,32 +73,19 @@ const RawEventList = ({
   openNewEventTemplateForm
 }) => (
   <Section>
-    <RhombusButton
-      large
-      float='right'
-      margin='10px 6px 0 24px'
-      onClick={toggleFilter}
-      filled={showTemplates}
+    <EventListHeader
+      header={EventListHeaderText[lang]}
+      openNewForm={openNewEventForm}
+      openNewTemplateForm={openNewEventTemplateForm}
+      formText={NewEventHeaderText[lang]}
+      templateFormText={NewEventTemplateHeaderText[lang]}
     />
-    <MoonButton
-      large
-      float='right'
-      margin='10px 6px 0 24px'
-      onClick={openNewEventForm}
-    />
-    <SunButton
-      large
-      float='right'
-      margin='10px 6px 0 24px'
-      onClick={openNewEventTemplateForm}
-    />
-    <Header>{EventListHeader[lang]}</Header>
     <Subsection>
       {showTemplates
-        ? <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
+        ? <GridContainer gtc='16px 1fr 32px' gcg='16px'>
           <TemplateList templates={eventTemplates} edit={editEvent} />
         </GridContainer>
-        : <GridContainer gtc={'40px 1fr 40px'} jc={'space-around'} gar={'32px'}>
+        : <GridContainer gtc='16px 1fr 32px' gcg='16px'>
           <CurrentList key={1} events={currentEvents} editEvent={editEvent} />
           <UpcomingList key={2} events={upcomingEvents} editEvent={editEvent} lang={lang} />
           <FastInput key={3} value={fet} inputHandler={fetInputHandler} addHandler={fetAddHandler} />
@@ -143,8 +127,8 @@ const getUpcoming = (events) => {
  */
 const mapStateToProps = state => {
   return {
-    currentEvents: getToday(state.getIn(['events', 'items']).rest()),
-    upcomingEvents: getUpcoming(state.getIn(['events', 'items']).rest()),
+    currentEvents: getToday(state.getIn(['events', 'items']).rest()).sort(maplistsort(['data', 'time'])),
+    upcomingEvents: getUpcoming(state.getIn(['events', 'items']).rest()).sort(maplistsort(['data', 'date'])),
     eventTemplates: state.getIn(['events', 'templates']).rest().sort(maplistsort(['data', 'summ'])),
     showTemplates: state.get('showEventTemplates'),
     fet: state.getIn(['events', 'items', 0, 'tmp', 'summ']),

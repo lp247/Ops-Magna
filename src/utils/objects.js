@@ -1,4 +1,5 @@
 import {Map, List} from 'immutable';
+import moment from 'moment';
 
 // =================================================================================================
 //           TASKS
@@ -12,13 +13,13 @@ export const getTaskTemplate = (
   id,
   summ = '',
   desc = '',
-  n = 1,
+  n = -1,
   cnt = 0,
   months = List(),
   weeks = List(),
   days = List(),
   time = '',
-  start = '',
+  start = moment().format('YYYY-MM-DD'),
   end = ''
 ) => {
   let core = getTaskTemplateCore(summ, desc, n, months, weeks, days, time, start, end);
@@ -37,7 +38,7 @@ export const getTask = (
   tid = '',
   summ = '',
   desc = '',
-  date = '',
+  date = moment().format('YYYY-MM-DD'),
   time = '',
   done = false
 ) => {
@@ -62,13 +63,13 @@ export const getEventTemplate = (
   id,
   summ = '',
   desc = '',
-  n = 1,
+  n = -1,
   cnt = 0,
   months = List(),
   weeks = List(),
   days = List(),
   time = '',
-  start = '',
+  start = moment().format('YYYY-MM-DD'),
   end = ''
 ) => {
   let core = getEventTemplateCore(summ, desc, n, months, weeks, days, time, start, end);
@@ -87,7 +88,7 @@ export const getEvent = (
   tid = '',
   summ = '',
   desc = '',
-  date = '',
+  date = moment().format('YYYY-MM-DD'),
   time = ''
 ) => {
   let core = getEventCore(summ, desc, date, time);
@@ -100,17 +101,17 @@ export const getEvent = (
 }
 
 // =================================================================================================
-//           RULES
+//           REMINDERS
 // =================================================================================================
 
-const getRuleCore = (summ, desc) => Map({summ, desc});
+const getReminderCore = (summ, desc) => Map({summ, desc});
 
-export const getRule = (
+export const getReminder = (
   id,
   summ = '',
   desc = ''
 ) => {
-  let core = getRuleCore(summ, desc);
+  let core = getReminderCore(summ, desc);
   return Map({
     id,
     tmp: core,
