@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
+import {goBack} from 'react-router-redux';
 
 import Section from '../container/Section';
 import Header from '../texts/Header';
-import history from '../../utils/history';
 import {
   discardTask,
   removeTask,
@@ -158,17 +158,23 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     updateTime: value => dispatch(updateTaskTime(id, value)),
     updateDone: () => dispatch(toggleTaskDone(id)),
     saveExit: () => {
+      dispatch(goBack());
       dispatch(saveTask(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     },
     discardExit: () => {
+      dispatch(goBack());
       dispatch(discardTask(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     },
     discard: () => dispatch(discardTask(id)),
     delExit: () => {
+      dispatch(goBack());
       dispatch(removeTask(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     }
   };
 }

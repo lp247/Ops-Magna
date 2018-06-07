@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
+import {goBack} from 'react-router-redux';
 
 import Section from '../container/Section';
 import Header from '../texts/Header';
-import history from '../../utils/history';
 import {
 	updateReminderSummary,
 	updateReminderDescription,
@@ -126,17 +126,23 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     updateSummary: value => dispatch(updateReminderSummary(id, value)),
     updateDescription: value => dispatch(updateReminderDescription(id, value)),
     saveExit: () => {
+      dispatch(goBack());
       dispatch(saveReminder(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     },
     discardExit: () => {
+      dispatch(goBack());
       dispatch(discardReminder(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     },
     discard: () => dispatch(discardReminder(id)),
     delExit: () => {
+      dispatch(goBack());
       dispatch(removeReminder(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     }
   };
 }

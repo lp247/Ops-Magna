@@ -39,7 +39,7 @@ const GridContainer = styled.div`
   justify-content: ${props => props.jc || 'space-between'};
   grid-row-gap: ${props => props.grg || '0'};
   grid-column-gap: ${props => props.gcg || '0'};
-  margin-bottom: 24px;
+  margin: ${props => props.margin || '0 0 0 0'};
   grid-auto-rows: ${props => props.gar || 'auto'};
   /* border: 1px solid white; */
 `;

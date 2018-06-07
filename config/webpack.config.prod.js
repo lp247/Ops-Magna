@@ -63,8 +63,8 @@ module.exports = {
     // Generated JS file names (with nested folders).
     // There will be one main bundle, and one file per asynchronous chunk.
     // We don't currently advertise code splitting but Webpack supports it.
-    filename: 'static/js/[name].[chunkhash:8].js',
-    chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js',
+    filename: 'static/js/bundle.[chunkhash:8].js',
+    chunkFilename: 'static/js/bundle.[chunkhash:8].chunk.js',
     // We inferred the "public path" (such as / or /my-project) from homepage.
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
@@ -142,6 +142,16 @@ module.exports = {
               limit: 10000,
               name: 'static/media/[name].[hash:8].[ext]',
             },
+          },
+          {
+            test: /\.workerscript\.js$/,
+            use: {
+              loader: 'worker-loader',
+              options: {
+                name: 'static/js/worker.[hash:8].js',
+                inline: true
+              }
+            }
           },
           // Process JS with Babel.
           {
@@ -274,6 +284,7 @@ module.exports = {
       },
       mangle: {
         safari10: true,
+        // reserved: ['serializedState']
       },
       output: {
         comments: false,

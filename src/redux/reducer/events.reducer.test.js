@@ -96,15 +96,63 @@ describe('Updating last update of events', () => {
 		let final = S([NCE], [NCET, et_good], '2018-05-17');
 		expect(events(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
 	});
-	it('adds template childs until update date, if counter of template is not full', () => {
+	it('adds template childs until counter of template is full', () => {
 		let initial = S([NCE], [NCET, et_overflow], '2018-05-01');
 		let final = S([NCE, et_overflow_child_1, et_overflow_child_2, et_overflow_child_3], [NCET, et_overflow.set('cnt', 13)], '2018-05-17');
 		expect(events(initial, updateLastUpdate(moment('2018-05-10 12:00'), mockfn))).toEqual(final);
 	});
-	it('adds latest template childs, if end is not reached', () => {
+	it('adds template childs, until end of template is reached', () => {
 		let initial = S([NCE], [NCET, et_ending], '2018-05-01');
 		let final = S([NCE, et_ending_child_1, et_ending_child_2, et_ending_child_3, et_ending_child_4, et_ending_child_5], [NCET, et_ending.set('cnt', 15)], '2018-05-17');
 		expect(events(initial, updateLastUpdate(moment('2018-05-10 12:00'), mockfn))).toEqual(final);
+	});
+	it('adds template childs until update date, if counter of template is not full and end is not reached', () => {
+		let et_data = ETD('everyday', 'event at every day', 100, List([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]), List([1, 2, 3, 4, 5]), List([1, 2, 3, 4, 5, 6, 7]), '12:30', '2018-05-01', '2019-01-01');
+		let et = ET('22', 2, et_data);
+		let et_new = ET('22', 18, et_data);
+		let child_1_data = ED('everyday', 'event at every day', '2018-05-10', '12:30');
+		let child_2_data = ED('everyday', 'event at every day', '2018-05-11', '12:30');
+		let child_3_data = ED('everyday', 'event at every day', '2018-05-12', '12:30');
+		let child_4_data = ED('everyday', 'event at every day', '2018-05-13', '12:30');
+		let child_5_data = ED('everyday', 'event at every day', '2018-05-14', '12:30');
+		let child_6_data = ED('everyday', 'event at every day', '2018-05-15', '12:30');
+		let child_7_data = ED('everyday', 'event at every day', '2018-05-16', '12:30');
+		let child_8_data = ED('everyday', 'event at every day', '2018-05-17', '12:30');
+		let child_1 = E('42', '22', child_1_data);
+		let child_2 = E('42', '22', child_2_data);
+		let child_3 = E('42', '22', child_3_data);
+		let child_4 = E('42', '22', child_4_data);
+		let child_5 = E('42', '22', child_5_data);
+		let child_6 = E('42', '22', child_6_data);
+		let child_7 = E('42', '22', child_7_data);
+		let child_8 = E('42', '22', child_8_data);
+		let initial = S([NCE], [NCET, et], '2018-05-01');
+		let final = S([NCE, child_1, child_2, child_3, child_4, child_5, child_6, child_7, child_8], [NCET, et_new], '2018-05-17');
+		expect(events(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
+	});
+	it('adds a template child to exactly one week, if set as day of year', () => {
+		let et_data = ETD('everyday', 'event at every day', -1, List(), List(), List([130, 137]), '12:30', '', '');
+		let et = ET('22', 2, et_data);
+		let et_new = ET('22', 4, et_data);
+		let child_1_data = ED('everyday', 'event at every day', '2018-05-10', '12:30');
+		let child_2_data = ED('everyday', 'event at every day', '2018-05-17', '12:30');
+		let child_1 = E('42', '22', child_1_data);
+		let child_2 = E('42', '22', child_2_data);
+		let initial = S([NCE], [NCET, et], '2018-05-01');
+		let final = S([NCE, child_1, child_2], [NCET, et_new], '2018-05-17');
+		expect(events(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
+	});
+	it('adds template childs in forecast, if template starts within it', () => {
+		let et_data = ETD('everyday', 'event at every day', -1, List([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]), List([1, 2, 3, 4, 5]), List([1, 2, 3, 4, 5, 6, 7]), '12:30', '2018-05-16', '');
+		let et = ET('22', 2, et_data);
+		let et_new = ET('22', 4, et_data);
+		let child_1_data = ED('everyday', 'event at every day', '2018-05-16', '12:30');
+		let child_2_data = ED('everyday', 'event at every day', '2018-05-17', '12:30');
+		let child_1 = E('42', '22', child_1_data);
+		let child_2 = E('42', '22', child_2_data);
+		let initial = S([NCE], [NCET, et], '2018-05-01');
+		let final = S([NCE, child_1, child_2], [NCET, et_new], '2018-05-17');
+		expect(events(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
 	});
 	it('updates last update to today', () => {
 		let initial = S([], [], '2000-01-01');

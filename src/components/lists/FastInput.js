@@ -7,7 +7,7 @@ const FastInput = ({value, inputHandler, addHandler}) => {
   return [
     <PlusButton
       key="1"
-      onClick={value.trim() !== '' ? addHandler : null}
+      onClick={value && value.trim() !== '' ? addHandler : null}
     />,
     <TextInput
       key="2"

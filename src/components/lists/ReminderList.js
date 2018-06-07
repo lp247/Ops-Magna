@@ -1,18 +1,19 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {List} from 'immutable';
+import {withRouter} from 'react-router';
+import {push} from 'react-router-redux';
 
 import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
 import Section from '../container/Section';
 import Subsection from '../container/Subsection';
-import history from '../../utils/history';
 import {updateReminderSummary, saveReminder} from '../../redux/actions/reminders.actions';
 import FastInput from './FastInput';
 import GridContainer from '../container/GridContainer';
 import BasicSpan from '../texts/BasicSpan';
 import {NewReminderHeaderText, ReminderListHeaderText} from '../../utils/translations';
-import ReminderListHeader from './ReminderListHeader';
+import ListHeader from './ListHeader';
 
 const CoreList = ({reminders, editReminder}) => {
   return reminders.reduce((accu, reminder, index) => {
@@ -36,7 +37,7 @@ const RawReminderList = ({
   openNewReminderForm
 }) => (
   <Section>
-    <ReminderListHeader
+    <ListHeader
       header={ReminderListHeaderText[lang]}
       openNewForm={openNewReminderForm}
       formText={NewReminderHeaderText[lang]}
@@ -66,9 +67,9 @@ const mapStateToProps = state => {
  * Regular mapping of dispatch function to props from redux.
  * @param {func} dispatch Dispatch function.
  */
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch, ownProps) => {
   return {
-    editReminder: id => history.push('/r/' + id),
+    editReminder: id => dispatch(push('/r/' + id)),
     frtInputHandler: e => {
       if (e.target.value !== '\n') {
         if (e.target.value.endsWith('\n')) {
@@ -79,7 +80,7 @@ const mapDispatchToProps = dispatch => {
       }
     },
     frtAddHandler: () => dispatch(saveReminder('new')),
-    openNewReminderForm: () => history.push('/r/new')
+    openNewReminderForm: () => dispatch(push('/r/new'))
   }
 }
 
@@ -88,4 +89,4 @@ const ReminderList = connect(
   mapDispatchToProps
 )(RawReminderList);
 
-export default ReminderList;
+export default withRouter(ReminderList);

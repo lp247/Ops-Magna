@@ -15,7 +15,7 @@ function isValid(months, weeks, days, startDate, endDate, number, counter) {
   if (!months || !weeks || !days || !startDate || !endDate) return false;
 
   // Maximum number of occurences is not reached.
-  if (counter >= number) return false;
+  if (counter >= number && number > -1) return false;
 
   // All months are between 0 (January) and 11 (december).
   if (Math.max(...months) > 11) return false;
@@ -37,8 +37,8 @@ function isValid(months, weeks, days, startDate, endDate, number, counter) {
   if (Math.max(...days) > 7 && weeks.size > 0) return false;
   if (Math.min(...days) < 1) return false;
   
-  // Start date is before end date.
-  if (startDate > endDate) return false;
+  // Start date is before end date, if both are set.
+  if (startDate > endDate && !!startDate && !!endDate) return false;
 
   // Return true, if false has not returned before (all checks have been positive).
   return true;

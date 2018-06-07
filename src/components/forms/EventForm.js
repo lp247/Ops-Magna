@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
+import {goBack} from 'react-router-redux';
 
 import Section from '../container/Section';
 import Header from '../texts/Header';
-import history from '../../utils/history';
 import {
 	updateEventSummary,
 	updateEventDescription,
@@ -18,7 +18,13 @@ import DescInput from '../inputs/DescInput';
 import FormButtonGroup from '../buttons/FormButtonGroup';
 import DateTimeSelectorGroup from '../inputs/DateTimeSelectorGroup';
 import {ModalYesNo, ModalOK} from '../modals/Modals';
-import { modalDeleteText, modalEmptyDate, modalEmptySumm, NewEventHeaderText, EditEventHeaderText } from '../../utils/translations';
+import {
+  modalDeleteText,
+  modalEmptyDate,
+  modalEmptySumm,
+  NewEventHeaderText,
+  EditEventHeaderText
+} from '../../utils/translations';
 
 class RawEventForm extends Component {
   constructor(props) {
@@ -153,17 +159,23 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     updateDate: value => dispatch(updateEventDate(id, value)),
     updateTime: value => dispatch(updateEventTime(id, value)),
     saveExit: () => {
+      dispatch(goBack());
       dispatch(saveEvent(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     },
     discardExit: () => {
+      dispatch(goBack());
       dispatch(discardEvent(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     },
     discard: () => dispatch(discardEvent(id)),
     delExit: () => {
+      dispatch(goBack());
       dispatch(removeEvent(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     }
   };
 }

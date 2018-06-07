@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import _ from 'lodash';
 import {FONT_COLOR} from '../../utils/constants';
+import uuidv4 from '../../utils/uuidv4';
 
 const Inputlabel = styled.label`
   display: block;
@@ -16,7 +16,7 @@ const Inputfield = styled.div`
 
 const inputWrapper = (InputComponent) => {
   return function({type, value, onChange, children, bottomBorderOnly, ...rest}) {
-    let uid = _.uniqueId('input_');
+    let uid = uuidv4();
     return (
       <Inputfield {...rest}>
         {children

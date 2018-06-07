@@ -51,12 +51,13 @@ import {
   updateTemplateSummary
 } from './ReducerHelperFunctions';
 import {getEvent, getEventTemplate} from '../../utils/objects';
+import {DAY_CHANGE_HOUR} from '../../utils/constants';
 
 const events = (
   state = Map({
     templates: List([getEventTemplate('new')]),
     items: List([getEvent('new')]),
-    lastUpdate: moment().format('YYYY-MM-DD')
+    lastUpdate: moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD')
   }),
   action
 ) => {

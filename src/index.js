@@ -1,32 +1,61 @@
+/* global Android */
+
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Router} from 'react-router-dom';
-import {createStore} from 'redux';
+import {createStore, applyMiddleware} from 'redux';
 import {Provider} from 'react-redux';
+import {routerMiddleware, ConnectedRouter, goBack} from 'react-router-redux';
 
 // import registerServiceWorker from './registerServiceWorker';
 import ops from './redux/ops';
 import './index.css';
 import App from './components/App';
-import history from './utils/history';
+import createHistory from 'history/createMemoryHistory';
 import {
   loadState,
   subscriber,
   updateStore
 } from './utils/maintenance';
+import updater from './webworker/updater.worker.js';
 
+// Create history object and router middleware for routing.
+const history = createHistory();
+const middleware = routerMiddleware(history);
+
+// Load saved state and create store with it.
 const persistedState = loadState();
-const store = createStore(ops, persistedState);
+const store = createStore(ops, persistedState, applyMiddleware(middleware));
 
+// Define an event listener for pressing back button.
+const backlistener = (e) => {
+  if (history.index !== 0) {
+    store.dispatch(goBack());
+  } else {
+    Android.closeApp();
+  }
+}
+window.addEventListener('back', backlistener);
+
+// Update the store.
 updateStore(store);
 
+// Register event listener to update store on every new day.
+updater.addEventListener('message', (e) => {
+  if (e.data === 'UPDATE_STORE') {
+    updateStore(store);
+    updater.postMessage('STORE_UPDATED');
+  }
+});
+
+// Subscribe saving subscriber to store changes.
 store.subscribe(subscriber(store));
 
+// Render whole app.
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={history}>
+    <ConnectedRouter history={history}>
       <App />
-    </Router>
+    </ConnectedRouter>
   </Provider>,
   document.getElementById('root')
 );

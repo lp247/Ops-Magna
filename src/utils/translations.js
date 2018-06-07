@@ -424,3 +424,10 @@ export const langButtonText = {
 	es: 'Idiomas',
 	ru: ''
 };
+
+export const showRecButtonText = {
+	en: 'Show recurring entries',
+	de: 'Wiederholende Einträge anzeigen',
+	es: 'Mostrar anotaciones repetitivas',
+	ru: ''
+};

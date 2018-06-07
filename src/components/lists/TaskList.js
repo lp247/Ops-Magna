@@ -2,13 +2,14 @@ import React from 'react';
 import {connect} from 'react-redux';
 import moment from 'moment';
 import {List} from 'immutable';
+import {withRouter} from 'react-router';
+import {push} from 'react-router-redux';
 
 import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
 import Section from '../container/Section';
 import Subsection from '../container/Subsection';
 import {DAY_CHANGE_HOUR} from '../../utils/constants';
-import history from '../../utils/history';
 import {maplistsort} from '../../utils/sort';
 import {toggleTaskDone, updateTaskSummary, updateTaskDate, saveTask} from '../../redux/actions/tasks.actions';
 import {toggleTaskDisplay} from '../../redux/actions/showTaskTemplates.actions';
@@ -16,8 +17,13 @@ import TemplateList from './TemplateList';
 import FastInput from './FastInput';
 import BasicSpan from '../texts/BasicSpan';
 import GridContainer from '../container/GridContainer';
-import {NewTaskHeaderText, NewTaskTemplateHeaderText, TaskListHeaderText} from '../../utils/translations';
-import TaskListHeader from './TaskListHeader';
+import {
+  NewTaskHeaderText,
+  NewTaskTemplateHeaderText,
+  TaskListHeaderText,
+  showRecButtonText
+} from '../../utils/translations';
+import ListHeader from './ListHeader';
 
 const PrevUncompletedList = ({tasks, editTask, toggleTask}) => {
   return tasks.reduce((accu, task, index) => {
@@ -92,12 +98,15 @@ const RawTaskList = ({
   openNewTaskTemplateForm
 }) => (
   <Section>
-    <TaskListHeader
+    <ListHeader
       header={TaskListHeaderText[lang]}
       openNewForm={openNewTaskForm}
       openNewTemplateForm={openNewTaskTemplateForm}
       formText={NewTaskHeaderText[lang]}
       templateFormText={NewTaskTemplateHeaderText[lang]}
+      filterButtonText={showRecButtonText[lang]}
+      filterAction={toggleFilter}
+      filterActive={showTemplates}
     />
     <Subsection>
       {showTemplates
@@ -178,9 +187,9 @@ const mapDispatchToProps = dispatch => {
     },
     editTask: (id, isTid) => {
       if (isTid) {
-        history.push('/tt/' + id);
+        dispatch(push('/tt/' + id));
       } else {
-        history.push('/t/' + id);
+        dispatch(push('/t/' + id));
       }
     },
     fttInputHandler: e => {
@@ -200,8 +209,8 @@ const mapDispatchToProps = dispatch => {
       dispatch(saveTask('new'));
     },
     toggleFilter: () => dispatch(toggleTaskDisplay()),
-    openNewTaskForm: () => history.push('/t/new'),
-    openNewTaskTemplateForm: () => history.push('/tt/new')
+    openNewTaskForm: () => dispatch(push('/t/new')),
+    openNewTaskTemplateForm: () => dispatch(push('/tt/new'))
   }
 }
 
@@ -210,4 +219,4 @@ const TaskList = connect(
   mapDispatchToProps
 )(RawTaskList);
 
-export default TaskList;
+export default withRouter(TaskList);

@@ -473,7 +473,7 @@ const saveEventTemplateChangesAtIndex = (state, index, today, idGenerator) => {
       });
       cnt += 1;
     }
-    if (cnt >= n) break;
+    if (cnt >= n && n > -1) break;
   }
 
   // Update counter.

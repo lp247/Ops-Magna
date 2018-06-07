@@ -1,4 +1,5 @@
 import {combineReducers} from 'redux-immutable';
+import {routerReducer} from 'react-router-redux';
 
 import tasks from './reducer/tasks.reducer';
 import events from './reducer/events.reducer';
@@ -15,7 +16,8 @@ const ops = combineReducers({
   showTaskTemplates,
   showEventTemplates,
   shouldSave,
-  lang
+  lang,
+  router: routerReducer
 });
 
 export default ops;

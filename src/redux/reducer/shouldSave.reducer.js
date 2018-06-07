@@ -17,6 +17,7 @@ import {
 } from '../actions/reminders.actions';
 import {UNSET_SHOULD_SAVE} from '../actions/shouldSave.actions';
 import {SELECT_LANGUAGE} from '../actions/lang.actions';
+import {UPDATE_LAST_UPDATE} from '../actions/tasksEventsUpdate.actions';
 
 function shouldSave(state = false, action) {
   switch (action.type) {
@@ -32,6 +33,7 @@ function shouldSave(state = false, action) {
     case SAVE_TASK_TEMPLATE:
     case TOGGLE_TASK_DONE:
     case SELECT_LANGUAGE:
+    case UPDATE_LAST_UPDATE:
       return true;
     case UNSET_SHOULD_SAVE:
     default:

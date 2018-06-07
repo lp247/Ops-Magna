@@ -9,7 +9,7 @@ export const INPUT_BACKGROUND_COLOR = 'rgb(43, 44, 47)';
 // export const ACCENT_GOLD = '#FEB82B';
 export const ACCENT_GREY = '#939393';
 // export const ACCENT_COLOR = 'rgba(39, 158, 178, 1.0)';
-export const ACCENT_COLOR = 'rgba(201, 167, 50, 1.0)';
+export const ACCENT_COLOR = 'rgba(201, 167, 50, 1.0)'; // #C9A732
 export const ACCENT_COLOR_DARKER = '#937a24';
 export const ACCENT_COLOR_OPACITY_07 = ACCENT_COLOR.replace('1.0', '0.7');
 export const ACCENT_COLOR_OPACITY_05 = ACCENT_COLOR.replace('1.0', '0.5');
@@ -18,3 +18,4 @@ export const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 
 export const DAY_CHANGE_HOUR = 4;
 export const EVENT_FORECAST_DAYS = 7;
+export const NOTIFICATION_START_HOURS = 1;

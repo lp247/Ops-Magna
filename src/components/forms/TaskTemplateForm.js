@@ -1,6 +1,6 @@
 import {connect} from 'react-redux';
+import {goBack} from 'react-router-redux';
 
-import history from '../../utils/history';
 import {
   updateTaskTemplateSummary,
   updateTaskTemplateDescription,
@@ -42,17 +42,23 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     updateStart: value => dispatch(updateTaskTemplateStart(id, value)),
     updateEnd: value => dispatch(updateTaskTemplateEnd(id, value)),
     saveExit: () => {
+      dispatch(goBack());
       dispatch(saveTaskTemplate(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     },
     discardExit: () => {
+      dispatch(goBack());
       dispatch(discardTaskTemplate(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     },
     discard: () => dispatch(discardTaskTemplate(id)),
     delExit: () => {
+      dispatch(goBack());
       dispatch(removeTaskTemplate(id));
-      history.push('/');
+      // history.push('/');
+      // history.go(-1);
     }
   };
 }

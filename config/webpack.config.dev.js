@@ -65,7 +65,7 @@ module.exports = {
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
     devtoolModuleFilenameTemplate: info =>
-      path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+      path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')
   },
   resolve: {
     // This allows you to set a fallback for where Webpack should look for modules.
@@ -137,6 +137,15 @@ module.exports = {
               limit: 10000,
               name: 'static/media/[name].[hash:8].[ext]',
             },
+          },
+          {
+            test: /\.workerscript\.js$/,
+            use: {
+              loader: 'worker-loader',
+              options: {
+                name: 'static/js/worker.[hash:8].js'
+              }
+            }
           },
           // Process JS with Babel.
           {

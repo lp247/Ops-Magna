@@ -3,9 +3,10 @@ import _ from 'lodash';
 
 import SVGCircle from './SVGCircle';
 import svgWrapper from './svgWrapper';
+import uuidv4 from '../../utils/uuidv4';
 
 const MoonIcon = ({large}) => {
-	let cpid = _.uniqueId('moonclip');
+	let cpid = uuidv4();
   return (
     <g>
 			<defs>

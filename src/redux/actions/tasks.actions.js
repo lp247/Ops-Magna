@@ -1,7 +1,7 @@
-import _ from 'lodash';
 import moment from 'moment';
 
 import {DAY_CHANGE_HOUR} from '../../utils/constants';
+import uuidv4 from '../../utils/uuidv4';
 
 export const DISCARD_TASK = 'DISCARD_TASK';
 export const DISCARD_TASK_TEMPLATE = 'DISCARD_TASK_TEMPLATE';
@@ -50,11 +50,11 @@ export function resetTaskTemplateCounter(id) {
 	return {type: RESET_TASK_TEMPLATE_COUNTER, id};
 }
 
-export function saveTask(id, idGenerator = _.uniqueId, newtid='') {
+export function saveTask(id, idGenerator = uuidv4, newtid='') {
 	return {type: SAVE_TASK, id, idGenerator, newtid};
 }
 
-export function saveTaskTemplate(id, today = moment().subtract(DAY_CHANGE_HOUR, 'hours'), idGenerator = _.uniqueId) {
+export function saveTaskTemplate(id, today = moment().subtract(DAY_CHANGE_HOUR, 'hours'), idGenerator = uuidv4) {
   return {type: SAVE_TASK_TEMPLATE, id, today, idGenerator};
 }
 

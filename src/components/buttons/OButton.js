@@ -1,11 +1,11 @@
 import React from 'react';
-import _ from 'lodash';
 
 import SVGCircle from './SVGCircle';
 import svgWrapper from './svgWrapper';
+import uuidv4 from '../../utils/uuidv4';
 
 const OIcon = ({large, filled}) => {
-  let cpid = _.uniqueId('oclip_');
+  let cpid = uuidv4();
   return (
     <g>
       <defs>

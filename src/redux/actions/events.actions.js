@@ -1,7 +1,7 @@
-import _ from 'lodash';
 import moment from 'moment';
 
 import {DAY_CHANGE_HOUR} from '../../utils/constants';
+import uuidv4 from '../../utils/uuidv4';
 
 export const DISCARD_EVENT = 'DISCARD_EVENT';
 export const DISCARD_EVENT_TEMPLATE = 'DISCARD_EVENT_TEMPLATE';
@@ -49,11 +49,11 @@ export function resetEventTemplateCounter(id) {
 	return {type: RESET_EVENT_TEMPLATE_COUNTER, id};
 }
 
-export function saveEvent(id, idGenerator = _.uniqueId, newtid='') {
+export function saveEvent(id, idGenerator = uuidv4, newtid='') {
 	return {type: SAVE_EVENT, id, idGenerator, newtid};
 }
 
-export function saveEventTemplate(id, today = moment().subtract(DAY_CHANGE_HOUR, 'hours'), idGenerator = _.uniqueId) {
+export function saveEventTemplate(id, today = moment().subtract(DAY_CHANGE_HOUR, 'hours'), idGenerator = uuidv4) {
   return {type: SAVE_EVENT_TEMPLATE, id, today, idGenerator};
 }
 

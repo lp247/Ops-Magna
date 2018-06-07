@@ -5,6 +5,8 @@ import GridContainer from '../container/GridContainer';
 import ListDropDownButton from './ListDropDownButton';
 import DropDownList from './DropDownList';
 import BasicLink from '../texts/BasicLink';
+import FlexContainer from '../container/FlexContainer';
+import TextButton from '../buttons/TextButton';
 
 class TaskListHeader extends Component {
 	constructor(props) {

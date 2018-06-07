@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import uuidv4 from '../../utils/uuidv4';
 
 export const DISCARD_REMINDER = 'DISCARD_REMINDER';
 export const REMOVE_REMINDER = 'REMOVE_REMINDER';
@@ -14,7 +14,7 @@ export function removeReminder(id) {
   return {type: REMOVE_REMINDER, id};
 }
 
-export function saveReminder(id, idGenerator = _.uniqueId) {
+export function saveReminder(id, idGenerator = uuidv4) {
 	return {type: SAVE_REMINDER, id, idGenerator};
 }
 

@@ -39,12 +39,27 @@ const StyledGhost = styled.div`
   width: ${props => props.width ? props.width + 'px' : 'auto'};
 `;
 
+const LineHeightModel = styled.div`
+  display: block;
+  visibility: hidden;
+  border: 1px solid white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: auto;
+`;
+
 class DynamicTextarea extends Component {
   constructor(props) {
 		super(props);
-    this.state = {inputRows: 1, ghostWidth: 0, ghostLineHeight: 0};
+    this.state = {
+      inputRows: null,
+      ghostWidth: null,
+      lineHeight: null
+    };
     this.input = null;
     this.ghost = null;
+    this.lhm = null;
     this.adjustInputRows = this.adjustInputRows.bind(this);
     this.adjustGhostWidth = this.adjustGhostWidth.bind(this);
     this.calcLineHeight = this.calcLineHeight.bind(this);
@@ -77,12 +92,14 @@ class DynamicTextarea extends Component {
   }
   
   adjustInputRows() {
-    let ghostRows = Math.max(Math.floor(this.ghost.clientHeight / this.state.ghostLineHeight), 1);
-    if (ghostRows !== this.state.inputRows) this.setState({inputRows: ghostRows});
+    let rows = Math.max(Math.floor(this.ghost.clientHeight / this.state.lineHeight), 1) || 1;
+    if (rows !== this.state.inputRows) this.setState({inputRows: rows});
   }
 
   calcLineHeight() {
-    this.setState({ghostLineHeight: this.ghost.clientHeight});
+    if (this.state.lineHeight !== this.lhm.clientHeight) {
+      this.setState({lineHeight: this.lhm.clientHeight});
+    }
   }
 
   render() {
@@ -90,7 +107,7 @@ class DynamicTextarea extends Component {
 		let {inputRows, ghostWidth} = this.state;
     return [
       <StyledTextArea
-        key={1}
+        key='1'
         innerRef={ref => this.input = ref}
         rows={inputRows}
         autoFocus={false}
@@ -98,11 +115,16 @@ class DynamicTextarea extends Component {
         {...rest}
       />,
       <StyledGhost
-        key={2}
+        key='2'
         innerRef={ref => this.ghost = ref}
-        aria-hidden="true"
+        aria-hidden='true'
         width={ghostWidth}
-      >{value || 'A'}</StyledGhost>
+      >{value}</StyledGhost>,
+      <LineHeightModel
+        key='3'
+        innerRef={ref => this.lhm = ref}
+        aria-hidden='true'
+      >A</LineHeightModel>
     ];
   }
 }

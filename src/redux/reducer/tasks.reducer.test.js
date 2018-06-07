@@ -234,6 +234,17 @@ describe('Saving task templates', () => {
 		let final = S([tt_ctt_new_child_today.set('tid', '101').set('id', '102')], [new_tt_clean, tt_ctt_saved.set('id', '101').set('cnt', 1)]);
 		expect(tasks(initial, saveTaskTemplate('new', moment('2018-05-10'), mockfn))).toEqual(final);
 	});
+	it('inserts a new task template on saving "new", creates a child on old day in night hours on match', () => {
+		let tt_data = TTD('c', 'd', 10, List([3, 4, 5]), List(), List([4, 6, 8, 10]), '22:00', '2010-01-01', '2019-01-01');
+		let new_data = TTD('', '', 0, List(), List(), List(), '', '', '');
+		let new_tt = TT_('new', 0, tt_data, new_data);
+		let tt = TT('42', 1, tt_data);
+		let t_data = TD('c', 'd', '2018-05-10', '22:00', false);
+		let t = T('42', '42', t_data);
+		let initial = S([NCT], [new_tt]);
+		let final = S([NCT, t], [NCTT, tt]);
+		expect(tasks(initial, saveTaskTemplate('new', moment('2018-05-10 22:00'), () => '42'))).toEqual(final);
+	});
 	it('inserts a new task template on saving "new", does not create a child today without match', () => {
 		let initial = S([new_t_clean], [tt_soft_new]);
 		let final = S([new_t_clean], [new_tt_clean, tt_soft_saved.set('cnt', 0).set('id', '200')]);
@@ -678,9 +689,39 @@ describe('Updating last update of tasks', () => {
 		let final = S([new_t_clean, tt_child_3], [new_tt_clean, tt_overflow.set('cnt', 5)], '2018-05-10');
 		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
 	});
+	it('adds latest template child, if counter of template is not full (start date and end date empty)', () => {
+		let tt_data = TTD('everyday', 'task at every day', 5, List([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]), List([1, 2, 3, 4, 5]), List([1, 2, 3, 4, 5, 6, 7]), '12:30', '', '');
+		let tt_before = TT('22', 2, tt_data);
+		let tt_after = TT('22', 5, tt_data);
+		let t_data = TD('everyday', 'task at every day', '2018-05-04', '12:30', false);
+		let t = T('42', '22', t_data);
+		let initial = S([NCT], [NCTT, tt_before], '2018-05-01');
+		let final = S([NCT, t], [NCTT, tt_after], '2018-05-10');
+		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
+	});
+	it('adds latest template child, if n of template is infinity (start date and end date empty)', () => {
+		let tt_data = TTD('everyday', 'task at every day', -1, List([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]), List([1, 2, 3, 4, 5]), List([1, 2, 3, 4, 5, 6, 7]), '12:30', '', '');
+		let tt_before = TT('22', 2, tt_data);
+		let tt_after = TT('22', 11, tt_data);
+		let t_data = TD('everyday', 'task at every day', '2018-05-10', '12:30', false);
+		let t = T('42', '22', t_data);
+		let initial = S([NCT], [NCTT, tt_before], '2018-05-01');
+		let final = S([NCT, t], [NCTT, tt_after], '2018-05-10');
+		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
+	});
 	it('adds latest template childs, if end is not reached', () => {
 		let initial = S([new_t_clean], [new_tt_clean, tt_ending], '2018-05-01');
 		let final = S([new_t_clean, tt_child_2], [new_tt_clean, tt_ending.set('cnt', 4)], '2018-05-10');
+		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
+	});
+	it('adds latest template childs, if end is not reached (start date empty)', () => {
+		let tt_data = TTD('everyday', 'task at every day', 100, List([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]), List([1, 2, 3, 4, 5]), List([1, 2, 3, 4, 5, 6, 7]), '12:30', '', '2018-05-03');
+		let tt_before = TT('22', 2, tt_data);
+		let tt_after = TT('22', 4, tt_data);
+		let t_data = TD('everyday', 'task at every day', '2018-05-03', '12:30', false);
+		let t = T('42', '22', t_data);
+		let initial = S([NCT], [NCTT, tt_before], '2018-05-01');
+		let final = S([NCT, t], [NCTT, tt_after], '2018-05-10');
 		expect(tasks(initial, updateLastUpdate(moment('2018-05-10 12:00'), () => '42'))).toEqual(final);
 	});
 	it('updates last update to today', () => {

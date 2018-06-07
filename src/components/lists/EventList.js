@@ -1,7 +1,9 @@
-import React from 'react';
+import React, {Component} from 'react';
 import moment from 'moment';
 import {connect} from 'react-redux';
 import {List} from 'immutable';
+import {withRouter} from 'react-router';
+import {push} from 'react-router-redux';
 
 import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
@@ -10,7 +12,6 @@ import Section from '../container/Section';
 import Subsection from '../container/Subsection';
 import getWeekday from '../../utils/weekday';
 import {DAY_CHANGE_HOUR, EVENT_FORECAST_DAYS} from '../../utils/constants';
-import history from '../../utils/history';
 import {updateEventSummary, updateEventDate, saveEvent} from '../../redux/actions/events.actions';
 import {toggleEventDisplay} from '../../redux/actions/showEventTemplates.actions';
 import {maplistsort} from '../../utils/sort';
@@ -18,8 +19,14 @@ import FastInput from './FastInput';
 import TemplateList from './TemplateList';
 import BasicSpan from '../texts/BasicSpan';
 import GridContainer from '../container/GridContainer';
-import EventListHeader from './EventListHeader';
-import { NewEventHeaderText, NewEventTemplateHeaderText, EventListHeaderText } from '../../utils/translations';
+import {
+  NewEventHeaderText,
+  NewEventTemplateHeaderText,
+  EventListHeaderText,
+  showRecButtonText
+} from '../../utils/translations';
+import ListHeader from './ListHeader';
+import updater from '../../webworker/updater.worker.js';
 
 const CurrentList = ({events, editEvent}) => {
   return events.reduce((accu, event, index) => {
@@ -58,42 +65,70 @@ const UpcomingList = ({events, editEvent, lang}) => {
   }, List());
 }
 
-const RawEventList = ({
-  currentEvents,
-  upcomingEvents,
-  eventTemplates,
-  showTemplates,
-  fet,
-  lang,
-  editEvent,
-  fetInputHandler,
-  fetAddHandler,
-  toggleFilter,
-  openNewEventForm,
-  openNewEventTemplateForm
-}) => (
-  <Section>
-    <EventListHeader
-      header={EventListHeaderText[lang]}
-      openNewForm={openNewEventForm}
-      openNewTemplateForm={openNewEventTemplateForm}
-      formText={NewEventHeaderText[lang]}
-      templateFormText={NewEventTemplateHeaderText[lang]}
-    />
-    <Subsection>
-      {showTemplates
-        ? <GridContainer gtc='16px 1fr 32px' gcg='16px'>
-          <TemplateList templates={eventTemplates} edit={editEvent} />
-        </GridContainer>
-        : <GridContainer gtc='16px 1fr 32px' gcg='16px'>
-          <CurrentList key={1} events={currentEvents} editEvent={editEvent} />
-          <UpcomingList key={2} events={upcomingEvents} editEvent={editEvent} lang={lang} />
-          <FastInput key={3} value={fet} inputHandler={fetInputHandler} addHandler={fetAddHandler} />
-        </GridContainer>
-      }
-    </Subsection>
-  </Section>
-);
+class RawEventList extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.minuteUpdate = this.minuteUpdate.bind(this);
+  }
+
+  componentDidMount() {
+    updater.addEventListener('message', this.minuteUpdate);
+  }
+
+  componentWillUnmount() {
+    updater.removeEventListener('message', this.minuteUpdate);
+  }
+
+  minuteUpdate(e) {
+    if (e.data === 'UPDATE_MINUTE') {
+      this.forceUpdate();
+    }
+  }
+
+  render () {
+    let {
+      currentEvents,
+      upcomingEvents,
+      eventTemplates,
+      showTemplates,
+      fet,
+      lang,
+      editEvent,
+      fetInputHandler,
+      fetAddHandler,
+      toggleFilter,
+      openNewEventForm,
+      openNewEventTemplateForm
+    } = this.props;
+    return (
+      <Section>
+        <ListHeader
+          header={EventListHeaderText[lang]}
+          openNewForm={openNewEventForm}
+          openNewTemplateForm={openNewEventTemplateForm}
+          formText={NewEventHeaderText[lang]}
+          templateFormText={NewEventTemplateHeaderText[lang]}
+          filterButtonText={showRecButtonText[lang]}
+          filterAction={toggleFilter}
+          filterActive={showTemplates}
+        />
+        <Subsection>
+          {showTemplates
+            ? <GridContainer gtc='16px 1fr 32px' gcg='16px'>
+              <TemplateList templates={eventTemplates} edit={editEvent} />
+            </GridContainer>
+            : <GridContainer gtc='16px 1fr 32px' gcg='16px'>
+              <CurrentList key={1} events={currentEvents} editEvent={editEvent} />
+              <UpcomingList key={2} events={upcomingEvents} editEvent={editEvent} lang={lang} />
+              <FastInput key={3} value={fet} inputHandler={fetInputHandler} addHandler={fetAddHandler} />
+            </GridContainer>
+          }
+        </Subsection>
+      </Section>
+    );
+  }
+}
 
 /**
  * Get events with date of today.
@@ -114,8 +149,11 @@ const getToday = (entries) => {
  */
 const getUpcoming = (events) => {
   if (events && events.size > 0) {
-    return events.filter(x => moment().add(EVENT_FORECAST_DAYS + 1, 'days').isAfter(x.getIn(['data', 'date']))
-      && moment().isBefore(x.getIn(['data', 'date'])));
+    return events.filter(x => moment()
+      .subtract(DAY_CHANGE_HOUR, 'hours')
+      .add(EVENT_FORECAST_DAYS + 1, 'days')
+      .isAfter(x.getIn(['data', 'date']), 'day')
+      && moment().subtract(DAY_CHANGE_HOUR, 'hours').isBefore(x.getIn(['data', 'date']), 'day'));
   } else {
     return List();
   }
@@ -140,9 +178,9 @@ const mapDispatchToProps = dispatch => {
   return {
     editEvent: (id, isTemplateID) => {
       if (isTemplateID) {
-        history.push('/et/' + id);
+        dispatch(push('/et/' + id));
       } else {
-        history.push('/e/' + id);
+        dispatch(push('/e/' + id));
       }
     },
     fetInputHandler: e => {
@@ -162,8 +200,8 @@ const mapDispatchToProps = dispatch => {
       dispatch(saveEvent('new'));
     },
     toggleFilter: () => dispatch(toggleEventDisplay()),
-    openNewEventForm: () => history.push('/e/new'),
-    openNewEventTemplateForm: () => history.push('/et/new')
+    openNewEventForm: () => dispatch(push('/e/new')),
+    openNewEventTemplateForm: () => dispatch(push('/et/new'))
   }
 }
 
@@ -172,4 +210,4 @@ const EventList = connect(
   mapDispatchToProps
 )(RawEventList);
 
-export default EventList;
+export default withRouter(EventList);

@@ -3,9 +3,10 @@ import _ from 'lodash';
 
 import SVGPath from './SVGPath';
 import svgWrapper from './svgWrapper';
+import uuidv4 from '../../utils/uuidv4';
 
 const RhombusIcon = ({large, filled}) => {
-  let cpid = _.uniqueId('rhombusclip_');
+  let cpid = uuidv4();
   return (
     <g>
       <defs>

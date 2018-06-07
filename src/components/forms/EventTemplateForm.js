@@ -1,6 +1,6 @@
 import {connect} from 'react-redux';
+import {goBack} from 'react-router-redux';
 
-import history from '../../utils/history';
 import {
   updateEventTemplateSummary,
   updateEventTemplateDescription,
@@ -16,7 +16,10 @@ import {
   removeEventTemplate
 } from '../../redux/actions/events.actions';
 import RawTemplateForm from './RawTemplateForm';
-import { NewEventTemplateHeaderText, EditEventTemplateHeaderText } from '../../utils/translations';
+import {
+  NewEventTemplateHeaderText,
+  EditEventTemplateHeaderText
+} from '../../utils/translations';
 
 const mapStateToProps = (state, ownProps) => {
   let {id} = ownProps.match.params;
@@ -42,17 +45,23 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     updateStart: value => dispatch(updateEventTemplateStart(id, value)),
     updateEnd: value => dispatch(updateEventTemplateEnd(id, value)),
     saveExit: () => {
+      // history.go(-1);
+      dispatch(goBack());
       dispatch(saveEventTemplate(id));
-      history.push('/');
+      // history.push('/');
     },
     discardExit:  () => {
+      // history.go(-1);
+      dispatch(goBack());
       dispatch(discardEventTemplate(id));
-      history.push('/');
+      // history.push('/');
     },
     discard: () => dispatch(discardEventTemplate(id)),
     delExit: () => {
+      // history.go(-1);
+      dispatch(goBack());
       dispatch(removeEventTemplate(id));
-      history.push('/');
+      // history.push('/');
     }
   };
 }

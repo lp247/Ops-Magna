@@ -1,11 +1,11 @@
 import React from 'react';
-import _ from 'lodash';
 
 import SVGPath from './SVGPath';
 import svgWrapper from './svgWrapper';
+import uuidv4 from '../../utils/uuidv4';
 
 const PlusIcon = ({large, inverted, up}) => {
-	let cpid = _.uniqueId('triangleclip_');
+	let cpid = uuidv4();
   return (
     <g>
 			<defs>
