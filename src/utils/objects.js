@@ -1,6 +1,4 @@
 import {Map, List} from 'immutable';
-import moment from 'moment';
-import {DAY_CHANGE_HOUR} from './constants';
 
 // =================================================================================================
 //           TASKS
@@ -20,7 +18,7 @@ export const getTaskTemplate = (
   weeks = List(),
   days = List(),
   time = '',
-  start = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD'),
+  start = '',
   end = ''
 ) => {
   let core = getTaskTemplateCore(summ, desc, n, months, weeks, days, time, start, end);
@@ -39,7 +37,7 @@ export const getTask = (
   tid = '',
   summ = '',
   desc = '',
-  date = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD'),
+  date = '',
   time = '',
   done = false
 ) => {
@@ -70,7 +68,7 @@ export const getEventTemplate = (
   weeks = List(),
   days = List(),
   time = '',
-  start = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD'),
+  start = '',
   end = ''
 ) => {
   let core = getEventTemplateCore(summ, desc, n, months, weeks, days, time, start, end);
@@ -89,7 +87,7 @@ export const getEvent = (
   tid = '',
   summ = '',
   desc = '',
-  date = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD'),
+  date = '',
   time = ''
 ) => {
   let core = getEventCore(summ, desc, date, time);

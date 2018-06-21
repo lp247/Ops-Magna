@@ -1,7 +1,9 @@
 import {fromJS, Map} from 'immutable';
+import moment from 'moment';
 
 import {unsetShouldSave} from '../redux/actions/shouldSave.actions';
-import {updateLastUpdate} from '../redux/actions/tasksEventsUpdate.actions';
+import {updateDate} from '../redux/actions/date.actions';
+import {DAY_CHANGE_HOUR} from './constants';
 
 export const loadState = () => {
   try {
@@ -40,4 +42,6 @@ export const subscriber = (store) => () => {
   }
 }
 
-export const updateStore = (store) => store.dispatch(updateLastUpdate());
+export const updateStore = (store) => {
+  store.dispatch(updateDate(moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD')));
+}

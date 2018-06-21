@@ -1,5 +1,4 @@
 import {Map, List} from 'immutable';
-import moment from 'moment';
 import {
 	DISCARD_TASK,
   DISCARD_TASK_TEMPLATE,
@@ -24,9 +23,6 @@ import {
   UPDATE_TASK_TIME,
 	UPDATE_TASK_TEMPLATE_TIME
 } from '../actions/tasks.actions';
-import {
-  UPDATE_LAST_UPDATE
-} from '../actions/tasksEventsUpdate.actions';
 import {
   discardItem,
   discardTemplate,
@@ -53,15 +49,19 @@ import {
   updateTemplateSummary,
 } from './ReducerHelperFunctions';
 import {getTask, getTaskTemplate} from '../../utils/objects';
-import {DAY_CHANGE_HOUR} from '../../utils/constants';
+import uuidv4 from '../../utils/uuidv4';
+import {UPDATE_DATE} from '../actions/date.actions';
+import {TRANSLATED_DATE} from '../../utils/constants';
 
 const tasks = (
   state = Map({
     templates: List([getTaskTemplate('new')]),
-    items: List([getTask('new')]),
-    lastUpdate: moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD')
+    items: List([getTask('new', undefined, undefined, undefined, TRANSLATED_DATE)])
   }),
-  action
+  oldDate = TRANSLATED_DATE,
+  newDate = TRANSLATED_DATE,
+  action = {},
+  idGenerator=uuidv4
 ) => {
   switch (action.type) {
     case DISCARD_TASK: return discardItem(state, action.id);
@@ -70,8 +70,8 @@ const tasks = (
     case REMOVE_TASK: return removeItem(state, action.id);
     case REMOVE_TASK_TEMPLATE: return removeTemplate(state, action.id);
     case RESET_TASK_TEMPLATE_COUNTER: return resetCounter(state, action.id);
-    case SAVE_TASK: return saveTaskChanges(state, action.id, action.idGenerator, action.newtid);
-    case SAVE_TASK_TEMPLATE: return saveTaskTemplateChanges(state, action.id, action.today, action.idGenerator);
+    case SAVE_TASK: return saveTaskChanges(state, action.id, newDate, idGenerator, action.newtid);
+    case SAVE_TASK_TEMPLATE: return saveTaskTemplateChanges(state, action.id, newDate, idGenerator);
     case TOGGLE_TASK_DONE: return toggleDone(state, action.id);
     case TOGGLE_TASK_TEMPLATE_DAY: return toggleDays(state, action.id, action.value);
     case TOGGLE_TASK_TEMPLATE_MONTH: return toggleMonths(state, action.id, action.value);
@@ -86,7 +86,7 @@ const tasks = (
     case UPDATE_TASK_TEMPLATE_START: return updateTemplateStart(state, action.id, action.value);
     case UPDATE_TASK_TIME: return updateItemTime(state, action.id, action.value);
     case UPDATE_TASK_TEMPLATE_TIME: return updateTemplateTime(state, action.id, action.value);
-    case UPDATE_LAST_UPDATE: return updateTasks(state, action.today, action.idGenerator);
+    case UPDATE_DATE: return updateTasks(state, oldDate, newDate, idGenerator);
     default: return state;
   }
 }

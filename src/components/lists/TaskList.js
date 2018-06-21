@@ -9,9 +9,8 @@ import CBButton from '../buttons/CBButton';
 import OButton from '../buttons/OButton';
 import Section from '../container/Section';
 import Subsection from '../container/Subsection';
-import {DAY_CHANGE_HOUR} from '../../utils/constants';
 import {maplistsort} from '../../utils/sort';
-import {toggleTaskDone, updateTaskSummary, updateTaskDate, saveTask} from '../../redux/actions/tasks.actions';
+import {toggleTaskDone, updateTaskSummary, saveTask} from '../../redux/actions/tasks.actions';
 import {toggleTaskDisplay} from '../../redux/actions/showTaskTemplates.actions';
 import TemplateList from './TemplateList';
 import FastInput from './FastInput';
@@ -135,12 +134,10 @@ const RawTaskList = ({
  * Get tasks with date of today.
  * @param {List.<Map>} tasks Tasks.
  */
-const getToday = (tasks) => {
+const getToday = (tasks, date) => {
   if (tasks && tasks.size > 0) {
     return tasks
-      .filter(x => moment()
-        .subtract(DAY_CHANGE_HOUR, 'hours')
-        .format('YYYY-MM-DD') === x.getIn(['data', 'date']));
+      .filter(x => date === x.getIn(['data', 'date']));
   } else {
     return List();
   }
@@ -150,10 +147,10 @@ const getToday = (tasks) => {
  * Get tasks from previous dates, which have not been done yet.
  * @param {List.<Map>} tasks Tasks.
  */
-const getUncompleted = (tasks) => {
+const getUncompleted = (tasks, date) => {
   if (tasks && tasks.size > 0) {
     return tasks.filter(x => {
-      return moment().subtract(DAY_CHANGE_HOUR, 'hours').isAfter(x.getIn(['data', 'date']), 'day');
+      return moment(date).isAfter(x.getIn(['data', 'date']), 'day');
     });
   } else {
     return List();
@@ -166,8 +163,8 @@ const getUncompleted = (tasks) => {
  */
 const mapStateToProps = state => {
   return {
-    currentTasks: getToday(state.getIn(['tasks', 'items']).rest()).sort(maplistsort(['data', 'time'])),
-    prevUncompletedTasks: getUncompleted(state.getIn(['tasks', 'items']).rest()),
+    currentTasks: getToday(state.getIn(['tasks', 'items']).rest(), state.get('date')).sort(maplistsort(['data', 'time'])),
+    prevUncompletedTasks: getUncompleted(state.getIn(['tasks', 'items']).rest(), state.get('date')),
     taskTemplates: state.getIn(['tasks', 'templates']).rest().sort(maplistsort(['data', 'summ'])),
     showTemplates: state.get('showTaskTemplates'),
     ftt: state.getIn(['tasks', 'items', 0, 'tmp', 'summ']),
@@ -195,8 +192,6 @@ const mapDispatchToProps = dispatch => {
     fttInputHandler: e => {
       if (e.target.value !== '\n') {
         if (e.target.value.endsWith('\n')) {
-          let today = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');
-          dispatch(updateTaskDate('new', today));
           dispatch(saveTask('new'));
         } else {
           dispatch(updateTaskSummary('new', e.target.value));
@@ -204,8 +199,6 @@ const mapDispatchToProps = dispatch => {
       }
     },
     fttAddHandler: () => {
-      let today = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');
-      dispatch(updateTaskDate('new', today));
       dispatch(saveTask('new'));
     },
     toggleFilter: () => dispatch(toggleTaskDisplay()),

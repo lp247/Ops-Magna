@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export const FONT_COLOR = 'rgb(184, 184, 184)';
 export const BACKGROUND_COLOR = 'rgb(33, 34, 37)';
 export const INPUT_BACKGROUND_COLOR = 'rgb(43, 44, 47)';
@@ -18,4 +20,7 @@ export const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 
 export const DAY_CHANGE_HOUR = 4;
 export const EVENT_FORECAST_DAYS = 7;
-export const NOTIFICATION_START_HOURS = 1;
+export const NOTIFICATION_START_MINUTES = 60;
+export const NOTIFICATION_END_MINUTES = 15;
+
+export const TRANSLATED_DATE = moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD');

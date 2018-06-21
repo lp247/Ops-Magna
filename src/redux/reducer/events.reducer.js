@@ -1,4 +1,3 @@
-import moment from 'moment';
 import {Map, List} from 'immutable';
 import {
 	DISCARD_EVENT,
@@ -24,9 +23,6 @@ import {
 	UPDATE_EVENT_TEMPLATE_TIME
 } from '../actions/events.actions';
 import {
-  UPDATE_LAST_UPDATE
-} from '../actions/tasksEventsUpdate.actions';
-import {
   discardItem,
   discardTemplate,
 	incrementCounter,
@@ -51,15 +47,19 @@ import {
   updateTemplateSummary
 } from './ReducerHelperFunctions';
 import {getEvent, getEventTemplate} from '../../utils/objects';
-import {DAY_CHANGE_HOUR} from '../../utils/constants';
+import uuidv4 from '../../utils/uuidv4';
+import {UPDATE_DATE} from '../actions/date.actions';
+import {TRANSLATED_DATE} from '../../utils/constants';
 
 const events = (
   state = Map({
     templates: List([getEventTemplate('new')]),
-    items: List([getEvent('new')]),
-    lastUpdate: moment().subtract(DAY_CHANGE_HOUR, 'hours').format('YYYY-MM-DD')
+    items: List([getEvent('new', undefined, undefined, undefined, TRANSLATED_DATE)])
   }),
-  action
+  oldDate = TRANSLATED_DATE,
+  newDate = TRANSLATED_DATE,
+  action = {},
+  idGenerator = uuidv4
 ) => {
   switch (action.type) {
     case DISCARD_EVENT: return discardItem(state, action.id);
@@ -68,8 +68,8 @@ const events = (
     case REMOVE_EVENT: return removeItem(state, action.id);
     case REMOVE_EVENT_TEMPLATE: return removeTemplate(state, action.id);
     case RESET_EVENT_TEMPLATE_COUNTER: return resetCounter(state, action.id);
-    case SAVE_EVENT: return saveEventChanges(state, action.id, action.idGenerator, action.newtid);
-    case SAVE_EVENT_TEMPLATE: return saveEventTemplateChanges(state, action.id, action.today, action.idGenerator);
+    case SAVE_EVENT: return saveEventChanges(state, action.id, newDate, idGenerator, action.newtid);
+    case SAVE_EVENT_TEMPLATE: return saveEventTemplateChanges(state, action.id, newDate, idGenerator);
     case TOGGLE_EVENT_TEMPLATE_DAY: return toggleDays(state, action.id, action.value);
     case TOGGLE_EVENT_TEMPLATE_MONTH: return toggleMonths(state, action.id, action.value);
     case TOGGLE_EVENT_TEMPLATE_WEEK: return toggleWeeks(state, action.id, action.value);
@@ -83,7 +83,7 @@ const events = (
     case UPDATE_EVENT_TEMPLATE_START: return updateTemplateStart(state, action.id, action.value);
     case UPDATE_EVENT_TIME: return updateItemTime(state, action.id, action.value);
     case UPDATE_EVENT_TEMPLATE_TIME: return updateTemplateTime(state, action.id, action.value);
-    case UPDATE_LAST_UPDATE: return updateEvents(state, action.today, action.idGenerator);
+    case UPDATE_DATE: return updateEvents(state, oldDate, newDate, idGenerator);
     default: return state;
   }
 }

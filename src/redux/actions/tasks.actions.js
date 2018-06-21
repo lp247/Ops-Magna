@@ -1,8 +1,3 @@
-import moment from 'moment';
-
-import {DAY_CHANGE_HOUR} from '../../utils/constants';
-import uuidv4 from '../../utils/uuidv4';
-
 export const DISCARD_TASK = 'DISCARD_TASK';
 export const DISCARD_TASK_TEMPLATE = 'DISCARD_TASK_TEMPLATE';
 export const INCREMENT_TASK_TEMPLATE_COUNTER = 'INCREMENT_TASK_TEMPLATE_COUNTER';
@@ -50,12 +45,12 @@ export function resetTaskTemplateCounter(id) {
 	return {type: RESET_TASK_TEMPLATE_COUNTER, id};
 }
 
-export function saveTask(id, idGenerator = uuidv4, newtid='') {
-	return {type: SAVE_TASK, id, idGenerator, newtid};
+export function saveTask(id, newtid='') {
+	return {type: SAVE_TASK, id, newtid};
 }
 
-export function saveTaskTemplate(id, today = moment().subtract(DAY_CHANGE_HOUR, 'hours'), idGenerator = uuidv4) {
-  return {type: SAVE_TASK_TEMPLATE, id, today, idGenerator};
+export function saveTaskTemplate(id) {
+  return {type: SAVE_TASK_TEMPLATE, id};
 }
 
 export function toggleTaskDone(id) {
