@@ -81,7 +81,7 @@ setTimeout(dateUpdater, (((24 + DAY_CHANGE_HOUR - h) * 60 - m) * 60 - s) * 1000 
 // Subscribe saving subscriber to store changes.
 store.subscribe(subscriber(store));
 
-// Render whole app.
+// Render whole app and show notifications.
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
@@ -91,3 +91,5 @@ ReactDOM.render(
   document.getElementById('root')
 );
 // registerServiceWorker();
+
+

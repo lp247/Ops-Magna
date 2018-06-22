@@ -431,3 +431,10 @@ export const showRecButtonText = {
 	es: 'Mostrar anotaciones repetitivas',
 	ru: ''
 };
+
+export const notificationAtText = {
+	en: 'at',
+	de: 'um',
+	es: 'a las',
+	ru: '',
+}

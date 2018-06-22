@@ -1,6 +1,7 @@
 /* global Android */
 
 import {Component} from 'react';
+import {notificationAtText} from '../../utils/translations';
 
 class AndroidNotification extends Component {
 	constructor(props) {
@@ -10,11 +11,28 @@ class AndroidNotification extends Component {
 		if (AndroidNotification.counter === 99) {
 			AndroidNotification.counter = 0;
 		}
-		console.log(this.notificationID);
+		this.refresh = this.refresh.bind(this);
+	}
+
+	refresh() {
+		Android.hideNotification(this.notificationID);
+		Android.showNotification(
+			this.props.title + ' ' + notificationAtText[this.props.lang] + ' ' + this.props.time,
+			this.props.text,
+			this.notificationID
+		);
 	}
 
 	componentDidMount() {
-		Android.showNotification(this.props.title + ' (' + this.notificationID + ')', this.props.text, this.notificationID);
+		Android.showNotification(
+			this.props.title + ' ' + notificationAtText[this.props.lang] + ' ' + this.props.time,
+			this.props.text,
+			this.notificationID
+		);
+	}
+
+	componentDidUpdate() {
+		this.refresh();
 	}
 
 	componentWillUnmount() {

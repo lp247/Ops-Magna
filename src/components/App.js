@@ -12,9 +12,10 @@ import ReminderForm from './forms/ReminderForm';
 import TaskTemplateForm from './forms/TaskTemplateForm';
 import EventTemplateForm from './forms/EventTemplateForm';
 import TitleBar from './lists/TitleBar';
+import NotificationStack from './modals/NotificationStack';
 
-const App = () => (
-  <Page>
+const App = () => [
+  <Page key='1'>
     <ContentWrapper>
       <Route exact path='/' render={() => [
         <TitleBar key={1} />,
@@ -28,7 +29,8 @@ const App = () => (
       <Route path='/tt/:id' component={TaskTemplateForm} />
       <Route path='/et/:id' component={EventTemplateForm} />
     </ContentWrapper>
-  </Page>
-);
+  </Page>,
+  <NotificationStack key='2' />
+];
 
 export default App;
