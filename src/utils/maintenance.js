@@ -31,7 +31,9 @@ export const saveStore = (store) => {
     tasks: store.getState().get('tasks'),
     events: store.getState().get('events'),
     reminders: store.getState().get('reminders'),
-    lang: store.getState().get('lang')
+    lang: store.getState().get('lang'),
+    date: store.getState().get('date'),
+    time: store.getState().get('time')
   }));
 }
 

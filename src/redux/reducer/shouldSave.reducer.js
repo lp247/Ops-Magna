@@ -18,6 +18,7 @@ import {
 import {UNSET_SHOULD_SAVE} from '../actions/shouldSave.actions';
 import {SELECT_LANGUAGE} from '../actions/lang.actions';
 import {UPDATE_DATE} from '../actions/date.actions';
+import {UPDATE_TIME} from '../actions/time.actions';
 
 const shouldSave = (state = false, action) => {
   switch (action.type) {
@@ -34,10 +35,12 @@ const shouldSave = (state = false, action) => {
     case TOGGLE_TASK_DONE:
     case SELECT_LANGUAGE:
     case UPDATE_DATE:
+    case UPDATE_TIME:
       return true;
     case UNSET_SHOULD_SAVE:
-    default:
       return false;
+    default:
+      return state;
   }
 }
 
